@@ -1,0 +1,35 @@
+{
+  "name": "warkhosh/variable",
+  "type": "library",
+  "description": "Набор универсальных хелперов,классов,библиотек и т.д.",
+  "keywords": [
+    "php",
+    "basic",
+    "class",
+    "Helpers"
+  ],
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "support": {
+    "email": "ekv.programmer@gmail.com"
+  },
+  "authors": [
+    {
+      "name": "Konstantin Egorov",
+      "email": "ekv.programmer@gmail.com"
+    }
+  ],
+  "repositories": [
+  ],
+  "require": {
+    "php": ">=7.2.26",
+    "ext-mbstring": "*",
+    "ext-iconv": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "warkhosh\\Variable\\": ""
+    },
+    "files": []
+  }
+}
