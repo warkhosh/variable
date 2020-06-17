@@ -14,7 +14,7 @@ use Warkhosh\Variable\Helper\VarHelper;
 class VarArray
 {
     /**
-     * Преобразование переданого значения в массив.
+     * Преобразование переданного значения в массив.
      *
      * @param mixed  $data
      * @param string $delimiter
@@ -36,7 +36,7 @@ class VarArray
     }
 
     /**
-     * Преобразование переданого значения в массив.
+     * Преобразование переданного значения в массив.
      *
      * @param mixed  $data
      * @param string $delimiter

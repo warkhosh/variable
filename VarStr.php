@@ -3,12 +3,13 @@
 namespace Warkhosh\Variable;
 
 use DateTime;
+use Ekv\Framework\Components\Support\VariableOptions;
 use Warkhosh\Variable\Helper\Helper;
 
 class VarStr
 {
     /**
-     * Преобразование переданого значения в текст.
+     * Преобразование переданного значения в текст.
      *
      * @param mixed $str
      * @return string
@@ -32,7 +33,7 @@ class VarStr
 
 
     /**
-     * Преобразование переданого значения в текст.
+     * Преобразование переданного значения в текст.
      *
      * @param mixed $str
      * @return void
@@ -602,7 +603,7 @@ class VarStr
 
                 } else {
                     array_pop($words); // убираем последнее слово делающее превышение ограничения по длинне
-                    $str =  static::trim(join(' ', $words));
+                    $str = static::trim(join(' ', $words));
                 }
             }
 
@@ -881,7 +882,7 @@ class VarStr
     {
         $str = VarStr::getMakeString($str);
         $str = str_replace(["\n", "\t", "\r", '&nbsp;'], ['', '', '', ' '], $str);
-        $str =  static::trim(preg_replace('/\s{2,}/', ' ', $str), "\x00..\x1F"); // убрать лишние пробелы
+        $str = static::trim(preg_replace('/\s{2,}/', ' ', $str), "\x00..\x1F"); // убрать лишние пробелы
 
         return $str;
     }
@@ -904,7 +905,7 @@ class VarStr
         }
 
         $value = str_replace(["\n", "\t", "\r"], '', $value);
-        $value = str_replace('&nbsp;', ' ',  static::trim((string)$value, "\x00..\x1F"));
+        $value = str_replace('&nbsp;', ' ', static::trim((string)$value, "\x00..\x1F"));
 
         return (preg_match("/(\S+)/i", $value) == 0 ? true : false);
     }
@@ -1057,10 +1058,97 @@ class VarStr
         }
 
         if (! is_null($deleted)) {
-            return VarArray::getRemove(explode($delimiter,  static::trim($str)), $deleted);
+            return VarArray::getRemove(explode($delimiter, static::trim($str)), $deleted);
         } else {
-            return explode($delimiter,  static::trim($str));
+            return explode($delimiter, static::trim($str));
         }
+    }
+
+    /**
+     * Разбивает строку по разделителю и дополнительно производит удаление пустых значений;
+     *
+     * @param string $delimiter - разделитель
+     * @param string $str       - строка
+     * @param string $action    - id|ids|number|integer
+     * @return array
+     */
+    static public function explodeToNumber($delimiter, $str, $action = "ids")
+    {
+        if (gettype($str) !== 'string') {
+            $str = VarStr::getMakeString($str);
+        }
+
+        $ids = explode($delimiter, static::trim($str));
+
+        switch ($action) {
+            case 'ids':
+            case 'id':
+                foreach ($ids as $key => $id) {
+                    $int = intval($id);
+
+                    if (! ($id > 0 && $int == $id)) {
+                        unset($ids[$key]);
+                        continue;
+                    }
+
+                    $ids[$key] = $int;
+                }
+
+                break;
+
+            case 'integer':
+                foreach ($ids as $key => $id) {
+                    $int = intval($id);
+
+                    if ($id != $int) {
+                        unset($ids[$key]);
+                        continue;
+                    }
+
+                    $ids[$key] = $int;
+                    continue;
+                }
+
+                break;
+
+            case 'number':
+                foreach ($ids as $key => $id) {
+                    if (! is_numeric($id)) {
+                        unset($ids[$key]);
+                        continue;
+                    }
+
+                    $int = intval($id);
+
+                    if (is_integer($id)) {
+                        $ids[$key] = $int;
+                        continue;
+                    }
+
+                    if (is_string($id)) {
+                        // int
+                        if ($id == $int) {
+                            $ids[$key] = $int;
+                            continue;
+                        }
+
+                        // float
+                        $float = VarFloat::makeString($id);
+
+                        if ($id == $float) {
+                            $ids[$key] = $float;
+                            continue;
+                        }
+                    }
+
+                    unset($ids[$key]);
+                    continue;
+                }
+
+                break;
+        }
+
+        return $ids;
     }
 
 

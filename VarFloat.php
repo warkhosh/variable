@@ -23,7 +23,7 @@ class VarFloat
         if (is_null($separator)) {
             $systemSeparator = localeconv()['decimal_point'];
 
-            // Руская локаль рисует разделитель десятичных как знак запятой,
+            // Русская локаль рисует разделитель десятичных как знак запятой,
             // это ломает преобразования или запись в базу, поэтому заменяем разделитель на символ точка
             if ($systemSeparator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
                 $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($systemSeparator, '.', $var); // заменяем запятую на точку
@@ -56,7 +56,7 @@ class VarFloat
             $separator = localeconv()['decimal_point'];
             $var = trim($var, static::TRIM_REMOVE_CHAR);
 
-            // руская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
+            // Русская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
                 $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $var);
             }
@@ -121,7 +121,7 @@ class VarFloat
             $separator = localeconv()['decimal_point'];
             $var = trim($var, static::TRIM_REMOVE_CHAR);
 
-            // руская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
+            // Русская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
                 $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $var);
             }
