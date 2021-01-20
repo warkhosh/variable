@@ -205,7 +205,7 @@ class VarArray
         [$value, $key] = static::explodePluckParameters($value, $key);
 
         foreach ($array as $item) {
-            $itemValue = static::get($item, $value);
+            $itemValue = static::get($value, $item);
 
             // Если ключ "null", мы просто добавим значение в массив и продолжим цикл.
             // В противном случае мы будем использовать массив, используя значение ключа, полученного нами от разработчика.
@@ -213,7 +213,7 @@ class VarArray
             if (is_null($key)) {
                 $results[] = $itemValue;
             } else {
-                $itemKey = static::get($item, $key);
+                $itemKey = static::get($key, $item);
 
                 $results[$itemKey] = $itemValue;
             }
