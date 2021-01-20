@@ -20,11 +20,16 @@
     }
   ],
   "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/warkhosh/component.git"
+    }
   ],
   "require": {
     "php": ">=7.2.26",
     "ext-mbstring": "*",
-    "ext-iconv": "*"
+    "ext-iconv": "*",
+    "warkhosh/component": "dev-master"
   },
   "autoload": {
     "psr-4": {

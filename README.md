@@ -1,6 +1,32 @@
 # Variable
+Работа с переменными
 
-### Help функции
+### VarArray
+Класс для работы с переменной типа Array.		
+Со списком методов можно ознакомиться в Warkhosh\Variable\VarArray.php
+
+### VarFloat
+Класс для работы с переменной типа Float или Double		
+Со списком методов можно ознакомиться в Warkhosh\Variable\VarFloat.php
+
+### Examples:
+
+Преобразование значения в число с плавающей точкой
+```php
+echo Warkhosh\Variable\VarFloat::getMake("159.127");
+```
+
+Преобразование значения в число с плавающей точкой с округлением десятичных в меньшую сторону до двух знаков.
+```php
+echo Warkhosh\Variable\VarFloat::getMake("159.127", 2, "downward", $default = 0.0);
+```
+
+Преобразование значения в число с плавающей точкой в положительном диапазоне значений.
+```php
+echo Warkhosh\Variable\VarFloat::getMakePositive("15.1", 2, "upward", $default = 0.0);
+```
+
+## Дополнительные функции
 ```php
 if (! function_exists('get')) {
     /**
