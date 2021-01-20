@@ -241,30 +241,32 @@ class VarArray
     /**
      * Получить элемент из массива с использованием нотации "точка".
      *
-     * @param string $key
-     * @param array  $inArray
+     * @param null|string|int|array $key
+     * @param array  $array
      * @param mixed  $default
-     * @return mixed
+     * @return array
      */
-    public static function get($key, $inArray = [], $default = null)
+    public static function get($key, $array = [], $default = null)
     {
         if (is_null($key)) {
-            return $inArray;
+            return $array;
         }
 
-        if (isset($inArray[$key]) && array_key_exists($key, $inArray)) {
-            return $inArray[$key];
+        if (is_string($key) && isset($array[$key]) && array_key_exists($key, $array)) {
+            return $array[$key];
         }
 
-        foreach (explode('.', $key) as $segment) {
-            if (! is_array($inArray) || ! array_key_exists($segment, $inArray)) {
+        $keys = is_array($key) ? $key : explode('.', (string)$key);
+
+        foreach ($keys as $segment) {
+            if (! is_array($array) || ! array_key_exists($segment, $array)) {
                 return $default;
             }
 
-            $inArray = $inArray[$segment];
+            $array = $array[$segment];
         }
 
-        return $inArray;
+        return $array;
     }
 
     /**
