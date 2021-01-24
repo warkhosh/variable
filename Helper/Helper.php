@@ -775,7 +775,7 @@ class Helper
         }
 
         if ($strict === false) {
-            if ((int)$var === 1 || mb_strtolower(trim($var)) === 'true') {
+            if ((int)$var === 1 || mb_strtolower(trim((string)$var)) === 'true') {
                 return true;
             }
         }
@@ -801,7 +801,7 @@ class Helper
         }
 
         if ($strict === false) {
-            if (((int)$var === 0 || mb_strtolower(trim($var)) === 'false')) {
+            if (((int)$var === 0 || mb_strtolower(trim((string)$var)) === 'false')) {
                 return true;
             }
         }
