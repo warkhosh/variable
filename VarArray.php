@@ -205,7 +205,7 @@ class VarArray
         [$value, $key] = static::explodePluckParameters($value, $key);
 
         foreach ($array as $item) {
-            $itemValue = static::get($value, $item);
+            $itemValue = static::getPluckData($value, $item);
 
             // Если ключ "null", мы просто добавим значение в массив и продолжим цикл.
             // В противном случае мы будем использовать массив, используя значение ключа, полученного нами от разработчика.
@@ -213,13 +213,57 @@ class VarArray
             if (is_null($key)) {
                 $results[] = $itemValue;
             } else {
-                $itemKey = static::get($key, $item);
+                $itemKey = static::getPluckData($key, $item);
 
                 $results[$itemKey] = $itemValue;
             }
         }
 
         return $results;
+    }
+
+    /**
+     * Получить элемент из массива или объекта с использованием нотации "точка" для Pluck метода.
+     * Get an item from an array or object using "dot" notation.
+     *
+     * @param  mixed        $target
+     * @param  string|array $key
+     * @param  mixed        $default
+     * @return mixed
+     */
+    public static function getPluckData($target, $key, $default = null)
+    {
+        if (is_null($key)) {
+            return $target;
+        }
+
+        $key = is_array($key) ? $key : explode('.', $key);
+
+        foreach ($key as $segment) {
+            if (is_array($target)) {
+                if (! array_key_exists($segment, $target)) {
+                    return VarHelper::value($default);
+                }
+
+                $target = $target[$segment];
+            } elseif ($target instanceof \ArrayAccess) {
+                if (! isset($target[$segment])) {
+                    return VarHelper::value($default);
+                }
+
+                $target = $target[$segment];
+            } elseif (is_object($target)) {
+                if (! isset($target->{$segment})) {
+                    return VarHelper::value($default);
+                }
+
+                $target = $target->{$segment};
+            } else {
+                return VarHelper::value($default);
+            }
+        }
+
+        return $target;
     }
 
     /**
