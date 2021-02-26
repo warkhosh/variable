@@ -321,12 +321,12 @@ class VarArray
      * @param       $key
      * @param array $array
      * @param null  $default
-     * @return array|mixed|null
+     * @return int
      */
     public static function getGreaterZero($key, $array = [], $default = 1) {
         $int = (int)static::get($key, $array, $default);
 
-        return ($int > 0) ? $int : $default;
+        return ($int > 0) ? $int : intval($default);
     }
 
     /**
