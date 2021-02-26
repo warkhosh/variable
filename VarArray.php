@@ -314,6 +314,22 @@ class VarArray
     }
 
     /**
+     * Получение числа из массива с использованием нотации "точка".
+     *
+     * @note используйте если вам по логике всегда нужно число!
+     *
+     * @param       $key
+     * @param array $array
+     * @param null  $default
+     * @return array|mixed|null
+     */
+    public static function getGreaterZero($key, $array = [], $default = 1) {
+        $int = (int)static::get($key, $array, $default);
+
+        return ($int > 0) ? $int : $default;
+    }
+
+    /**
      * Проверяет, существует ли данный ключ в предоставленном массиве.
      *
      * @param string|int         $key
