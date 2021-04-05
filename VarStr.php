@@ -880,7 +880,8 @@ class VarStr
     static public function getClean($str = '')
     {
         $str = VarStr::getMakeString($str);
-        $str = str_replace(["\n", "\t", "\r", '&nbsp;'], ['', '', '', ' '], $str);
+        $search = ["\n", "\t", "\r", '&nbsp;', '&emsp;', '&ensp;', '&thinsp;'];
+        $str = str_replace($search, ['', '', '', ' ', ' ', ' ', ' '], $str);
         $str = static::trim(preg_replace('/\s{2,}/', ' ', $str), "\x00..\x1F"); // убрать лишние пробелы
 
         return $str;

@@ -677,7 +677,7 @@ trait VariableMethod
         }
 
         // для переключателя делаем условие определения значения более мягкие и разрешаем on | yes | true ...
-        $strict = $option === 'toggle' ? false : true;
+        $strict = in_array($option, ['toggle', 'ids']) ? false : true;
 
         $this->makeInteger($positive, $recursive, $strict);
 

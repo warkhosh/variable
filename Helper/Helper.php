@@ -36,7 +36,8 @@ class Helper
      */
     static public function getClean(string $str): string
     {
-        $str = str_replace(["\n", "\t", "\r", '&nbsp;'], ['', '', '', ' '], $str);
+        $search = ["\n", "\t", "\r", '&nbsp;', '&emsp;', '&ensp;', '&thinsp;'];
+        $str = str_replace($search, ['', '', '', ' ', ' ', ' ', ' '], $str);
         $str = static::trim(preg_replace('/\s{2,}/', ' ', $str), "\x00..\x1F"); // убрать лишние пробелы
 
         return $str;
