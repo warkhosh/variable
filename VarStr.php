@@ -1201,4 +1201,33 @@ class VarStr
          *
          * return $str;*/
     }
+
+    /**
+     * Транскрипция текста
+     *
+     * @param string $word
+     * @return string
+     */
+    static public function getTranscription(string $word): string
+    {
+        $chars = ["а" => "a", "к" => "k", "х" => "kh", "б" => "b", "л" => "l", "ц" => "c", "в" => "v", "м" => "m"];
+        $chars = array_merge($chars, ["ч" => "ch", "г" => "g", "н" => "n", "ш" => "sh", "д" => "d", "о" => "o"]);
+        $chars = array_merge($chars, ["щ" => "sch", "е" => "e", "п" => "p", "ъ" => "", "ё" => "yo", "р" => "r"]);
+        $chars = array_merge($chars, ["ы" => "y", "ж" => "zh", "с" => "s", "ь" => "", "з" => "z", "т" => "t"]);
+        $chars = array_merge($chars, ["э" => "e", "и" => "i", "у" => "u", "ю" => "yu", "й" => "y", "ф" => "f"]);
+        $chars = array_merge($chars, ["я" => "ya"]);
+
+        $word = mb_strtolower($word, 'UTF-8');
+        $word = strip_tags($word);
+        $word = preg_replace("/&[a-zA-Z]+;/u", '-', $word);
+        $word = str_replace("+", ' plus', $word);
+        $word = preg_replace("/[^a-zа-я0-9_]/siu", "-", $word);
+        $word = strtr($word, $chars);
+        $word = preg_replace("/[-]+/u", '-', $word);
+        $word = trim($word, '-');
+        $word = iconv("UTF-8", "UTF-8//IGNORE", $word);
+        $word = mb_substr($word, 0, 255);
+
+        return $word;
+    }
 }
