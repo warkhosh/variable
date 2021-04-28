@@ -1210,12 +1210,12 @@ class VarStr
      */
     static public function getTranscription(string $word): string
     {
-        $chars = ["а" => "a", "к" => "k", "х" => "kh", "б" => "b", "л" => "l", "ц" => "c", "в" => "v", "м" => "m"];
-        $chars = array_merge($chars, ["ч" => "ch", "г" => "g", "н" => "n", "ш" => "sh", "д" => "d", "о" => "o"]);
-        $chars = array_merge($chars, ["щ" => "sch", "е" => "e", "п" => "p", "ъ" => "", "ё" => "yo", "р" => "r"]);
-        $chars = array_merge($chars, ["ы" => "y", "ж" => "zh", "с" => "s", "ь" => "", "з" => "z", "т" => "t"]);
-        $chars = array_merge($chars, ["э" => "e", "и" => "i", "у" => "u", "ю" => "yu", "й" => "y", "ф" => "f"]);
-        $chars = array_merge($chars, ["я" => "ya"]);
+        $chars = [
+            "а" => "a", "к" => "k", "х" => "kh", "б" => "b", "л" => "l", "ц" => "c", "в" => "v", "м" => "m",
+            "ч" => "ch", "г" => "g", "н" => "n", "ш" => "sh", "д" => "d", "о" => "o", "щ" => "sch", "е" => "e",
+            "п" => "p", "ъ" => "", "ё" => "yo", "р" => "r", "ы" => "y", "ж" => "zh", "с" => "s", "ь" => "", "з" => "z",
+            "т" => "t", "э" => "e", "и" => "i", "у" => "u", "ю" => "yu", "й" => "y", "ф" => "f", "я" => "ya",
+        ];
 
         $word = mb_strtolower($word, 'UTF-8');
         $word = strip_tags($word);
