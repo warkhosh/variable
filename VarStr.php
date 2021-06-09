@@ -822,19 +822,39 @@ class VarStr
      * Создает токен по двум алгоритмам.
      *
      * @note
-     * @param integer $length - минимальное значение 10
+     * @param integer $length - минимальное значение 8
      * @param integer $split
-     * @param integer $readable
+     * @param boolean $readable
      * @return string
      */
-    static public function randomToken($length = 128, $split = 0, $readable = 0)
+    static public function randomToken($length = 128, $split = 0, $readable = false)
     {
         $unreadablePool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $readablePool = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-        $numberPool = '0123456789';
-        $pool = intval($readable) === 2 ? $numberPool : ($readable ? $readablePool : $unreadablePool);
+        $pool = $readable ? $readablePool : $unreadablePool;
 
-        $value = substr(str_shuffle(str_repeat($pool, (int)$length / 10)), 0, $length);
+        $value = substr(str_shuffle(str_repeat($pool, (int)$length / 8)), 0, $length);
+
+        if ($split > 0) {
+            $value = join('-', str_split($value, $split));
+        }
+
+        return $value;
+    }
+
+
+    /**
+     * Создает цифирный код.
+     *
+     * @note
+     * @param integer $length - минимальное значение 4
+     * @param integer $split
+     * @return string
+     */
+    static public function randomNumberCode($length = 6, $split = 0)
+    {
+        $pool = '0123456789';
+        $value = substr(str_shuffle(str_repeat($pool, (int)$length / 4)), 0, $length);
 
         if ($split > 0) {
             $value = join('-', str_split($value, $split));
