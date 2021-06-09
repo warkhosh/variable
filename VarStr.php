@@ -822,16 +822,17 @@ class VarStr
      * Создает токен по двум алгоритмам.
      *
      * @note
-     * @param integer    $length - минимальное значение 10
-     * @param integer    $split
-     * @param bool|false $readable
+     * @param integer $length - минимальное значение 10
+     * @param integer $split
+     * @param integer $readable
      * @return string
      */
-    static public function randomToken($length = 128, $split = 0, $readable = false)
+    static public function randomToken($length = 128, $split = 0, $readable = 0)
     {
         $unreadablePool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $readablePool = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-        $pool = $readable ? $readablePool : $unreadablePool;
+        $numberPool = '0123456789';
+        $pool = intval($readable) === 2 ? $numberPool : ($readable ? $readablePool : $unreadablePool);
 
         $value = substr(str_shuffle(str_repeat($pool, (int)$length / 10)), 0, $length);
 
@@ -1211,10 +1212,39 @@ class VarStr
     static public function getTranscription(string $word): string
     {
         $chars = [
-            "а" => "a", "к" => "k", "х" => "kh", "б" => "b", "л" => "l", "ц" => "c", "в" => "v", "м" => "m",
-            "ч" => "ch", "г" => "g", "н" => "n", "ш" => "sh", "д" => "d", "о" => "o", "щ" => "sch", "е" => "e",
-            "п" => "p", "ъ" => "", "ё" => "yo", "р" => "r", "ы" => "y", "ж" => "zh", "с" => "s", "ь" => "", "з" => "z",
-            "т" => "t", "э" => "e", "и" => "i", "у" => "u", "ю" => "yu", "й" => "y", "ф" => "f", "я" => "ya",
+            "а" => "a",
+            "к" => "k",
+            "х" => "kh",
+            "б" => "b",
+            "л" => "l",
+            "ц" => "c",
+            "в" => "v",
+            "м" => "m",
+            "ч" => "ch",
+            "г" => "g",
+            "н" => "n",
+            "ш" => "sh",
+            "д" => "d",
+            "о" => "o",
+            "щ" => "sch",
+            "е" => "e",
+            "п" => "p",
+            "ъ" => "",
+            "ё" => "yo",
+            "р" => "r",
+            "ы" => "y",
+            "ж" => "zh",
+            "с" => "s",
+            "ь" => "",
+            "з" => "z",
+            "т" => "t",
+            "э" => "e",
+            "и" => "i",
+            "у" => "u",
+            "ю" => "yu",
+            "й" => "y",
+            "ф" => "f",
+            "я" => "ya",
         ];
 
         $word = mb_strtolower($word, 'UTF-8');
