@@ -226,9 +226,9 @@ class VarArray
      * Получить элемент из массива или объекта с использованием нотации "точка" для Pluck метода.
      * Get an item from an array or object using "dot" notation.
      *
-     * @param  mixed        $target
-     * @param  string|array $key
-     * @param  mixed        $default
+     * @param mixed        $target
+     * @param string|array $key
+     * @param mixed        $default
      * @return mixed
      */
     public static function getPluckData($target, $key, $default = null)
@@ -286,8 +286,8 @@ class VarArray
      * Получить элемент из массива с использованием нотации "точка".
      *
      * @param null|string|int|array $key
-     * @param array  $array
-     * @param mixed  $default
+     * @param array                 $array
+     * @param mixed                 $default
      * @return array
      */
     public static function get($key, $array = [], $default = null)
@@ -323,7 +323,8 @@ class VarArray
      * @param null  $default
      * @return int
      */
-    public static function getGreaterZero($key, $array = [], $default = 1) {
+    public static function getGreaterZero($key, $array = [], $default = 1)
+    {
         $int = (int)static::get($key, $array, $default);
 
         return ($int > 0) ? $int : intval($default);
@@ -465,7 +466,7 @@ class VarArray
             return [];
         }
 
-        return array_reduce($array, function ($result, $item) use ($depth) {
+        return array_reduce($array, function($result, $item) use ($depth) {
             if (! is_array($item)) {
                 return array_merge($result, [$item]);
 
@@ -476,6 +477,41 @@ class VarArray
                 return array_merge($result, static::getFlatten($item, $depth - 1));
             }
         }, []);
+    }
+
+    /**
+     * Возвращает массив где все вложенные элементы становятся плоски с последовательными ключами в ключах
+     *
+     * @param array  $array
+     * @param string $separator
+     * @param string $prefix
+     * @return array
+     */
+    public static function getSimplify($array = [], $separator = "_", $prefix = "")
+    {
+        $return = [];
+        $recFunction = function($fun, $separator, $prefix, $array = [], array $keys = [], &$return = []) {
+            if (is_array($array)) {
+                foreach ($array as $key => $value) {
+                    $keyList = $keys;
+                    $keyList[] = $key;
+                    $fun($fun, $separator, $prefix, $value, $keyList, $return);
+                }
+
+            } else {
+                if (! empty($prefix)) {
+                    $keys = array_merge([$prefix], $keys);
+                }
+
+                $return[join($separator, $keys)] = $array;
+            }
+        };
+
+        if (is_array($array)) {
+            $recFunction($recFunction, $separator, $prefix, $array, [], $return);
+        }
+
+        return $return;
     }
 
     /**
