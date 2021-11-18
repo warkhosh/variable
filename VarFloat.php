@@ -167,8 +167,12 @@ class VarFloat
                 $str = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $str);
             }
 
-            $str = VarStr::getRemoveSymbol($str, [' ']);
-            //$var = $str + 0;
+            // Производим преобразование значения, поскольку в нём есть символ запятой
+            if (mb_strpos($str, ',', 0, 'UTF-8') !== false) {
+                $str = \Warkhosh\Variable\Helper\Helper::str_replace_once(',', '.', $str);
+            }
+
+            $var = VarStr::getRemoveSymbol($str, [' ']);
         }
 
         return $var;
