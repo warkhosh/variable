@@ -149,4 +149,28 @@ class VarFloat
 
         return floatval($default);
     }
+
+    /**
+     * Возвращает переданные значения, но с преобразованием под flat
+     *
+     * @param mixed $var
+     * @return mixed
+     */
+    static public function getConvert($var)
+    {
+        if (is_string($var)) {
+            $separator = localeconv()['decimal_point'];
+            $str = trim($var, static::TRIM_REMOVE_CHAR);
+
+            // руская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
+            if ($separator === ',' && mb_strpos($str, '.', 0, 'UTF-8') === false) {
+                $str = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $str);
+            }
+
+            $str = VarStr::getRemoveSymbol($str, [' ']);
+            //$var = $str + 0;
+        }
+
+        return $var;
+    }
 }
