@@ -1551,4 +1551,20 @@ class VarArray
 
         return $arr;
     }
+
+    /**
+     * Проверка значения на не пустой массив
+     *
+     * @param mixed $arr
+     * @param int   $length
+     * @return bool
+     */
+    static public function isEmpty($arr, $length = 0)
+    {
+        if (is_array($arr) && count($arr) > (int)$length) {
+            return true;
+        }
+
+        return false;
+    }
 }
