@@ -288,7 +288,7 @@ class VarArray
      * @param null|string|int|array $key
      * @param array                 $array
      * @param mixed                 $default
-     * @return array
+     * @return mixed
      */
     public static function get($key, $array = [], $default = null)
     {
