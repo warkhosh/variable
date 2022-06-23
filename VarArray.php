@@ -296,7 +296,7 @@ class VarArray
             return $array;
         }
 
-        if (is_string($key)) {
+        if (is_string($key) && VarStr::find(".", $key) === false) {
             if (is_array($array) && array_key_exists($key, $array)) {
                 return $array[$key];
             }
