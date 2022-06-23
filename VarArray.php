@@ -290,14 +290,18 @@ class VarArray
      * @param mixed                 $default
      * @return mixed
      */
-    public static function get($key, $array = [], $default = null)
+    public static function get($key, array $array = [], $default = null)
     {
         if (is_null($key)) {
             return $array;
         }
 
-        if (is_string($key) && isset($array[$key]) && array_key_exists($key, $array)) {
-            return $array[$key];
+        if (is_string($key)) {
+            if (is_array($array) && array_key_exists($key, $array)) {
+                return $array[$key];
+            }
+
+            return $default;
         }
 
         $keys = is_array($key) ? $key : explode('.', (string)$key);
