@@ -27,6 +27,9 @@ class VarFloat
             // это ломает преобразования или запись в базу, поэтому заменяем разделитель на символ точка
             if ($systemSeparator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
                 $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($systemSeparator, '.', $var); // заменяем запятую на точку
+
+            } elseif ($systemSeparator === '.' && mb_strpos($var, ',', 0, 'UTF-8') !== false) {
+                $var = \Warkhosh\Variable\Helper\Helper::str_replace_once(',', '.', $var); // заменяем запятую на точку
             }
 
             return $var;
