@@ -48,7 +48,7 @@ class VarArray
     }
 
     /**
-     * Установливает значение в элемент массива, использетуя для этого "точечную" нотацию.
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию.
      *
      * @note если ключ не задан или NULL, весь массив будет заменен.
      *
@@ -234,7 +234,7 @@ class VarArray
     public static function getPluckData($target, $key, $default = null)
     {
         if (is_null($key)) {
-            return $target;
+            return $default;
         }
 
         $key = is_array($key) ? $key : explode('.', $key);
@@ -275,9 +275,9 @@ class VarArray
      */
     protected static function explodePluckParameters($value, $key)
     {
-        $value = is_string($value) ? explode('.', $value) : $value;
+        $value = is_array($value) ? $value : (is_string($value) ? explode('.', $value) : (array)$value);
 
-        $key = is_null($key) || is_array($key) ? $key : explode('.', $key);
+        $key = is_null($key) || is_array($key) ? $key : (is_string($key) ? explode('.', $key) : null);
 
         return [$value, $key];
     }
@@ -293,7 +293,7 @@ class VarArray
     public static function get($key, array $array = [], $default = null)
     {
         if (is_null($key)) {
-            return $array;
+            return $default;
         }
 
         if (is_string($key) && VarStr::find(".", $key) === false) {
