@@ -1337,7 +1337,7 @@ class VarStr
             return [];
         }
 
-        if (! is_array($deleted) && count($deleted) > 0) {
+        if (is_array($deleted) && count($deleted) > 0) {
             $parts = explode($delimiter, static::trim((string)$str));
 
             return VarArray::getRemove($parts, $deleted);
