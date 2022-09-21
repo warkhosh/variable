@@ -3,17 +3,65 @@
 namespace Warkhosh\Variable;
 
 use DateTime;
-use Warkhosh\Variable\Helper\Helper;
+use Exception;
 
+/**
+ * Class VarStr
+ *
+ * Класс по работе с строками
+ *
+ * @package Warkhosh\Variable
+ */
 class VarStr
 {
+    const ENCODING = 'UTF-8';
+
     /**
-     * Преобразование переданного значения в текст.
+     * Пробельные символы
+     */
+    const SPACE_CHAR = [
+        " ",        // пробел
+        " ",     // No-break space = 0xC2,0xA0
+        " ",     // En space       = 0xE2,0x80,0x82
+        " ",     // Em space       = 0xE2,0x80,0x83
+        " ",     // Thin space     = 0xE2,0x80,0x89
+    ];
+
+    /**
+     * Пробельные коды
+     */
+    const SPACE_CODE = [
+        "&nbsp;",   // Мнемоник пробела
+        "&emsp;",   // Мнемоник очень длинного пробел, примерно с длинное тире
+        "&ensp;",   // Мнемоник длинного пробела, примерно с короткое тире
+        "&thinsp;", // Мнемоник узкого пробела
+    ];
+
+    /**
+     * Управляющие символы
+     */
+    const CONTROL_CHAR = [
+        "\n",       // Перевод каретки на следующую строку (0x0A)
+        "\r",       // Перевод каретки на в начало текущей строки (0x0D)
+        "\t",       // Табуляция (tab)
+        "\b",       // Перевод каретки на один символ назад (backspace)
+        "\v",       // Вертикальная табуляция (0x0B)
+    ];
+
+    /**
+     * Управляющие символы
+     */
+    const SPECIAL_CHAR = [
+        "\0",       // NUL-байт (0x00)
+    ];
+
+    /**
+     * Преобразование переданного значения в текст
      *
      * @param mixed $str
      * @return string
      */
-    static public function getMakeString($str = '')
+    static public function getMakeString($str = ''): string
     {
         if (gettype($str) === 'string') {
             return $str;
@@ -30,9 +78,8 @@ class VarStr
         return strval($str);
     }
 
-
     /**
-     * Преобразование переданного значения в текст.
+     * Преобразование переданного значения в текст
      *
      * @param mixed $str
      * @return void
@@ -42,18 +89,17 @@ class VarStr
         $str = static::getMakeString($str);
     }
 
-
     /**
-     * Определить, является ли данная строка начинается с определенной подстроки.
+     * Определить, является ли данная строка начинается с определенной подстроки
      *
-     * @param string       $haystack
+     * @param string|null  $str
      * @param string|array $needles
      * @return bool
      */
-    public static function startsWith($haystack, $needles)
+    public static function startsWith(?string $str, $needles): bool
     {
         foreach ((array)$needles as $needle) {
-            if ($needle != '' && mb_strpos($haystack, $needle) === 0) {
+            if ($needle != '' && mb_strpos((string)$str, $needle) === 0) {
                 return true;
             }
         }
@@ -61,39 +107,37 @@ class VarStr
         return false;
     }
 
-
     /**
-     * Определить, заканчивается ли строка с заданной подстроки.
+     * Определить, заканчивается ли строка с заданной подстроки
      *
-     * @param string       $haystack
+     * @param string|null  $str
      * @param string|array $needles
      * @return bool
      */
-    public static function endsWith($haystack, $needles)
+    public static function endsWith(?string $str, $needles): bool
     {
         foreach ((array)$needles as $needle) {
-            if ((string)$needle === mb_substr($haystack, -mb_strlen($needle))) {
+            if ((string)$needle === mb_substr((string)$str, -mb_strlen($needle, self::ENCODING))) {
                 return true;
             }
         }
 
         return false;
     }
-
 
     /**
      * Регистрозависимый поиск первого вхождения символа в строке с возвратом номера позиции символа или false
      *
      * @note Первый символ стоит на позиции 0, позиция второго 1 и так далее.
-     * @param string | array $needles - строка, поиск которой производится в строке $str
-     * @param string         $str     - строка в которой ищем $needles
-     * @param integer        $offset
+     * @param string|array $needles - строка, поиск которой производится в строке $str
+     * @param string|null  $str     - строка в которой ищем $needles
+     * @param integer      $offset
      * @return integer|bool
      */
-    public static function findPos($needles = null, $str = '', $offset = 0)
+    public static function findPos($needles = null, ?string $str = '', int $offset = 0)
     {
         foreach ((array)$needles as $needle) {
-            if (($pos = mb_strpos($str, $needle, $offset, 'UTF-8')) !== false) {
+            if (($pos = mb_strpos((string)$str, $needle, $offset, 'UTF-8')) !== false) {
                 return $pos;
             }
         }
@@ -101,18 +145,21 @@ class VarStr
         return false;
     }
 
-
     /**
      * Регистрозависимый поиск первого вхождения символа в строке с возвратом результата
      *
      * @note Первый символ стоит на позиции 0, позиция второго 1 и так далее.
-     * @param string | array $needles - строка, поиск которой производится в строке $str
-     * @param string         $str     - строка в которой ищем $needles
-     * @param int            $offset
+     * @param string|array $needles - строка, поиск которой производится в строке $str
+     * @param string|null  $str     - строка в которой ищем $needles
+     * @param int          $offset
      * @return bool
      */
-    public static function find($needles = null, $str = '', $offset = 0)
+    public static function find($needles = null, ?string $str = '', int $offset = 0): bool
     {
+        if (empty($needles)) {
+            return false;
+        }
+
         if (static::findPos($needles, $str, $offset) !== false) {
             return true;
         }
@@ -120,240 +167,240 @@ class VarStr
         return false;
     }
 
-
     /**
      * Замена первого вхождения
      *
-     * @param string $search
-     * @param string $replace
-     * @param string $text
+     * @param string      $search
+     * @param string      $replace
+     * @param string|null $str
      * @return string
      */
-    static public function replaceOnce($search = '', $replace = '', $text = '')
+    static public function replaceOnce(string $search, string $replace, ?string $str): string
     {
-        if (gettype($search) !== 'string') {
-            $search = VarStr::getMakeString($search);
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        if (gettype($replace) !== 'string') {
-            $replace = VarStr::getMakeString($replace);
-        }
+        if ($search !== "") {
+            $position = mb_strpos((string)$str, (string)$search, 0, self::ENCODING);
 
-        if (gettype($text) !== 'string') {
-            $text = VarStr::getMakeString($text);
-        }
+            if ($position !== false) {
+                $start = mb_substr((string)$str, 0, $position, self::ENCODING);
+                $endPosition = ($position + mb_strlen((string)$search, self::ENCODING));
+                $end = mb_substr((string)$str, $endPosition, null, self::ENCODING);
 
-        if (mb_strlen($search) > 0) {
-            $pos = mb_strpos($text, $search);
-
-            if ($pos !== false) {
-                return mb_substr($text, 0, $pos) . $replace . mb_substr($text, $pos + mb_strlen($search));
+                return $start . (string)$replace . $end;
             }
         }
 
-        return $text;
+        return $str;
     }
-
 
     /**
-     * Возвращает длину указанной строки.
+     * Замена первой найденной строки в строке
      *
-     * @param string $value
-     * @return int
+     * @param string      $search
+     * @param string      $replace
+     * @param string|null $str
+     * @return string
+     * @deprecated метод будет переименован в replaceOnce()
      */
-    public static function length($value = '')
+    static public function str_replace_once(string $search, string $replace, ?string $str): string
     {
-        if (gettype($value) === 'string') {
-            return mb_strlen($value);
-        }
-
-        return 0;
+        return static::replaceOnce($search, $replace, $str);
     }
 
+    /**
+     * Возвращает длину указанной строки
+     *
+     * @param string|null $value
+     * @return int
+     */
+    public static function length(?string $value): int
+    {
+        return mb_strlen((string)$value, self::ENCODING);
+    }
 
     /**
      * Устанавливает начало строки на указанное с проверкой на наличие такого значения
      *
-     * @param string $prefix
-     * @param string $str
+     * @param string      $prefix
+     * @param string|null $str
      * @return string
      */
     public static function start(string $prefix, ?string $str): string
     {
-        $quoted = preg_quote($prefix, '/');
-        $str = is_string($str) ? $str : "";
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
 
-        return $prefix . preg_replace('/^(?:' . $quoted . ')+/u', '', $str);
+        if ($prefix !== "") {
+            $quoted = preg_quote((string)$prefix, '/');
+
+            return (string)$prefix . preg_replace('/^(?:' . $quoted . ')+/u', '', (string)$str);
+        }
+
+        return (string)$str;
     }
-
 
     /**
      * Закрывает строку заданным значением с проверкой на наличие такого значения
      *
-     * @param string $prefix
-     * @param string $str
+     * @param string      $prefix
+     * @param string|null $str
      * @return string
      */
     public static function ending(string $prefix, ?string $str): string
     {
-        $quoted = preg_quote($prefix, '/');
-        $str = is_string($str) ? $str : "";
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
 
-        return preg_replace('/(?:' . $quoted . ')+$/u', '', $str) . $prefix;
+        if ($prefix !== "") {
+            $quoted = preg_quote((string)$prefix, '/');
+
+            return preg_replace('/(?:' . $quoted . ')+$/u', '', (string)$str) . (string)$prefix;
+        }
+
+        return (string)$str;
     }
-
 
     /**
      * Убирает указное значения из начала строки
      *
-     * @param string|array $prefix
-     * @param string       $str
+     * @param string      $prefix
+     * @param string|null $str
      * @return string
      */
-    static public function getRemoveStart($prefix = '', $str = '')
+    static public function getRemoveStart(string $prefix, ?string $str): string
     {
-        $str = static::getMakeString($str);
-
-        if (gettype($prefix) === 'array') {
-            foreach ($prefix as $text) {
-                $str = preg_replace('/^(?:' . preg_quote($text, '/') . ')+/u', '', $str);
-            }
-
-            return $str;
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        if (gettype($prefix) === 'string') {
-            return preg_replace('/^(?:' . preg_quote($prefix, '/') . ')+/u', '', $str);
+        if ($prefix !== "") {
+            $quoted = preg_quote((string)$prefix, '/');
+
+            return preg_replace('/^(?:' . $quoted . ')+/u', '', (string)$str);
         }
 
-        return $str;
+        return (string)$str;
     }
-
 
     /**
      * Убирает указное значения из конца строки
      *
-     * @param string|array $prefix
-     * @param string       $str
+     * @param string      $prefix
+     * @param string|null $str
      * @return string
      */
-    static public function getRemoveEnding($prefix = '', $str = '')
+    static public function getRemoveEnding(string $prefix, ?string $str): string
     {
-        $str = static::getMakeString($str);
-
-        if (gettype($prefix) === 'array') {
-            foreach ($prefix as $text) {
-                $str = preg_replace('/(?:' . preg_quote($text, '/') . ')+$/u', '', $str);
-            }
-
-            return $str;
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        if (gettype($prefix) === 'string') {
-            return preg_replace('/(?:' . preg_quote($prefix, '/') . ')+$/u', '', $str);
+        if ($prefix !== "") {
+            $quoted = preg_quote((string)$prefix, '/');
+
+            return preg_replace('/(?:' . $quoted . ')+$/u', '', (string)$str);
         }
 
-        return $str;
+        return (string)$str;
     }
-
 
     /**
      * Убирает указное значения из начала строки
      *
-     * @param string|array $search
-     * @param string       $replace
-     * @param string       $str
+     * @param string      $search
+     * @param string      $replace
+     * @param string|null $str
      * @return string
      */
-    static public function getReplaceStart($search = '', $replace = '', $str = '')
+    static public function getReplaceStart(string $search, string $replace, ?string $str): string
     {
-        $str = static::getMakeString($str);
-
-        if (gettype($search) === 'array') {
-            foreach ($search as $text) {
-                $str = self::getReplaceStart($text, $replace, $str);
-            }
-
-            return $str;
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        if (gettype($search) === 'string') {
-            return preg_replace('/^(?:' . preg_quote($search, '/') . ')+/u', '', $str);
+        if ($search !== "") {
+            $quoted = preg_quote((string)$search, '/');
+
+            return preg_replace('/^(?:' . $quoted . ')+/u', (string)$replace, (string)$str);
         }
 
-        return $str;
+        return (string)$str;
     }
-
 
     /**
      * Убирает указное значения из конца строки
      *
-     * @param string|array $search
-     * @param string       $replace
-     * @param string       $str
+     * @param string      $search
+     * @param string      $replace
+     * @param string|null $str
      * @return string
      */
-    static public function getReplaceEnding($search = '', $replace = '', $str = '')
+    static public function getReplaceEnding(string $search, string $replace, ?string $str): string
     {
-        $str = static::getMakeString($str);
-
-        if (is_array($search)) {
-            foreach ($search as $text) {
-                $str = self::getReplaceEnding($text, $replace, $str);
-            }
-
-            return $str;
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        if (gettype($search) === 'string') {
-            return preg_replace('/(?:' . preg_quote($search, '/') . ')+$/u', $replace, $str);
+        if ($search !== "") {
+            $quoted = preg_quote((string)$search, '/');
+
+            return preg_replace('/(?:' . $quoted . ')+$/u', (string)$replace, (string)$str);
         }
 
-        return $str;
+        return (string)$str;
     }
-
 
     /**
      * Кодирует данные в формат MIME base64
      *
-     * @param string $str
+     * @param string|null $str
      * @return string
      */
-    static function getBase64UrlEncode($str = '')
+    static function getBase64UrlEncode(?string $str): string
     {
-        return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
-    }
+        if (is_null($str) || $str === "") {
+            return rtrim(strtr(base64_encode((string)$str), '+/', '-_'), '=');
+        }
 
+        return (string)$str;
+    }
 
     /**
      * Декодирует данные, закодированные MIME base64
      *
-     * @param string $str
+     * @param string|null $str
      * @return string
      */
-    static function getBase64UrlDecode($str = '')
+    static function getBase64UrlDecode(?string $str): string
     {
-        return base64_decode(str_pad(strtr($str, '-_', '+/'), strlen($str) % 4, '=', STR_PAD_RIGHT));
-    }
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
 
+        $string = strtr((string)$str, '-_', '+/');
+        $length = mb_strlen((string)$str, self::ENCODING) % 4;
+
+        return base64_decode(str_pad($string, $length, '=', STR_PAD_RIGHT));
+    }
 
     /**
      * Преобразовать данную строку в нижний регистр (lower-case).
      *
-     * @param string|array $words
-     * @return string|array
+     * @note нужно учитывать что чем больше символов строке тем больше потребуется память при preg_split() !
+     * @param string|null $words
+     * @return string
+     * @throws Exception
      */
-    public static function getLower($words)
+    public static function getLower(?string $words): string
     {
-        if (is_array($words)) {
-            foreach ($words as $key => $row) {
-                $words[$key] = static::getLower($row);
-            }
-
-            return $words;
+        if (is_null($words) || $words === "") {
+            return (string)$words;
         }
-
-        $words = static::getMakeString($words); // а что, а вдруг? :)
 
         $replaceChar = [
             "А" => "а",
@@ -364,44 +411,41 @@ class VarStr
             "Е" => "е",
             "Ё" => "ё",
             "Ж" => "ж",
+            "З" => "з",
+            "И" => "и",
+            "Й" => "й",
             "К" => "к",
             "Л" => "л",
             "М" => "м",
             "Н" => "н",
+            "О" => "о",
+            "П" => "п",
+            "Р" => "р",
+            "С" => "с",
+            "Т" => "т",
+            "У" => "у",
+            "Ф" => "ф",
+            "Х" => "х",
             "Ц" => "ц",
             "Ч" => "ч",
             "Ш" => "ш",
-            "О" => "о",
             "Щ" => "щ",
-            "П" => "п",
             "Ъ" => "ъ",
-            "Р" => "р",
             "Ы" => "ы",
-            "С" => "с",
             "Ь" => "ь",
-            "З" => "з",
-            "Т" => "т",
             "Э" => "э",
-            "Х" => "х",
-            "И" => "и",
-            "У" => "у",
             "Ю" => "ю",
-            "Й" => "й",
-            "Ф" => "ф",
             "Я" => "я",
         ];
 
         $str = "";
 
         // специально сохраняем символ плюса
-        $words = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', $words);
+        $words = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', (string)$words);
         $words = urldecode($words);
         $words = str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $words);
 
-        if (Helper::getEncoding($words) == 'windows-1251') {
-            $words = iconv('CP1251', 'UTF-8', $words);
-        }
-
+        $words = VarStr::toUTF8($words);
         $words = mb_strtolower($words); // другие символы в нижний регистр
         $words = preg_split('//u', $words, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -412,72 +456,64 @@ class VarStr
         return $str;
     }
 
-
     /**
      * Преобразовать данную строку в верхний регистр (upper-case).
      *
-     * @param string|array $words
-     * @return string|array
+     * @note нужно учитывать что чем больше символов строке тем больше потребуется память при preg_split() !
+     * @param string|null $words
+     * @return string
+     * @throws Exception
      */
-    static public function getUpper($words)
+    static public function getUpper(?string $words): string
     {
-        if (is_array($words)) {
-            foreach ($words as $key => $row) {
-                $words[$key] = static::getUpper($row);
-            }
-
-            return $words;
+        if (is_null($words) || $words === "") {
+            return (string)$words;
         }
-
-        $words = static::getMakeString($words); // а что, а вдруг? :)
 
         $replaceChar = [
             "а" => "А",
-            "к" => "К",
-            "х" => "Х",
             "б" => "Б",
-            "л" => "Л",
-            "ц" => "Ц",
             "в" => "В",
-            "м" => "М",
-            "ч" => "Ч",
             "г" => "Г",
-            "н" => "Н",
-            "ш" => "Ш",
             "д" => "Д",
-            "о" => "О",
-            "щ" => "Щ",
             "е" => "Е",
-            "п" => "П",
-            "ъ" => "Ъ",
             "ё" => "Ё",
-            "р" => "Р",
-            "ы" => "Ы",
             "ж" => "Ж",
-            "с" => "С",
-            "ь" => "Ь",
             "з" => "З",
-            "т" => "Т",
-            "э" => "Э",
             "и" => "И",
-            "у" => "У",
-            "ю" => "Ю",
             "й" => "Й",
+            "к" => "К",
+            "л" => "Л",
+            "м" => "М",
+            "н" => "Н",
+            "о" => "О",
+            "п" => "П",
+            "р" => "Р",
+            "с" => "С",
+            "т" => "Т",
+            "у" => "У",
             "ф" => "Ф",
+            "х" => "Х",
+            "ц" => "Ц",
+            "ч" => "Ч",
+            "ш" => "Ш",
+            "щ" => "Щ",
+            "ъ" => "Ъ",
+            "ы" => "Ы",
+            "ь" => "Ь",
+            "э" => "Э",
+            "ю" => "Ю",
             "я" => "Я",
         ];
 
         $str = "";
 
         // специально сохраняем символ плюса
-        $words = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', $words);
+        $words = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', (string)$words);
         $words = urldecode($words);
         $words = str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $words);
 
-        if (Helper::getEncoding($words) == 'windows-1251') {
-            $words = iconv('CP1251', 'UTF-8', $words);
-        }
-
+        $words = VarStr::toUTF8($words);
         $words = mb_strtoupper($words, 'UTF-8'); // другие символы в верхний регистр
         $words = preg_split('//u', $words, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -488,85 +524,93 @@ class VarStr
         return $str;
     }
 
-
     /**
-     * Ограничить количество слов в строке.
+     * Ограничить количество слов в строке
      *
-     * @param string $value
-     * @param int    $words
-     * @param string $end
+     * @note предназначен для работы с простыми кодировками
+     * @param string|null $str
+     * @param int         $words
+     * @param string      $end
      * @return string
      */
-    static public function words($value, $words = 100, $end = '...')
+    static public function words(?string $str, int $words = 100, string $end = '...')
     {
-        preg_match('/^\s*+(?:\S++\s*+){1,' . $words . '}/u', $value, $matches);
-
-        if (! isset($matches[0]) || strlen($value) === strlen($matches[0])) {
-            return $value;
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        return rtrim($matches[0]) . $end;
+        if ($words >= 0) {
+            preg_match('/^\s*+(?:\S++\s*+){1,' . $words . '}/u', $str, $matches);
+
+            if (! isset($matches[0]) || mb_strlen($str, self::ENCODING) === mb_strlen($matches[0], self::ENCODING)) {
+                return $str;
+            }
+
+            return rtrim($matches[0]) . $end;
+        }
+
+        return (string)$str;
     }
 
-
     /**
-     * Обрезает строку до указаных символов;
+     * Обрезает строку до указанных символов
      *
-     * @param string   $str
-     * @param null|int $length
+     * @note метод использует trim() перед обрезанием
      *
+     * @param string|null $str
+     * @param null|int    $length
      * @return string
      */
-    static public function crop($str = '', $length = 250)
+    static public function crop(?string $str, int $length = 250): string
     {
-        if (is_null($length)) {
-            return VarStr::getMakeString($str);
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        $length = VarInt::getMakePositiveInteger($length) > 0 ? intval($length) : 250;
-        $default = VarStr::trim(VarStr::getMakeString($str));
+        if ($length !== 0) {
+            $str = VarStr::trim((string)$str);
 
-        if (is_string($str) && mb_strlen($str) > 1) {
-            $default = mb_substr($default, 0, $length);
-            $default = is_bool($default) ? '' : $default;
+            return mb_substr($str, 0, (int)$length, self::ENCODING);
         }
 
-        return $default;
+        return "";
     }
 
-
     /**
-     * Сокращает текст по параметрам;
+     * Сокращает текст по параметрам
      *
-     * @param string    $str
-     * @param null|int  $length
-     * @param string    $end
-     * @param bool|true $transform - преобразование кодов в символы и обратно ( дял подсчета длинны по символам )
-     * @param bool|true $smart     - флаг включающий умную систему усечения строки с учётом целостности слов
+     * @note метод использует trim() перед сокращением
+     *
+     * @param string|null $str
+     * @param int         $length
+     * @param string      $ending
+     * @param bool        $transform - преобразование кодов в символы и обратно ( дял подсчета длинны по символам )
+     * @param bool        $smart     - флаг включающий умную систему усечения строки с учётом целостности слов
      * @return string
      */
-    static public function reduce($str = '', $length = 250, $end = '', $transform = true, $smart = true)
-    {
-        if (is_null($length)) {
-            return $str;
+    static public function reduce(
+        ?string $str,
+        int $length = 250,
+        string $ending = '',
+        bool $transform = true,
+        bool $smart = true
+    ): string {
+        if ($length <= 0 || is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        $str = VarStr::trim(VarStr::getMakeString($str));
+        $str = VarStr::trim((string)$str);
 
-        // Допустимая длинна текста
-        $length = VarInt::getMakePositiveInteger($length) > 0 ? intval($length) : 250;
+        // Вычисляем длину текста с учетом количества символов от переменной $ending
+        $maxLength = $length - mb_strlen($ending, self::ENCODING);
 
-        // вычисляем длинну текста с учетом количества символов от переменной обрезания
-        $maxLength = VarInt::getMakePositiveInteger($length - mb_strlen($end));
-        $end = mb_strlen($str) > $maxLength ? $end : '';
+        // Переустанавливаем значение окончания через проверку длинны текста
+        $ending = mb_strlen($str, self::ENCODING) > $maxLength ? $ending : '';
 
         // Защита от человеческого фактора когда длинна строки меньше чем окончание
         if ($maxLength < 1) {
-            return '';
+            return "";
         }
-
-        $smart = Helper::isTrue($smart);
-        $transform = Helper::isTrue($transform);
 
         // Кодирует коды HTML-сущностей в символы для более точного усечения
         if ($transform) {
@@ -574,39 +618,41 @@ class VarStr
         }
 
         // Жёсткое обрезание текста, строго по лимиту
-        if (! $smart) {
-            $str = VarStr::crop($str, $length) . $end;
+        if ($smart !== true) {
+            $returnStr = VarStr::crop($str, $length);
+            $returnStr .= $returnStr !== $str ? $ending : "";
 
             // Кодирует символы в HTML-сущности если указали флаг преобразования
-            return $transform ? static::getHtmlSpecialCharsEncode($str) : $str;
+            return $transform ? static::getHtmlSpecialCharsEncode($returnStr) : $returnStr;
         }
 
         // Длинна строки больше чем требуется
-        if (mb_strlen($str) > $length) {
-            // Укорачиваем единственное слово по точному количеству символов раз в строке нет пробелов
+        if (mb_strlen($str, self::ENCODING) > $length) {
+            // поиск пробелов в тексте
             if (mb_strstr($str, ' ') === false) {
-                $str = mb_substr($str, 0, $maxLength);
+                // Укорачиваем единственное слово по точному количеству символов раз в строке нет пробелов
+                $str = mb_substr($str, 0, $maxLength, self::ENCODING);
 
             } else {
                 $words = [];
 
                 foreach (explode(" ", $str) as $string) {
-                    if (mb_strlen(join(' ', $words)) < $maxLength) {
+                    if (mb_strlen(join(" ", $words), self::ENCODING) < $maxLength) {
                         $words[] = $string;
                     }
                 }
 
-                // страховка на случай если первое и единственное выбраное слово превышает указанную длину
+                // страховка на случай если первое и единственное выбранное слово превышает указанную длину
                 if (count($words) === 1) {
-                    $str = mb_substr($words[0], 0, $maxLength);
+                    $str = mb_substr($words[0], 0, $maxLength, self::ENCODING);
 
                 } else {
-                    array_pop($words); // убираем последнее слово делающее превышение ограничения по длинне
-                    $str = static::trim(join(' ', $words));
+                    array_pop($words); // убираем последнее слово делающее превышение ограничения по длине
+                    $str = static::trim(join(" ", $words));
                 }
             }
 
-            $str .= $end;
+            $str .= $ending;
         }
 
         if ($transform) {
@@ -616,39 +662,40 @@ class VarStr
         return $str;
     }
 
-
     /**
      * Convert a value to studly caps case.
      *
-     * @param string $value
+     * @param string|null $str
      * @return string
      */
-    public static function getStudly($value)
+    public static function getStudly(?string $str): string
     {
         static $studlyCache;
 
-        $key = $value;
-
-        if (isset($studlyCache[$key])) {
-            return $studlyCache[$key];
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        $value = ucwords(str_replace(['-', '_'], ' ', $value));
+        $str = ucwords(str_replace(['-', '_'], ' ', (string)$str));
 
-        return $studlyCache[$key] = str_replace(' ', '', $value);
+        return str_replace(' ', '', $str);
     }
-
 
     /**
      * Преобразование Camel case в Snake case!
      *
-     * @param string $input
+     * @param string|null $str
      * @return string
      */
-    static public function getSnakeCase($input = '')
+    static public function getSnakeCase(?string $str): string
     {
-        preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
-        $ret = $matches[0];
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
+        preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', (string)$str, $matches);
+        $ret = (array)$matches[0];
+
         foreach ($ret as &$match) {
             $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
         }
@@ -656,34 +703,42 @@ class VarStr
         return implode('_', $ret);
     }
 
-
     /**
      * Преобразование Snake case в Camel case!
      *
-     * @param string $input
+     * @param string|null $str
      * @return string
      */
-    static public function getCamelCase($input = '')
+    static public function getCamelCase(?string $str): string
     {
-        return join("", VarArray::ucfirst(explode("_", $input)));
-    }
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
 
+        return join("", VarArray::ucfirst(explode("_", (string)$str)));
+    }
 
     /**
      * Преобразует HTML-сущности ( Entity ) в специальные символы
      *
      * @example: &amp;copy; > &copy; | &amp; > & | &quot; > " | &bull; > •
      *
-     * @param string $str
-     * @param int    $flags    - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding - кодировка
-     * @return array|string
+     * @param string|null $str
+     * @param int         $flags    - битовая маска из флагов определяющая режим обработки
+     * @param string      $encoding - кодировка
+     * @return string
      */
-    static public function getHtmlEntityDecode($str, $flags = ENT_COMPAT | ENT_HTML5, $encoding = 'UTF-8')
-    {
+    static public function getHtmlEntityDecode(
+        ?string $str,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8'
+    ): string {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
         return html_entity_decode((string)$str, $flags, $encoding);
     }
-
 
     /**
      * Кодирует только специальные символы в их HTML-сущности
@@ -691,21 +746,24 @@ class VarStr
      * @note    Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
      * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
      *
-     * @param string $str
-     * @param int    $flags        - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding     - кодировка
-     * @param bool   $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
+     * @param string|null $str
+     * @param int         $flags        - битовая маска из флагов определяющая режим обработки
+     * @param string      $encoding     - кодировка
+     * @param bool        $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
      * @return string
      */
     static public function getHtmlSpecialCharsEncode(
-        $str,
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $doubleEncode = false
-    ) {
+        ?string $str,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false
+    ): string {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
         return htmlspecialchars((string)$str, $flags, $encoding, $doubleEncode);
     }
-
 
     /**
      * Кодирует ( все допустимые! ) символы в соответствующие HTML-сущности ( Entity )
@@ -714,32 +772,40 @@ class VarStr
      * @note    для преобразования только символов &, ", ', <, > используйте self::getHtmlSpecialCharsEncode() !
      * @example & > &amp; | " > &quot;
      *
-     * @param string $str          -
-     * @param int    $flags        - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding     - кодировка
-     * @param bool   $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
+     * @param string|null $str          -
+     * @param int         $flags        - битовая маска из флагов определяющая режим обработки
+     * @param string      $encoding     - кодировка
+     * @param bool        $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
      * @return string
      */
     static public function getHtmlEntityEncode(
-        $str,
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $doubleEncode = false
-    ) {
+        ?string $str,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false
+    ): string {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
         return $return = htmlentities((string)$str, $flags, $encoding, $doubleEncode);
     }
 
-
     /**
-     * Декодирование закодированой URL строки
+     * Декодирование закодированной URL строки
      *
-     * @param string $str      - строка, которая должна быть декодирована.
-     * @param bool   $raw      - флаг для переключения метода декодирования на rawurldecode() без преобразования символа +
-     * @param string $encoding - кодировка
+     * @param string|null $str      - строка, которая должна быть декодирована.
+     * @param bool        $raw      - флаг для переключения метода декодирования на rawurldecode() без преобразования символа +
+     * @param string      $encoding - кодировка
      * @return string
+     * @throws Exception
      */
-    static public function getUrlDecode($str = '', $raw = false, $encoding = 'UTF-8')
+    static public function getUrlDecode(?string $str = '', bool $raw = false, string $encoding = 'UTF-8'): string
     {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
         $str = static::getTransformToEncoding((string)$str, $encoding);
 
         if ($raw) {
@@ -754,20 +820,24 @@ class VarStr
         return $str;
     }
 
-
     /**
      * Кодирование строки для URL
      *
-     * @note RFC 3986: cтрокf, в которой все не цифро-буквенные символы, кроме -_.~,
+     * @note RFC 3986: строка, в которой все не цифро-буквенные символы, кроме -_.~,
      *       должны быть заменены знаком процента (%) за которым следует два шестнадцатеричных числа
      *
-     * @param string $str      - строка, которая должна быть декодирована.
-     * @param bool   $raw      - флаг для переключения метода кодирования на rawurlencode() согласно RFC 3986 без преобразования символа +
-     * @param string $encoding - кодировка
+     * @param string|null $str      - строка, которая должна быть декодирована.
+     * @param bool        $raw      - флаг для переключения метода кодирования на rawurlencode() согласно RFC 3986 без преобразования символа +
+     * @param string      $encoding - кодировка
      * @return string
+     * @throws Exception
      */
-    static public function getUrlEncode($str = '', $raw = false, $encoding = 'UTF-8')
+    static public function getUrlEncode(?string $str = '', bool $raw = false, string $encoding = 'UTF-8'): string
     {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
         $str = static::getTransformToEncoding((string)$str, $encoding);
 
         if ($raw) {
@@ -780,60 +850,84 @@ class VarStr
         return urlencode($str);
     }
 
-
     /**
-     * Форматирует число с разделением групп
+     * Форматирует переданное значение с разделением групп
      *
      * @param mixed  $str
-     * @param int    $decimals      - точность
+     * @param int    $decimals      - точность (цело число больше нуля)
      * @param string $separator     - разделитель точности
      * @param string $thousands_sep - разделитель тысяч
      * @param int    $default
      * @return string
+     * @throws Exception
      */
     static public function getNumberFormat(
         $str,
-        $decimals = 2,
-        $separator = '.',
-        $thousands_sep = '',
+        int $decimals = 2,
+        string $separator = '.',
+        string $thousands_sep = '',
         $default = 0
-    ) {
+    ): string {
         $decimals = $decimals > 0 ? $decimals : 2;
-        $str = is_string($str) ? $str : strval($str);
 
-        // Помощь при опечатках если разделители классические
-        if ($separator == '.') {
-            $str = Helper::str_replace_once(",", ".", $str);
-        } elseif ($separator == ',') {
-            $str = Helper::str_replace_once(".", ",", $str);
+        if (is_null($str) || $str === "") {
+            return number_format($default, $decimals, $separator, $thousands_sep);
         }
 
-        try {
-            $return = number_format($str, $decimals, $separator, $thousands_sep);
-        } catch (\Throwable $e) {
-            $return = number_format($default, $decimals, $separator, $thousands_sep);
+        if (is_string($str)) {
+            $price = preg_replace('/[^0-9\,\.\s]/', '', (string)$str);
+
+            if ($str !== $price) {
+                throw new \Exception("Incorrect number");
+            }
+
+            $str = static::trim($str);
+            $dotParts = explode(".", $str);
+            $commaParts = explode(",", $str);
+            $spaceParts = explode(" ", $str);
+
+            $fidDot = count($dotParts) > 1;
+            $fidComma = count($commaParts) > 1;
+            $fidSpace = count($spaceParts) > 1;
+
+            // Проверка наличия только одного разделителя в тексте
+            if (((int)$fidDot + (int)$fidComma + (int)$fidSpace) > 1) {
+                throw new \Exception("There are several separators in value of number");
+            }
+
+            // Проверка повторяющегося разделителя
+            if (($fidDot + $fidComma + $fidSpace) > 1) {
+                throw new \Exception("Invalid number format");
+            }
         }
 
-        return $return;
+        $str = VarFloat::getMake($str, $decimals, $default);
+
+        return number_format($str, $decimals, $separator, $thousands_sep);
     }
 
-
     /**
-     * Создает токен по двум алгоритмам.
+     * Создает токен по двум алгоритмам
      *
      * @note
-     * @param integer $length - минимальное значение 8
-     * @param integer $split
-     * @param boolean $readable
+     * @param integer $length   - длинна возвращаемых символов (без учёта $split)
+     * @param integer $split    - количество символов для разделения строки на части через символ тире
+     * @param boolean $readable - флаг для генерации более простых кодов
      * @return string
+     * @throws Exception
      */
-    static public function randomToken($length = 128, $split = 0, $readable = false)
+    static public function getRandomToken(int $length = 128, int $split = 0, $readable = false): string
     {
+        if (! ($length > 0)) {
+            throw new Exception("Specify the length to generate the string");
+        }
+
         $unreadablePool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $readablePool = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $times = (int)VarFloat::round($length / 10, 0, 'upward');
         $pool = $readable ? $readablePool : $unreadablePool;
 
-        $value = substr(str_shuffle(str_repeat($pool, (int)$length / 8)), 0, $length);
+        $value = substr(str_shuffle(str_repeat($pool, $times)), 0, $length);
 
         if ($split > 0) {
             $value = join('-', str_split($value, $split));
@@ -842,264 +936,432 @@ class VarStr
         return $value;
     }
 
+    /**
+     * Создает токен по двум алгоритмам
+     *
+     * @param integer $length   - длинна возвращаемых символов (без учёта $split)
+     * @param integer $split    - количество символов для разделения строки на части через символ тире
+     * @param boolean $readable - флаг для генерации более простых кодов
+     * @return string
+     * @throws Exception
+     * @deprecated изменилось название метода getRandomToken()
+     */
+    static public function randomToken(int $length = 128, int $split = 0, $readable = false): string
+    {
+        return static::getRandomToken($length, $split, $readable);
+    }
 
     /**
-     * Создает цифирный код.
+     * Создает цифирный код
      *
-     * @note
-     * @param integer $length - минимальное значение 4
-     * @param integer $split
+     * @param int $length - длинна возвращаемых символов (без учёта $split)
+     * @param int $split  - количество символов для разделения строки на части через символ тире
      * @return string
+     * @throws Exception
      */
-    static public function randomNumberCode($length = 6, $split = 0)
+    static public function getRandomNumberCode(int $length = 6, int $split = 0): string
     {
+        if (! ($length > 0)) {
+            throw new Exception("Specify the length to generate the string");
+        }
+
         $pool = '0123456789';
-        $value = substr(str_shuffle(str_repeat($pool, (int)$length / 4)), 0, $length);
+        $times = (int)VarFloat::round($length / 10, 0, 'upward');
+        $str = substr(str_shuffle(str_repeat($pool, $times)), 0, $length);
 
         if ($split > 0) {
-            $value = join('-', str_split($value, $split));
+            $str = join('-', str_split($str, $split));
         }
 
-        return $value;
+        return (string)$str;
     }
-
 
     /**
-     * Возвращает часть строки.
+     * Создает цифирный код
      *
-     * @param string   $string
-     * @param int      $start
-     * @param int|null $length
+     * @param int $length - длинна возвращаемых символов (без учёта $split)
+     * @param int $split  - количество символов для разделения строки на части через символ тире
      * @return string
+     * @throws Exception
+     * @deprecated изменилось название метода getRandomToken()
      */
-    static public function substr($string, $start, $length = null)
+    static public function randomNumberCode(int $length = 6, int $split = 0): string
     {
-        return mb_substr($string, $start, $length, 'UTF-8');
+        return static::getRandomNumberCode($length, $split);
     }
 
+    /**
+     * Возвращает часть строки
+     *
+     * @param string|null $str
+     * @param int         $start
+     * @param int|null    $length
+     * @return string
+     */
+    static public function substr(?string $str, int $start, ?int $length = null): string
+    {
+        if (is_null($str) || $str === "") {
+            return mb_substr((string)$str, $start, $length, 'UTF-8');
+        }
+
+        return (string)$str;
+    }
 
     /**
      * Преобразует первый символ строки в верхний регистр
      *
-     * @param string $string
+     * @param string|null $str
      * @return string
+     * @throws Exception
      */
-    static public function ucfirst($string)
+    static public function ucfirst(?string $str): string
     {
-        $string = VarStr::getMakeString($string);
+        if (is_null($str) || $str === "") {
+            return static::getUpper(static::substr((string)$str, 0, 1)) . static::substr((string)$str, 1);
+        }
 
-        return static::getUpper(static::substr($string, 0, 1)) . static::substr($string, 1);
+        return (string)$str;
     }
-
 
     /**
-     * Убирает из строки лишние пробелы и переводы строк для последующей проверки на пустоту
+     * Убирает из строки разные пробелы и технические символы
      *
-     * @param string $str
+     * @note промежуточный метод для последующих проверок на пустоту в другим местах
+     *
+     * @param string|null $str
      * @return string
      */
-    static public function getClean($str = '')
+    static public function getClean(?string $str): string
     {
-        $str = VarStr::getMakeString($str);
-        $search = ["\n", "\t", "\r", '&nbsp;', '&emsp;', '&ensp;', '&thinsp;'];
-        $str = str_replace($search, ['', '', '', ' ', ' ', ' ', ' '], $str);
-        $str = static::trim(preg_replace('/\s{2,}/', ' ', $str), "\x00..\x1F"); // убрать лишние пробелы
+        if (is_null($str) || $str === "") {
+            //$search = ["\n", "\t", "\r", '&nbsp;', '&emsp;', '&ensp;', '&thinsp;'];
+            $search = array_merge(static::SPACE_CHAR, static::SPACE_CODE, static::CONTROL_CHAR);
+            $str = str_replace($search, ' ', (string)$str);
+            $str = static::trim(preg_replace('/\s{2,}/', ' ', $str), "\x00..\x1F"); // убрать лишние пробелы
 
-        return $str;
+            return $str;
+        }
+
+        return (string)$str;
     }
-
 
     /**
      * Проверка строки на на пустое значение.
      *
-     * @param string $value
+     * @param string|null $str
      * @return bool
      */
-    static public function isEmpty($value = '')
+    static public function isEmpty(?string $str)
     {
-        if (is_null($value) || is_bool($value) || is_array($value)) {
+        if (is_null($str) || is_bool($str) || is_array($str)) {
             return true;
         }
 
-        if (gettype($value) !== 'string') {
-            $value = VarStr::getMakeString($value);
+        if ($str !== "") {
+            $str = str_replace(static::CONTROL_CHAR, '', (string)$str);
+            $str = str_replace(static::SPECIAL_CHAR, '', $str);
+            $str = str_replace(static::SPACE_CODE, ' ', $str);
+            $str = str_replace(static::SPACE_CHAR, ' ', $str);
+            $str = static::trim($str);
+
+            return preg_match("/(\S+)/i", $str) == 0;
         }
 
-        $value = str_replace(["\n", "\t", "\r"], '', $value);
-        $value = str_replace('&nbsp;', ' ', static::trim((string)$value, "\x00..\x1F"));
-
-        return (preg_match("/(\S+)/i", $value) == 0 ? true : false);
+        return true;
     }
-
 
     /**
      * Удаляет пробелы из начала и конца строки (или другие символы при передачи их вторым параметром )
      *
      * @note \x0B вертикальная табуляция,
      *
-     * @param string $str
-     * @param string $removeChar - список символов для удаления
+     * @param string|null $str
+     * @param string      $remove             - список символов для удаления
+     * @param bool        $addSingleSpaceChar - флаг добавляющий к списку символов односимвольные пробелы
      * @return string
      */
-    static public function trim($str = '', $removeChar = " \t\n\r\0\x0B")
+    static public function trim(?string $str, $remove = " \t\n\r\b\v\0\x0B", bool $addSingleSpaceChar = true): string
     {
-        if (! is_string($str)) {
-            $str = VarStr::getMakeString($str);
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
 
-        $str = trim($str, (string)$removeChar);
-        //$str = trim($str, chr(194) . chr(160)); // работает только в ASCII а иначе это &#171;
+        // Дописываем к переданному списку символов односимвольные пробелы !
+        if ($addSingleSpaceChar === true) {
+            // Следить и не допускать сюда обычные символы!
+            $remove .=
+                // No-break space
+                chr(0xC2) . chr(0xA0) .
+                // 'En space
+                chr(0xE2) .
+                chr(0x80) .
+                chr(0x82) .
+                // Em space
+                chr(0xE2) .
+                chr(0x80) .
+                chr(0x83) .
+                // Thin space
+                chr(0xE2) .
+                chr(0x80) .
+                chr(0x89) .
+                // удаляем управляющие ASCII-символы с начала и конца $binary (от 0 до 31 включительно)
+                "\x00..\x1F";
+        }
 
-        // удаляем управляющие ASCII-символы с начала и конца $binary (от 0 до 31 включительно)
-        return trim($str, "\x00..\x1F");
+        return trim((string)$str, (string)$remove);
     }
 
-
     /**
-     * Замена повторяющегося символа
+     * Замена повторяющихся символов из списка $char в значения из списка $replace
      *
-     * @note нужно учитывать что списки должны совпадать по длине!
+     * @note нужно учитывать что список $replace должен совпадать по длине с $char
      *
-     * @param string         $str
-     * @param string | array $char
-     * @param string | array $replace
+     * @param string|null  $str
+     * @param string|array $char
+     * @param string|array $replace
      * @return string
      */
-    static public function getRemovingDoubleChar(string $str = '', $char = ' ', $replace = ' ')
+    static public function getRemovingDoubleChar(?string $str = '', array $char = [' '], array $replace = [' ']): string
     {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
         $char = is_array($char) ? $char : [(string)$char];
         $replace = is_array($replace) ? $replace : [(string)$replace];
 
         foreach ($char as $key => $symbol) {
             if (isset($replace[$key])) {
-                $str = static::trim(preg_replace("/" . preg_quote($symbol, '/') . "{2,}/", $replace[$key], $str));
+                $quoted = preg_quote($symbol, '/');
+                $str = static::trim(preg_replace("/" . $quoted . "{2,}/", $replace[$key], (string)$str));
             }
         }
 
-        return $str;
+        return (string)$str;
     }
 
-
     /**
-     * Удаление указаных символов из строки;
+     * Удаление указанных символов из строки
      *
-     * @param string       $str
+     * @param string|null  $str
      * @param array|string $removeChar - список символов для удаления
      * @return string
      */
-    static public function getRemoveSymbol($str = '', $removeChar = ["\n", "\r", "\t"])
+    static public function getRemoveSymbol(?string $str, $removeChar = ["\n", "\r", "\t", "\v"]): string
     {
-        $removeChar = is_array($removeChar) ? $removeChar : [VarStr::getMakeString($removeChar)];
-
-        if (gettype($str) !== 'string') {
-            $str = VarStr::getMakeString($str);
+        if (is_null($str) || $str === "") {
+            return (string)$str;
         }
+
+        $removeChar = is_array($removeChar) ? $removeChar : [(string)$removeChar];
 
         if (count($removeChar) > 0) {
-            $str = str_replace($removeChar, '', $str);
+            $str = str_replace($removeChar, '', (string)$str);
         }
 
-        return $str;
+        return (string)$str;
     }
 
-
     /**
-     * Проверка даты под указаный формат
+     * Проверка даты под указанный формат
      *
-     * @param string $date
-     * @param string $format
+     * @param string|null $strDate
+     * @param string      $format
      * @return bool
      */
-    static public function validateDateTime($date = null, $format = 'Y-m-d H:i:s')
+    static public function validateDateTime(?string $strDate = null, $format = 'Y-m-d H:i:s')
     {
-        if (! is_string($date)) {
+        if (is_null($strDate) || $strDate === "") {
             return false;
         }
 
-        $dt = DateTime::createFromFormat($format, $date);
+        $dt = DateTime::createFromFormat($format, (string)$strDate);
 
-        return $dt && $dt->format($format) === $date;
+        return $dt && $dt->format($format) === $strDate;
     }
-
 
     /**
-     * Проверка строки на дату по указаному формату;
+     * Проверка строки на дату по указанному формату
      *
-     * @param string $str
-     * @param mixed  $default
-     * @param string $format
-     * @return string|mixed
+     * @param string|null $strDate
+     * @param mixed       $default
+     * @param string      $format
+     * @return string|bool|null
      */
-    static public function makeDate($str, $default = null, $format = 'Y-m-d')
+    static public function makeDate(?string $strDate, $default = null, $format = 'Y-m-d')
     {
-        if (! is_string($str)) {
-            return $default;
+        if (is_null($strDate) || $strDate === "") {
+            return (string)$default;
         }
 
-        $str = static::crop(static::getRemoveSymbol(trim($str)));
+        $strDate = VarStr::trim((string)$strDate);
+        $strDate = mb_substr($strDate, 0, 250, self::ENCODING);
 
-        return VarStr::validateDateTime($str, $format) === true ? $str : $default;
+        return VarStr::validateDateTime($strDate, $format) === true ? $strDate : (string)$default;
     }
 
+    /**
+     * Возвращает название кодировки у переданной строки
+     *
+     * @param string|null $str
+     * @return string|null
+     */
+    static public function getEncoding(?string $str): ?string
+    {
+        //$encodingList = ['utf-8', 'windows-1251', /*'ascii'*/];
+        $currentEncoding = mb_detect_encoding((string)$str, mb_detect_order(), false);
+        //$cleanStr = (string)$str;
+
+        switch ($currentEncoding) {
+            case 'UTF-8':
+                $text = mb_convert_encoding((string)$str, 'UTF-8');
+                break;
+
+            case 'Windows-1251':
+                $text = mb_convert_encoding((string)$str, 'Windows-1251');
+                break;
+
+            //case 'ASCII':
+            //    $text = mb_convert_encoding((string)$str, 'ASCII');
+            //    break;
+
+            default:
+                $text = (string)$str;
+        }
+
+        if ($text !== false) {
+            return $currentEncoding;
+        }
+
+        //foreach ($encodingList as $k => $codePage) {
+        //    if (md5($str) === @md5(@iconv($codePage, $codePage . '//IGNORE', $text))) {
+        //        return $codePage;
+        //    }
+        //}
+
+        return null;
+    }
 
     /**
      * Безопасное преобразование строки в utf-8
      *
-     * @param string $text
+     * @param string|null $str
      * @return string
+     * @throws Exception
      */
-    static public function toUTF8($text = '')
+    static public function toUTF8(?string $str = ''): string
     {
-        if (gettype($text) !== 'string') {
-            $text = VarStr::getMakeString($text);
+        // Если кодировки строки отличается от указанной
+        if (! mb_check_encoding((string)$str, "UTF-8")) {
+            $encoding = mb_detect_encoding((string)$str, mb_detect_order(), false);
+
+            switch ($encoding) {
+                case 'UTF-8':
+                    $str = mb_convert_encoding((string)$str, 'UTF-8', 'UTF-8');
+                    break;
+
+                case 'ASCII':
+                    $str = mb_convert_encoding((string)$str, 'UTF-8', 'ASCII');
+                    break;
+
+                case 'Windows-1251':
+                    $str = mb_convert_encoding((string)$str, 'UTF-8', 'Windows-1251');
+                    break;
+            }
+
+            // Проверка некорректной работы mb_convert_encoding()
+            if ($str === false) {
+                throw new Exception("Error when trying to convert a string via mb_convert_encoding()");
+            }
+
+            // Если было не удачное определение кодировки
+            if (is_null($encoding)) {
+                return @iconv("UTF-8", "UTF-8//IGNORE", (string)$str);
+            }
+
+            return @iconv($encoding, "UTF-8//IGNORE", $str);
         }
 
-        $encoding = mb_detect_encoding($text, mb_detect_order(), false);
-
-        if ($encoding === "UTF-8") {
-            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-        }
-
-        return @iconv($encoding, "UTF-8//IGNORE", $text);
+        return (string)$str;
     }
 
+    /**
+     * Безопасное преобразование строки в указанную кодировку если она таковой не является
+     *
+     * @param string|null $str      - строка, для которой требуется определить кодировку
+     * @param string      $encoding - ожидаемая кодировка
+     * @return string
+     * @throws Exception
+     */
+    static public function getTransformToEncoding(?string $str = '', string $encoding = 'UTF-8'): string
+    {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
+        // Если кодировки строки отличается от указанной
+        if (! mb_check_encoding((string)$str, $encoding)) {
+            // Определение кодировки у указанной строки
+            $currentEncoding = mb_detect_encoding((string)$str, mb_detect_order(), false);
+
+            // Преобразование строки из одной кодировки символов в другую
+            $text = mb_convert_encoding((string)$str, $encoding);
+
+            // Проверка некорректной работы mb_convert_encoding()
+            if ($text === false) {
+                throw new Exception("Error when trying to convert a string via mb_convert_encoding()");
+            }
+
+            // Если было не удачное определение кодировки у указанной строки
+            if (is_null($currentEncoding)) {
+                return @iconv("UTF-8", "UTF-8//IGNORE", $text);
+            }
+
+            return @iconv($currentEncoding, "{$encoding}//IGNORE", $text);
+        }
+
+        return (string)$str;
+    }
 
     /**
      * Разбивает строку по разделителю и дополнительно производит удаление пустых значений;
      *
-     * @param string $delimiter - разделитель
-     * @param string $str       - строка
-     * @param array  $deleted   - массив значений которые надо удалить
+     * @param string      $delimiter - разделитель
+     * @param string|null $str       - строка
+     * @param array       $deleted   - массив значений которые надо удалить
      * @return array
      */
-    static public function explode($delimiter, $str, $deleted = ['', 0, null, 'null'])
+    static public function explode(string $delimiter, ?string $str, array $deleted = ['', 0, null]): array
     {
-        if (gettype($str) !== 'string') {
-            $str = VarStr::getMakeString($str);
+        if (is_null($str) || $str === "") {
+            return [];
         }
 
-        if (! is_null($deleted)) {
-            return VarArray::getRemove(explode($delimiter, static::trim($str)), $deleted);
-        } else {
-            return explode($delimiter, static::trim($str));
+        if (! is_array($deleted) && count($deleted) > 0) {
+            $parts = explode($delimiter, static::trim((string)$str));
+
+            return VarArray::getRemove($parts, $deleted);
+
         }
+
+        return explode($delimiter, static::trim((string)$str));
     }
 
     /**
      * Разбивает строку по разделителю и дополнительно производит удаление пустых значений;
      *
-     * @param string $delimiter - разделитель
-     * @param string $str       - строка
-     * @param string $action    - id|ids|number|integer
+     * @param string      $delimiter - разделитель
+     * @param string|null $str       - строка
+     * @param string      $action    - id|ids|number|integer
      * @return array
      */
-    static public function explodeToNumber($delimiter, $str, $action = "ids")
+    static public function explodeToNumber(string $delimiter, ?string $str, $action = "ids"): array
     {
-        if (gettype($str) !== 'string') {
-            $str = VarStr::getMakeString($str);
+        if (is_null($str) || $str === "") {
+            return [];
         }
 
-        $ids = explode($delimiter, static::trim($str));
+        $ids = explode($delimiter, static::trim((string)$str));
 
         switch ($action) {
             case 'ids':
@@ -1172,112 +1434,147 @@ class VarStr
         return $ids;
     }
 
-
     /**
      * Преобразует HTML-сущности в специальные символы через регулярное выражение и список сущностей.
      * Преобразует &amp; > & | &quot; > " | &bull; > •
      *
-     * @param string $str
-     * @param int    $flags
-     * @param string $charset = utf-8 (ISO-8859-1)
+     * @param string|null $str
+     * @param int         $flags
+     * @param string      $charset = utf-8 (ISO-8859-1)
      * @return string
      * @todo это решение на php4, но пока решил оставить на всякий случай
      *
      */
-    static function getDecodeEntities($str = '', $flags = ENT_COMPAT, $charset = 'UTF-8')
+    static function getDecodeEntities(?string $str, $flags = ENT_COMPAT, $charset = 'UTF-8')
     {
-        if (gettype($str) !== 'string') {
-            $str = VarStr::getMakeString($str);
-        }
-
-        $str = preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', 'convert_entity', $str);
+        $str = preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', 'convert_entity', (string)$str);
 
         return html_entity_decode($str, $flags, $charset);
-    }
-
-
-    /**
-     * Безопасное преобразование строки в указаную кодировку если она таковой не является
-     *
-     * @param string $str      - строка, для которой требуется определить кодировку
-     * @param string $encoding - список возможных кодировок
-     * @return string
-     */
-    static public function getTransformToEncoding($str = '', $encoding = 'UTF-8')
-    {
-        if (! mb_check_encoding($str, $encoding)) {
-            $str = mb_convert_encoding($str, $encoding);
-            $str = @iconv(mb_detect_encoding($str, mb_detect_order(), false), "{$encoding}//IGNORE", $str);
-        }
-
-        return $str;
-
-        /**
-         * $currentEncoding = mb_detect_encoding($str, mb_detect_order(), true); // у меня было false но в документации написано надо true
-         *
-         * if ($currentEncoding !== $encoding) {
-         * $str = mb_convert_encoding($str, $encoding);
-         * $str = @iconv(mb_detect_encoding($str, mb_detect_order(), false), "{$encoding}//IGNORE", $str);
-         * }
-         *
-         * return $str;*/
     }
 
     /**
      * Транскрипция текста
      *
-     * @param string $word
+     * @param string $str
+     * @param bool   $lower
      * @return string
+     * @throws Exception
      */
-    static public function getTranscription(string $word): string
+    static public function getTranscription(string $str, bool $lower = true): string
     {
-        $chars = [
-            "а" => "a",
-            "к" => "k",
-            "х" => "kh",
-            "б" => "b",
-            "л" => "l",
-            "ц" => "c",
-            "в" => "v",
-            "м" => "m",
-            "ч" => "ch",
-            "г" => "g",
-            "н" => "n",
-            "ш" => "sh",
-            "д" => "d",
-            "о" => "o",
-            "щ" => "sch",
-            "е" => "e",
-            "п" => "p",
-            "ъ" => "",
-            "ё" => "yo",
-            "р" => "r",
-            "ы" => "y",
-            "ж" => "zh",
-            "с" => "s",
-            "ь" => "",
-            "з" => "z",
-            "т" => "t",
-            "э" => "e",
-            "и" => "i",
-            "у" => "u",
-            "ю" => "yu",
-            "й" => "y",
-            "ф" => "f",
-            "я" => "ya",
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
+        $str = static::getTransformToEncoding((string)$str);
+        $str = strip_tags(static::trim($str));
+        $str = urldecode($str); // Декодирование URL из кодированной строки
+
+        $char = [
+            // lower
+            "а"  => "a",
+            "б"  => "b",
+            "в"  => "v",
+            "г"  => "g",
+            "д"  => "d",
+            "е"  => "e",
+            "ё"  => "yo",
+            "ж"  => "zh",
+            "з"  => "z",
+            "и"  => "i",
+            "й"  => "y",
+            "к"  => "k",
+            "л"  => "l",
+            "м"  => "m",
+            "н"  => "n",
+            "о"  => "o",
+            "п"  => "p",
+            "р"  => "r",
+            "с"  => "s",
+            "т"  => "t",
+            "у"  => "u",
+            "ф"  => "f",
+            "х"  => "kh",
+            "ц"  => "c",
+            "ч"  => "ch",
+            "ш"  => "sh",
+            "щ"  => "sch",
+            "ъ"  => "",
+            "ы"  => "y",
+            "ь"  => "",
+            "э"  => "e",
+            "ю"  => "yu",
+            "я"  => "ya",
+            // upper
+            "А"  => "a",
+            "Б"  => "b",
+            "В"  => "v",
+            "Г"  => "g",
+            "Д"  => "d",
+            "Е"  => "e",
+            "Ё"  => "yo",
+            "Ж"  => "zh",
+            "З"  => "z",
+            "И"  => "i",
+            "Й"  => "y",
+            "К"  => "k",
+            "Л"  => "l",
+            "М"  => "m",
+            "Н"  => "n",
+            "О"  => "o",
+            "П"  => "p",
+            "Р"  => "r",
+            "С"  => "s",
+            "Т"  => "t",
+            "У"  => "u",
+            "Ф"  => "f",
+            "Х"  => "kh",
+            "Ц"  => "c",
+            "Ч"  => "ch",
+            "Ш"  => "sh",
+            "Щ"  => "sch",
+            "Ъ"  => "",
+            "Ы"  => "y",
+            "Ь"  => "",
+            "Э"  => "e",
+            "Ю"  => "yu",
+            "Я"  => "ya",
+            // over
+            "-"  => "-",
+            " "  => "-",
+            "\\" => "-diff-",
+            "/"  => "-slash-",
+            "+"  => "-plus-",
+            "="  => "-equal-",
+            ":"  => "-colon-",
+            "."  => "-dot-",
+            // number
+            "0"  => "0",
+            "1"  => "1",
+            "2"  => "2",
+            "3"  => "3",
+            "4"  => "4",
+            "5"  => "5",
+            "6"  => "6",
+            "7"  => "7",
+            "8"  => "8",
+            "9"  => "9",
         ];
 
-        $word = mb_strtolower($word, 'UTF-8');
-        $word = strip_tags($word);
-        $word = preg_replace("/&[a-zA-Z]+;/u", '-', $word);
-        $word = str_replace("+", ' plus', $word);
-        $word = preg_replace("/[^a-zа-я0-9_]/siu", "-", $word);
-        $word = strtr($word, $chars);
-        $word = preg_replace("/[-]+/u", '-', $word);
-        $word = trim($word, '-');
-        $word = iconv("UTF-8", "UTF-8//IGNORE", $word);
-        $word = mb_substr($word, 0, 255);
+        if ($lower) {
+            $str = static::getLower($str);
+        }
 
-        return $word;
+        $result = '';
+        $words = preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (is_array($words) && count($words)) {
+            foreach ($words as $key => $value) {
+                // преобразовывает русские символы в их аналоги
+                $result .= isset($char[$value]) && array_key_exists($value, $char) ? $char[$value] : $value;
+            }
+        }
+
+        return preg_replace("/[-]+/", '-', $result); // убираем дубли
     }
 }

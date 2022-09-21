@@ -1149,9 +1149,9 @@ trait VariableMethod
 
                         // Помощь при опечатках если разделители классические
                         if ($separator == '.') {
-                            $item = Helper::str_replace_once(",", ".", $item);
+                            $item = VarStr::replaceOnce(",", ".", $item);
                         } elseif ($separator == ',') {
-                            $item = Helper::str_replace_once(".", ",", $item);
+                            $item = VarStr::replaceOnce(".", ",", $item);
                         }
 
                         try {
@@ -1167,9 +1167,9 @@ trait VariableMethod
 
             // Помощь при опечатках если разделители классические
             if ($separator == '.') {
-                $data = Helper::str_replace_once(",", ".", $data);
+                $data = VarStr::replaceOnce(",", ".", $data);
             } elseif ($separator == ',') {
-                $data = Helper::str_replace_once(".", ",", $data);
+                $data = VarStr::replaceOnce(".", ",", $data);
             }
 
             try {

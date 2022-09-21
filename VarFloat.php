@@ -7,8 +7,6 @@ namespace Warkhosh\Variable;
  */
 class VarFloat
 {
-    const TRIM_REMOVE_CHAR = " \t\n\r\0\x0B";
-
     /**
      * Преобразование значения в строку
      *
@@ -26,10 +24,10 @@ class VarFloat
             // Русская локаль рисует разделитель десятичных как знак запятой,
             // это ломает преобразования или запись в базу, поэтому заменяем разделитель на символ точка
             if ($systemSeparator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($systemSeparator, '.', $var); // заменяем запятую на точку
+                $var = VarStr::replaceOnce($systemSeparator, '.', $var); // заменяем запятую на точку
 
             } elseif ($systemSeparator === '.' && mb_strpos($var, ',', 0, 'UTF-8') !== false) {
-                $var = \Warkhosh\Variable\Helper\Helper::str_replace_once(',', '.', $var); // заменяем запятую на точку
+                $var = VarStr::replaceOnce(',', '.', $var); // заменяем запятую на точку
             }
 
             return $var;
@@ -47,21 +45,21 @@ class VarFloat
      * @note: $round = upward, округляет десятичные значения в большую сторону если они выходят за пределы точности [$decimals]
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
-     * @param float | integer | string $var
-     * @param int                      $decimals - точность
-     * @param string                   $round    [auto, upward, downward] - тип округления
-     * @param float                    $default
+     * @param float|integer|string $var
+     * @param int                  $decimals - точность
+     * @param string               $round    [auto, upward, downward] - тип округления
+     * @param float                $default
      * @return float
      */
     static public function getMake($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
     {
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
-            $var = trim($var, static::TRIM_REMOVE_CHAR);
+            $var = VarStr::trim($var);
 
             // Русская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $var);
+                $var = VarStr::str_replace_once($separator, '.', (string)$var);
             }
 
             $var = VarStr::getRemoveSymbol($var, [' ']);
@@ -122,11 +120,11 @@ class VarFloat
         // для строки делаем предварительную замену альтернативного разделителя если ошиблись при вводе
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
-            $var = trim($var, static::TRIM_REMOVE_CHAR);
+            $var = VarStr::trim($var);
 
             // Русская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $var);
+                $var = VarStr::str_replace_once($separator, '.', (string)$var);
             }
 
             $var = VarStr::getRemoveSymbol($var, [' ']);
@@ -163,16 +161,16 @@ class VarFloat
     {
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
-            $str = trim($var, static::TRIM_REMOVE_CHAR);
+            $str = VarStr::trim($var);
 
             // руская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
             if ($separator === ',' && mb_strpos($str, '.', 0, 'UTF-8') === false) {
-                $str = \Warkhosh\Variable\Helper\Helper::str_replace_once($separator, '.', $str);
+                $str = VarStr::str_replace_once($separator, '.', $str);
             }
 
             // Производим преобразование значения, поскольку в нём есть символ запятой
             if (mb_strpos($str, ',', 0, 'UTF-8') !== false) {
-                $str = \Warkhosh\Variable\Helper\Helper::str_replace_once(',', '.', $str);
+                $str = VarStr::str_replace_once(',', '.', $str);
             }
 
             $var = VarStr::getRemoveSymbol($str, [' ']);
