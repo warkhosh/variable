@@ -364,10 +364,10 @@ class VarStr
     static function getBase64UrlEncode(?string $str): string
     {
         if (is_null($str) || $str === "") {
-            return rtrim(strtr(base64_encode((string)$str), '+/', '-_'), '=');
+            return (string)$str;
         }
 
-        return (string)$str;
+        return rtrim(strtr(base64_encode((string)$str), '+/', '-_'), '=');
     }
 
     /**
@@ -1001,10 +1001,10 @@ class VarStr
     static public function substr(?string $str, int $start, ?int $length = null): string
     {
         if (is_null($str) || $str === "") {
-            return mb_substr((string)$str, $start, $length, 'UTF-8');
+            return (string)$str;
         }
 
-        return (string)$str;
+        return mb_substr((string)$str, $start, $length, 'UTF-8');
     }
 
     /**
@@ -1017,10 +1017,10 @@ class VarStr
     static public function ucfirst(?string $str): string
     {
         if (is_null($str) || $str === "") {
-            return static::getUpper(static::substr((string)$str, 0, 1)) . static::substr((string)$str, 1);
+            return (string)$str;
         }
 
-        return (string)$str;
+        return static::getUpper(static::substr((string)$str, 0, 1)) . static::substr((string)$str, 1);
     }
 
     /**
