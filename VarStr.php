@@ -44,7 +44,6 @@ class VarStr
         "\n",       // Перевод каретки на следующую строку (0x0A)
         "\r",       // Перевод каретки на в начало текущей строки (0x0D)
         "\t",       // Табуляция (tab)
-        "\b",       // Перевод каретки на один символ назад (backspace)
         "\v",       // Вертикальная табуляция (0x0B)
     ];
 
@@ -1080,7 +1079,7 @@ class VarStr
      * @param bool        $addSingleSpaceChar - флаг добавляющий к списку символов односимвольные пробелы
      * @return string
      */
-    static public function trim(?string $str, $remove = " \t\n\r\b\v\0\x0B", bool $addSingleSpaceChar = true): string
+    static public function trim(?string $str, $remove = " \t\n\r\v\0\x0B", bool $addSingleSpaceChar = true): string
     {
         if (is_null($str) || $str === "") {
             return (string)$str;
