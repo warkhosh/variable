@@ -1467,6 +1467,149 @@ class VarStr
 
         $str = static::getTransformToEncoding((string)$str);
         $str = strip_tags(static::trim($str));
+        $str = static::getDecodeEntities($str);
+        $str = urldecode($str); // Декодирование URL из кодированной строки
+
+        $char = [
+            // lower
+            "а"  => "a",
+            "б"  => "b",
+            "в"  => "v",
+            "г"  => "g",
+            "д"  => "d",
+            "е"  => "e",
+            "ё"  => "yo",
+            "ж"  => "zh",
+            "з"  => "z",
+            "и"  => "i",
+            "й"  => "y",
+            "к"  => "k",
+            "л"  => "l",
+            "м"  => "m",
+            "н"  => "n",
+            "о"  => "o",
+            "п"  => "p",
+            "р"  => "r",
+            "с"  => "s",
+            "т"  => "t",
+            "у"  => "u",
+            "ф"  => "f",
+            "х"  => "kh",
+            "ц"  => "c",
+            "ч"  => "ch",
+            "ш"  => "sh",
+            "щ"  => "sch",
+            "ъ"  => "",
+            "ы"  => "y",
+            "ь"  => "",
+            "э"  => "e",
+            "ю"  => "yu",
+            "я"  => "ya",
+            // upper
+            "А"  => "a",
+            "Б"  => "b",
+            "В"  => "v",
+            "Г"  => "g",
+            "Д"  => "d",
+            "Е"  => "e",
+            "Ё"  => "yo",
+            "Ж"  => "zh",
+            "З"  => "z",
+            "И"  => "i",
+            "Й"  => "y",
+            "К"  => "k",
+            "Л"  => "l",
+            "М"  => "m",
+            "Н"  => "n",
+            "О"  => "o",
+            "П"  => "p",
+            "Р"  => "r",
+            "С"  => "s",
+            "Т"  => "t",
+            "У"  => "u",
+            "Ф"  => "f",
+            "Х"  => "kh",
+            "Ц"  => "c",
+            "Ч"  => "ch",
+            "Ш"  => "sh",
+            "Щ"  => "sch",
+            "Ъ"  => "",
+            "Ы"  => "y",
+            "Ь"  => "",
+            "Э"  => "e",
+            "Ю"  => "yu",
+            "Я"  => "ya",
+            // over
+            "-"  => "-",
+            " "  => "-",
+            "\\" => "-diff-",
+            "/"  => "-slash-",
+            "+"  => "-plus-",
+            "="  => "-equal-",
+            ":"  => "-colon-",
+            "."  => "-dot-",
+            "\"" => "-quote-",
+            "#"  => "-num-",
+            "%"  => "-percnt-",
+            "&"  => "-amp-",
+            "$"  => "-dollar-",
+            "€"  => "-euro-",
+            "₽"  => "-ruble-",
+            "?"  => "-quest-",
+            "!"  => "-excl-",
+            "@"  => "-commat-",
+            "*"  => "-asterisk-",
+            "©"  => "-copy-",
+            "®"  => "-reg-",
+            // number
+            "0"  => "0",
+            "1"  => "1",
+            "2"  => "2",
+            "3"  => "3",
+            "4"  => "4",
+            "5"  => "5",
+            "6"  => "6",
+            "7"  => "7",
+            "8"  => "8",
+            "9"  => "9",
+        ];
+
+        if ($lower) {
+            $str = static::getLower($str);
+        }
+
+        $result = '';
+        $words = preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (is_array($words) && count($words)) {
+            foreach ($words as $key => $value) {
+                // преобразовывает русские символы в их аналоги
+                $result .= isset($char[$value]) && array_key_exists($value, $char) ? $char[$value] : $value;
+            }
+        }
+
+        return preg_replace("/[-]+/", '-', $result); // убираем дубли
+    }
+
+    /**
+     * Преобразует строку к виду slug,
+     *
+     * @note подходит для использования в урлах
+     *
+     * @param string $str
+     * @param bool   $lower
+     * @return string
+     * @throws Exception
+     */
+    static public function getSlug(string $str, bool $lower = true)
+    {
+        if (is_null($str) || $str === "") {
+            return (string)$str;
+        }
+
+        $str = static::getTransformToEncoding((string)$str);
+        $str = strip_tags(static::trim($str));
+        $str = static::getDecodeEntities($str);
         $str = urldecode($str); // Декодирование URL из кодированной строки
 
         $char = [
@@ -1574,6 +1717,9 @@ class VarStr
             }
         }
 
-        return preg_replace("/[-]+/", '-', $result); // убираем дубли
+        // Заменяем все не простые символы
+        $result = preg_replace("/[^a-z0-9\-]/ius", "-", $result);
+
+        return trim(preg_replace("/[-]+/", '-', $result), '-'); // убираем дубли
     }
 }
