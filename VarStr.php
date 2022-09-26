@@ -1085,27 +1085,25 @@ class VarStr
             return (string)$str;
         }
 
+        // Безопасное удаление всех пробелов (возвращающие код символа 32)
+        $str = preg_replace("/^\s+/isu", "", $str);
+        $str = preg_replace("/\s+$/isu", "", $str);
+
         // Дописываем к переданному списку символов односимвольные пробелы !
-        if ($addSingleSpaceChar === true) {
-            // Следить и не допускать сюда обычные символы!
-            $remove .=
-                // No-break space
-                chr(0xC2) . chr(0xA0) .
-                // 'En space
-                chr(0xE2) .
-                chr(0x80) .
-                chr(0x82) .
-                // Em space
-                chr(0xE2) .
-                chr(0x80) .
-                chr(0x83) .
-                // Thin space
-                chr(0xE2) .
-                chr(0x80) .
-                chr(0x89) .
-                // удаляем управляющие ASCII-символы с начала и конца $binary (от 0 до 31 включительно)
-                "\x00..\x1F";
-        }
+        //if ($addSingleSpaceChar === true) {
+        //    // Следить и не допускать сюда обычные символы!
+        //    $remove .=
+        //        // No-break space
+        //        chr(0xC2) . chr(0xA0) .
+        //        // 'En space
+        //        chr(0xE2) . chr(0x80) . chr(0x82) .
+        //        // Em space
+        //        chr(0xE2) . chr(0x80) . chr(0x83) .
+        //        // Thin space
+        //        chr(0xE2) . chr(0x80) . chr(0x89) .
+        //        // удаляем управляющие ASCII-символы с начала и конца $binary (от 0 до 31 включительно)
+        //        "\x00..\x1F";
+        //}
 
         return trim((string)$str, (string)$remove);
     }
