@@ -1718,7 +1718,7 @@ class VarStr
         }
 
         // Заменяем все не простые символы
-        $result = preg_replace("/[^a-z0-9\-]/ius", "-", $result);
+        $result = preg_replace("/[^a-z0-9\-\_]/ius", "-", $result);
 
         return trim(preg_replace("/[-]+/", '-', $result), '-'); // убираем дубли
     }
