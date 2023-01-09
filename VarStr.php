@@ -258,7 +258,7 @@ class VarStr
         if ($prefix !== "") {
             $quoted = preg_quote((string)$prefix, '/');
 
-            return preg_replace('/(?:' . $quoted . ')+$/u', '', (string)$str) . (string)$prefix;
+            return (string)preg_replace('/(?:' . $quoted . ')+$/u', '', (string)$str) . (string)$prefix;
         }
 
         return (string)$str;
@@ -280,7 +280,7 @@ class VarStr
         if ($prefix !== "") {
             $quoted = preg_quote((string)$prefix, '/');
 
-            return preg_replace('/^(?:' . $quoted . ')+/u', '', (string)$str);
+            return (string)preg_replace('/^(?:' . $quoted . ')+/u', '', (string)$str);
         }
 
         return (string)$str;
@@ -302,7 +302,7 @@ class VarStr
         if ($prefix !== "") {
             $quoted = preg_quote((string)$prefix, '/');
 
-            return preg_replace('/(?:' . $quoted . ')+$/u', '', (string)$str);
+            return (string)preg_replace('/(?:' . $quoted . ')+$/u', '', (string)$str);
         }
 
         return (string)$str;
@@ -325,7 +325,7 @@ class VarStr
         if ($search !== "") {
             $quoted = preg_quote((string)$search, '/');
 
-            return preg_replace('/^(?:' . $quoted . ')+/u', (string)$replace, (string)$str);
+            return (string)preg_replace('/^(?:' . $quoted . ')+/u', (string)$replace, (string)$str);
         }
 
         return (string)$str;
@@ -348,7 +348,7 @@ class VarStr
         if ($search !== "") {
             $quoted = preg_quote((string)$search, '/');
 
-            return preg_replace('/(?:' . $quoted . ')+$/u', (string)$replace, (string)$str);
+            return (string)preg_replace('/(?:' . $quoted . ')+$/u', (string)$replace, (string)$str);
         }
 
         return (string)$str;
