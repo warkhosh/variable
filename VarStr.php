@@ -982,7 +982,7 @@ class VarStr
      * @param int $split  - количество символов для разделения строки на части через символ тире
      * @return string
      * @throws Exception
-     * @deprecated изменилось название метода getRandomToken()
+     * @deprecated изменилось название метода getRandomNumberCode()
      */
     static public function randomNumberCode(int $length = 6, int $split = 0): string
     {
