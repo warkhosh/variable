@@ -1454,10 +1454,11 @@ class VarStr
      *
      * @param string $str
      * @param bool   $lower
+     * @param array  $ignoreChars
      * @return string
      * @throws Exception
      */
-    static public function getTranscription(string $str, bool $lower = true): string
+    static public function getTranscription(string $str, bool $lower = true, array $ignoreChars = []): string
     {
         if (is_null($str) || $str === "") {
             return (string)$str;
@@ -1582,7 +1583,12 @@ class VarStr
 
         if (is_array($words) && count($words)) {
             foreach ($words as $key => $value) {
-                // преобразовывает русские символы в их аналоги
+                if (in_array($value, $ignoreChars)) {
+                    $result .= $value;
+                    continue;
+                }
+
+                // преобразовывает символы в их аналоги
                 $result .= isset($char[$value]) && array_key_exists($value, $char) ? $char[$value] : $value;
             }
         }
@@ -1597,10 +1603,11 @@ class VarStr
      *
      * @param string $str
      * @param bool   $lower
+     * @param array  $ignoreChars
      * @return string
      * @throws Exception
      */
-    static public function getSlug(string $str, bool $lower = true)
+    static public function getSlug(string $str, bool $lower = true, array $ignoreChars = [])
     {
         if (is_null($str) || $str === "") {
             return (string)$str;
@@ -1712,13 +1719,28 @@ class VarStr
 
         if (is_array($words) && count($words)) {
             foreach ($words as $key => $value) {
-                // преобразовывает русские символы в их аналоги
+                if (in_array($value, $ignoreChars)) {
+                    $result .= $value;
+                    continue;
+                }
+
+                // преобразовывает символы в их аналоги
                 $result .= isset($char[$value]) && array_key_exists($value, $char) ? $char[$value] : $value;
             }
         }
 
+        $ignore = "";
+
+        if (count($ignoreChars) > 0) {
+            foreach ($ignoreChars as $char) {
+                $ignore.= $char;
+            }
+
+            $ignore = preg_quote((string)$ignore, '/');
+        }
+
         // Заменяем все не простые символы
-        $result = preg_replace("/[^a-z0-9\-\_]/ius", "-", $result);
+        $result = preg_replace("/[^a-z0-9\-\_{$ignore}]/ius", "-", $result);
 
         return trim(preg_replace("/[-]+/", '-', $result), '-'); // убираем дубли
     }
