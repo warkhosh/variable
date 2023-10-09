@@ -3,6 +3,7 @@
 namespace Warkhosh\Variable;
 
 use Warkhosh\Variable\Helper\VarHelper;
+use Closure;
 
 /**
  * Class Arr
@@ -578,6 +579,49 @@ class VarArray
         }
 
         return $array;
+    }
+
+    /**
+     * Сортировка массива по возрастанию
+     *
+     * @param array $array
+     * @param string|Closure $field
+     * @param int $options
+     * @param bool $descending
+     * @return array
+     */
+    public static function sortBy(array $array, $field, int $options = SORT_REGULAR, bool $descending = false)
+    {
+        if (! $field instanceof Closure) {
+            $field = function ($item) use ($field) {
+                return static::get($field, $item);
+            };
+        }
+
+        foreach ($array as $key => $value) {
+            $results[$key] = $field($value);
+        }
+
+        $descending ? arsort($results, $options) : asort($results, $options);
+
+        foreach (array_keys($results) as $key) {
+            $results[$key] = $array[$key];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Сортировка массива по убыванию
+     *
+     * @param array $array
+     * @param string|Closure $field
+     * @param int $options
+     * @return array
+     */
+    public static function sortByDesc(array $array, $field, int $options = SORT_REGULAR)
+    {
+        return static::sortBy($array, $field, $options, true);
     }
 
     /**
