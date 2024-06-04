@@ -21,12 +21,15 @@ class Http
     /**
      * Возвращает все или указанную переменную
      *
-     * @param string | array
+     * @note может принимать один или два аргумента.
+     * Первый аргумент это название ключа в переменной $_SERVER в формате string.
+     * Второй аргумент это default значение если указали не существующий ключ.
+     *
      * @return mixed
      */
-    public static function server()
+    public static function server(): mixed
     {
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
+        if (count(func_get_args()) >= 1 && ! is_null($key = func_get_arg(0))) {
             $initDefault = false;
             $default = null;
 
@@ -35,7 +38,7 @@ class Http
                 $initDefault = true;
             }
 
-            return self::getVariable($_SERVER, (string)$varName, $initDefault, $default);
+            return self::getVariable($_SERVER, (string)$key, $initDefault, $default);
         }
 
         return $_SERVER;
@@ -43,25 +46,29 @@ class Http
 
 
     /**
-     * @param array          $storage     - хранилище с данными
-     * @param string | array $varName     - название переменной
-     * @param bool           $initDefault - флаг для установки значения для неустановленной переменной значения по умолчанию
-     * @param null           $default     - значение по умолчанию
-     * @return array|null
+     * @param array $storage - хранилище с данными
+     * @param array|string $varKey - название переменной
+     * @param bool $initDefault - флаг для установки значения для неустановленной переменной значения по умолчанию
+     * @param mixed|null $default - значение по умолчанию
+     * @return mixed
      */
-    static protected function getVariable(array $storage, $varName, $initDefault = false, $default = null)
-    {
-        if (is_string($varName)) {
-            if (isset($storage[$varName]) && key_exists($varName, $storage)) {
-                return $storage[$varName];
+    protected static function getVariable(
+        array $storage,
+        array|string $varKey,
+        bool $initDefault = false,
+        mixed $default = null
+    ): mixed {
+        if (is_string($varKey)) {
+            if (isset($storage[$varKey]) && key_exists($varKey, $storage)) {
+                return $storage[$varKey];
 
             } elseif ($initDefault) {
                 return $default;
             }
 
-        } elseif (is_array($varName) && is_array($return = [])) {
+        } elseif (is_array($varKey) && is_array($return = [])) {
 
-            foreach ($varName as $key) {
+            foreach ($varKey as $key) {
                 if (isset($storage[$key]) && key_exists($key, $storage)) {
                     $return[$key] = $storage[$key];
 
