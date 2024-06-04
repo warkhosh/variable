@@ -1,0 +1,29 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "printWidth": 120,
+  "tabWidth": 2,
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "Semicolons": false,
+  "singleAttributePerLine": false,
+  "trailingComma": "es5",
+  "embeddedLanguageFormatting": "auto",
+  "binary_operator_spaces": "single_space",
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": [
+        "**/*.php",
+        "**/*.tpl"
+      ],
+      "options": {
+        "singleQuote": false,
+        "trailingCommaPHP": true,
+        "tabWidth": 4,
+        "phpVersion": "8.0"
+      }
+    }
+  ]
+}
