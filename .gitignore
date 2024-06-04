@@ -1,6 +1,11 @@
-.idea
 vendor
+node_modules
+.idea
 .git
-composer.phar
-composer.lock
+.htaccess
 .DS_Store
+.vscode
+composer.lock
+composer.phar
+package-lock.json
+mix-manifest.json
