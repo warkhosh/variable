@@ -2,16 +2,18 @@
 
 namespace Warkhosh\Variable\Helper;
 
+use Closure;
+
 class VarHelper
 {
     /**
      * Быстрое преобразование значения в массив
      *
-     * @param      $items
+     * @param mixed $items
      * @param bool $strict - флаг соответствия типа
      * @return array
      */
-    static public function getArrayWrap($items, $strict = true)
+    public static function getArrayWrap(mixed $items, bool $strict = true): array
     {
         return $strict ? (is_array($items) ? $items : []) : (array)$items;
     }
@@ -19,12 +21,12 @@ class VarHelper
     /**
      * Return the default value of the given value.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return mixed
      */
-    static public function value($value)
+    public static function value(mixed $value): mixed
     {
-        return $value instanceof \Closure ? $value() : $value;
+        return $value instanceof Closure ? $value() : $value;
     }
 
 }
