@@ -2,6 +2,8 @@
 
 namespace Warkhosh\Variable;
 
+use Exception;
+
 /**
  * Class VarFloat
  */
@@ -10,11 +12,11 @@ class VarFloat
     /**
      * Преобразование значения в строку
      *
-     * @param float|int|string $var - значение числа
-     * @param string|null $separator - разделитель точности
+     * @param float|int|string $var значение числа
+     * @param string|null $separator разделитель точности
      * @return string
      */
-    public static function makeString($var = 0, ?string $separator = null)
+    public static function makeString(float|int|string $var = 0, ?string $separator = null): string
     {
         $var = strval($var);
 
@@ -45,27 +47,32 @@ class VarFloat
      * @note: $round = upward, округляет десятичные значения в большую сторону если они выходят за пределы точности [$decimals]
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
-     * @param float|integer|string $var
-     * @param int $decimals - точность
+     * @param bool|float|int|string|null $var
+     * @param int $decimals точность
      * @param string $round [auto, upward, downward] - тип округления
      * @param float $default
      * @return float
      */
-    public static function getMake($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
-    {
+    public static function getMake(
+        bool|float|int|string|null $var = 0,
+        int $decimals = 12,
+        string $round = "auto",
+        float $default = 0.0
+    ): float {
+        if (is_null($var) || is_numeric($var) || is_bool($var)) {
+            return floatval($var);
+        }
+
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
             $var = VarStr::trim($var);
 
-            // Русская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
+            // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = VarStr::str_replace_once($separator, '.', (string)$var);
+                $var = VarStr::replaceOnce($separator, '.', $var);
             }
 
             $var = VarStr::getRemoveSymbol($var, [' ']);
-        }
-
-        if (is_numeric($var) || is_string($var) || is_float($var) || is_double($var) || is_bool($var)) {
             $var = floatval($var);
 
             if ($round === 'upward') {
@@ -83,7 +90,7 @@ class VarFloat
             return $var;
         }
 
-        return floatval($default);
+        return $default;
     }
 
     /**
@@ -92,45 +99,53 @@ class VarFloat
      * @note: $round = upward, округляет десятичные значения в большую сторону если они выходят за пределы точности [$decimals]
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
-     * @param mixed $var
-     * @param int $decimals - точность
+     * @param bool|float|int|string|null $var
+     * @param int $decimals точность
      * @param string $round [auto, upward, downward] - тип округления
      * @param float $default
      * @return float
      */
-    public static function getMakePositive($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
-    {
+    public static function getMakePositive(
+        bool|float|int|string|null $var = 0,
+        int $decimals = 12,
+        string $round = "auto",
+        float $default = 0.0
+    ): float {
         $var = self::getMake($var, $decimals, $round, $default);
-        $var = $var >= 0 ? $var : $default;
 
-        return $var;
+        return $var >= 0 ? $var : $default;
     }
 
     /**
      * Округляет число типа float
      *
-     * @param float|integer|string $var
+     * @param bool|float|int|string|null $var
      * @param int $decimals
      * @param string $round
      * @param float $default
      * @return float
      */
-    public static function round($var = 0.0, $decimals = 12, $round = "auto", $default = 0.0)
-    {
+    public static function round(
+        bool|float|int|string|null $var = 0.0,
+        int $decimals = 12,
+        string $round = "auto",
+        float $default = 0.0
+    ): float {
+        if (is_null($var) || is_numeric($var) || is_bool($var)) {
+            return floatval($var);
+        }
+
         // для строки делаем предварительную замену альтернативного разделителя если ошиблись при вводе
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
             $var = VarStr::trim($var);
 
-            // Русская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
+            // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = VarStr::str_replace_once($separator, '.', (string)$var);
+                $var = VarStr::replaceOnce($separator, '.', $var);
             }
 
             $var = VarStr::getRemoveSymbol($var, [' ']);
-        }
-
-        if (is_numeric($var) || is_string($var) || is_float($var) || is_double($var) || is_bool($var)) {
             $var = floatval($var);
 
             if ($round === 'upward') {
@@ -148,7 +163,7 @@ class VarFloat
             return $var;
         }
 
-        return floatval($default);
+        return $default;
     }
 
     /**
@@ -156,26 +171,11 @@ class VarFloat
      *
      * @param mixed $var
      * @return mixed
+     * @throws Exception
+     * @deprecated аналогична getMake() и подлежит удалению
      */
-    public static function getConvert($var)
+    public static function getConvert(mixed $var): mixed
     {
-        if (is_string($var)) {
-            $separator = localeconv()['decimal_point'];
-            $str = VarStr::trim($var);
-
-            // руская локаль рисует разделитель десятичных как знак запятой но это ломает преобразование
-            if ($separator === ',' && mb_strpos($str, '.', 0, 'UTF-8') === false) {
-                $str = VarStr::str_replace_once($separator, '.', $str);
-            }
-
-            // Производим преобразование значения, поскольку в нём есть символ запятой
-            if (mb_strpos($str, ',', 0, 'UTF-8') !== false) {
-                $str = VarStr::str_replace_once(',', '.', $str);
-            }
-
-            $var = VarStr::getRemoveSymbol($str, [' ']);
-        }
-
-        return $var;
+        throw new Exception("Используйте метод VarFloat::getMake()");
     }
 }
