@@ -10,11 +10,11 @@ class VarInt
      * @note: результат может быть отрицательным!
      *
      * @param mixed $int
-     * @param int   $default
-     * @param bool  $strict - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param int $default
+     * @param bool $strict - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return int
      */
-    static public function getMakeInteger($int = null, $default = 0, $strict = true)
+    public static function getMakeInteger($int = null, $default = 0, $strict = true)
     {
         if (is_numeric($int) || is_string($int) || is_float($int) || is_double($int) || is_bool($int)) {
             if (! $strict) {
@@ -35,7 +35,7 @@ class VarInt
                 }
             }
 
-            return  intval($int);
+            return intval($int);
         }
 
         return intval($default);
@@ -46,11 +46,11 @@ class VarInt
      * Возращает целое и положительное число если такое передали, иначе вернет второе значение ( по умолчанию )
      *
      * @param mixed $num
-     * @param int   $default
-     * @param bool  $strict - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param int $default
+     * @param bool $strict - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return int
      */
-    static public function getMakePositiveInteger($num = null, $default = 0, $strict = true)
+    public static function getMakePositiveInteger($num = null, $default = 0, $strict = true)
     {
         if (is_numeric($num) || is_string($num) || is_float($num) || is_double($num) || is_bool($num)) {
             if (! $strict) {
@@ -72,6 +72,7 @@ class VarInt
             }
 
             $num = intval($num);
+
             return $num >= 0 ? $num : $default;
         }
 
@@ -84,11 +85,11 @@ class VarInt
      *
      * @note: результат может быть отрицательным!
      *
-     * @param null  $float
+     * @param null $float
      * @param float $default
      * @return float
      */
-    static public function getMakeFloat($float = null, $default = 0.0)
+    public static function getMakeFloat($float = null, $default = 0.0)
     {
         if (is_float($float + 0)) {
             return (float)$float;
@@ -107,7 +108,7 @@ class VarInt
      * @param integer $max
      * @return integer
      */
-    static public function getOfRange($num, $default = 0, $min = 0, $max = 1)
+    public static function getOfRange($num, $default = 0, $min = 0, $max = 1)
     {
         $num = static::getMakeInteger($num, $default);
 
