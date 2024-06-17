@@ -10,11 +10,11 @@ class VarFloat
     /**
      * Преобразование значения в строку
      *
-     * @param float|int|string $var       - значение числа
-     * @param string|null      $separator - разделитель точности
+     * @param float|int|string $var - значение числа
+     * @param string|null $separator - разделитель точности
      * @return string
      */
-    static public function makeString($var = 0, ?string $separator = null)
+    public static function makeString($var = 0, ?string $separator = null)
     {
         $var = strval($var);
 
@@ -46,12 +46,12 @@ class VarFloat
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
      * @param float|integer|string $var
-     * @param int                  $decimals - точность
-     * @param string               $round    [auto, upward, downward] - тип округления
-     * @param float                $default
+     * @param int $decimals - точность
+     * @param string $round [auto, upward, downward] - тип округления
+     * @param float $default
      * @return float
      */
-    static public function getMake($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
+    public static function getMake($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
     {
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
@@ -69,11 +69,11 @@ class VarFloat
             $var = floatval($var);
 
             if ($round === 'upward') {
-                $int = "1" . str_repeat("0", $decimals);
+                $int = "1".str_repeat("0", $decimals);
                 $var = ceil($var * $int) / $int;
 
             } elseif ($round === 'downward') {
-                $int = "1" . str_repeat("0", $decimals);
+                $int = "1".str_repeat("0", $decimals);
                 $var = floor($var * $int) / $int;
 
             } else {
@@ -92,13 +92,13 @@ class VarFloat
      * @note: $round = upward, округляет десятичные значения в большую сторону если они выходят за пределы точности [$decimals]
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
-     * @param mixed  $var
-     * @param int    $decimals - точность
-     * @param string $round    [auto, upward, downward] - тип округления
-     * @param float  $default
+     * @param mixed $var
+     * @param int $decimals - точность
+     * @param string $round [auto, upward, downward] - тип округления
+     * @param float $default
      * @return float
      */
-    static public function getMakePositive($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
+    public static function getMakePositive($var = 0, $decimals = 12, $round = "auto", $default = 0.0)
     {
         $var = self::getMake($var, $decimals, $round, $default);
         $var = $var >= 0 ? $var : $default;
@@ -109,13 +109,13 @@ class VarFloat
     /**
      * Округляет число типа float
      *
-     * @param float | integer | string $var
-     * @param int                      $decimals
-     * @param string                   $round
-     * @param float                    $default
+     * @param float|integer|string $var
+     * @param int $decimals
+     * @param string $round
+     * @param float $default
      * @return float
      */
-    static public function round($var = 0.0, $decimals = 12, $round = "auto", $default = 0.0)
+    public static function round($var = 0.0, $decimals = 12, $round = "auto", $default = 0.0)
     {
         // для строки делаем предварительную замену альтернативного разделителя если ошиблись при вводе
         if (is_string($var)) {
@@ -134,11 +134,11 @@ class VarFloat
             $var = floatval($var);
 
             if ($round === 'upward') {
-                $int = "1" . str_repeat("0", $decimals);
+                $int = "1".str_repeat("0", $decimals);
                 $var = ceil($var * $int) / $int;
 
             } elseif ($round === 'downward') {
-                $int = "1" . str_repeat("0", $decimals);
+                $int = "1".str_repeat("0", $decimals);
                 $var = floor($var * $int) / $int;
 
             } else {
@@ -157,7 +157,7 @@ class VarFloat
      * @param mixed $var
      * @return mixed
      */
-    static public function getConvert($var)
+    public static function getConvert($var)
     {
         if (is_string($var)) {
             $separator = localeconv()['decimal_point'];
