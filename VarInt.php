@@ -11,7 +11,7 @@ class VarInt
      *
      * @param mixed $int
      * @param int $default
-     * @param bool $strict - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return int
      */
     public static function getMakeInteger($int = null, $default = 0, $strict = true)
@@ -43,11 +43,11 @@ class VarInt
 
 
     /**
-     * Возращает целое и положительное число если такое передали, иначе вернет второе значение ( по умолчанию )
+     * Позлащает целое и положительное число если такое передали, иначе вернет второе значение (по умолчанию)
      *
      * @param mixed $num
      * @param int $default
-     * @param bool $strict - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return int
      */
     public static function getMakePositiveInteger($num = null, $default = 0, $strict = true)
@@ -100,7 +100,7 @@ class VarInt
 
 
     /**
-     * Метод проверяет попадает ли число в диапазон и возращает его или значение указаное по умолчанию
+     * Метод проверяет, а попадает ли число в диапазон и возвращает его или значение указанное по умолчанию
      *
      * @param integer $num
      * @param integer $default
