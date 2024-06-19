@@ -3,6 +3,7 @@
 namespace Warkhosh\Variable;
 
 use Warkhosh\Variable\Traits\VariableMethod;
+use Traversable;
 
 /**
  * Class Variable
@@ -14,23 +15,23 @@ class Variable
     use VariableMethod;
 
     /**
-     * @var array | string | integer | float | null - $data
+     * @var array|float|int|string|null
      */
     protected $data;
 
     /**
      * Тип переменной: массив значений или одно значение
      *
-     * @var mixed $data
+     * @var string $data
      */
     protected $dataType = 'value';
 
     /**
      * Default значение
      *
-     * @note надо следить что-бы в значение по умолчанию не передавали массив или объект ( если этого не требует логика )
+     * @note надо следить что-бы в значение по умолчанию не передавали массив или объект (если этого не требует логика)
      *
-     * @var array | string | integer | float | null $default
+     * @var array|float|int|string|null $default
      */
     protected $default;
 
@@ -43,13 +44,13 @@ class Variable
 
 
     /**
-     * Variable constructor.
+     * Variable constructor
      *
-     * @param array | string | integer | float - $data
+     * @param float|int|iterable|string|null $data
      */
-    public function __construct($data = null)
+    public function __construct(float|int|string|null|iterable $data = null)
     {
-        $this->data = $data;
+        $this->set($data);
 
         if (count(func_get_args()) >= 2) {
             $this->byDefault(func_get_arg(1));
@@ -60,15 +61,15 @@ class Variable
     /**
      * Установка значения для переменной
      *
-     * @param mixed $data
+     * @param float|int|iterable|string|null $data
      * @return $this
      */
-    public function set($data)
+    public function set(float|int|string|null|iterable $data): static
     {
         if (is_array($data) || is_string($data) || is_numeric($data) || is_float($data)) {
             $this->data = $data;
 
-        } else if ($data instanceof \Traversable) {
+        } elseif ($data instanceof Traversable) {
             $this->data = iterator_to_array($data);
         }
 
@@ -79,18 +80,17 @@ class Variable
     /**
      * Возвращает значение переменной
      *
-     * @note если не указать название или ключ переменной то будут возвращены все значения;
+     * @note если не указать название или ключ переменной, то будут возвращены все значения
      *
-     * @param integer $keys
-     * @return mixed
+     * @param array|string|null $keys
+     * @return array|float|int|string|null
      */
-    public function get($keys = null)
+    public function get(array|string $keys = null): array|float|int|string|null
     {
         $this->data = $this->getEmptyStringConversion($this->data);
 
         if (is_null($this->data)) {
-
-            // если указали что переменная массив а default указали не массивом, оборачиваем его в массив
+            // если указали что переменная массив, а default указали не массивом, оборачиваем его в массив
             if ($this->dataType === 'array' && ! is_array($this->default)) {
                 return is_array($this->default) ? $this->default : [$this->default];
             }
@@ -98,7 +98,7 @@ class Variable
             return $this->default === '' ? $this->convertAnEmptyString : $this->default;
         }
 
-        // если ключа нет то возвращаем все
+        // если ключа нет, то возвращаем все
         if (is_null($keys)) {
             return $this->data;
         }
@@ -107,7 +107,7 @@ class Variable
         if (is_array($keys) && count($keys) > 0) {
             $return = [];
 
-            // Перебираем массиве запрошенных значений и по каждому получаем результат что-бы отдать этот массив
+            // Перебираем в массиве запрошенных значений и по каждому получаем результат что-бы отдать этот массив
             foreach ($keys as $key) {
                 if (is_array($this->data) && array_key_exists($key, $this->data)) {
                     $return[$key] = $this->data[$key];
@@ -119,7 +119,7 @@ class Variable
             return $return;
         }
 
-        // Если указали конкретный ключ а мы работаем с типом массив
+        // Если указали конкретный ключ, а мы работаем с типом массив
         if (! is_array($keys) && $this->dataType === 'array') {
             // Пытаемся вернуть значение по ключу
             if (is_array($this->data) && array_key_exists($keys, $this->data)) {
@@ -129,7 +129,7 @@ class Variable
             return $this->default === '' ? $this->convertAnEmptyString : $this->default;
         }
 
-        // если указали что переменная массив а default указали не массивом, оборачиваем его в массив
+        // если указали что переменная массив, а default указали не массивом, оборачиваем его в массив
         if ($this->dataType === 'array' && ! is_array($this->default)) {
             return is_array($this->default) ? $this->default : [$this->default];
         }
@@ -139,11 +139,11 @@ class Variable
 
 
     /**
-     * Возвращает все значения;
+     * Возвращает все значения
      *
      * @return array|string
      */
-    public function all()
+    public function all(): array|string
     {
         return $this->get();
     }
@@ -152,10 +152,10 @@ class Variable
     /**
      * Переобход данных для проверки их строк на пустое значение и преобразование в иное
      *
-     * @param null $data
-     * @return array|null|string
+     * @param array|float|int|string|null $data
+     * @return array|float|int|string|null
      */
-    protected function getEmptyStringConversion($data = null)
+    protected function getEmptyStringConversion(array|string|int|float|null $data = null): array|string|int|float|null
     {
         if ($this->convertAnEmptyString === '') {
             return $data;
@@ -166,7 +166,7 @@ class Variable
                 $data[$key] = $this->getEmptyStringConversion($row);
             }
 
-        } else if (is_string($data)) {
+        } elseif (is_string($data)) {
             $data = $data === '' ? $this->convertAnEmptyString : $data;
         }
 
