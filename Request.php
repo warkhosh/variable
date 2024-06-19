@@ -16,7 +16,7 @@ class Request extends Http
     /**
      * @var string $method
      */
-    protected $method;
+    protected string $method;
 
 
     /**
@@ -34,14 +34,14 @@ class Request extends Http
     /**
      * Проверка названия текущего метода
      *
-     * @param string $method
+     * @param string|null $method
      * @return bool
      */
-    static public function isMethod($method = null)
+    public static function isMethod(?string $method = null): bool
     {
-        $method = empty($_SERVER['REQUEST_METHOD']) ? "get" : strtolower($_SERVER['REQUEST_METHOD']);
+        $requestMethod = empty($_SERVER['REQUEST_METHOD']) ? "get" : strtolower($_SERVER['REQUEST_METHOD']);
 
-        if ($method === strtolower($method)) {
+        if ($requestMethod === strtolower((string)$method)) {
             return true;
         }
 
@@ -52,171 +52,163 @@ class Request extends Http
     /**
      * Возвращает все или указанную переменную
      *
-     * @param string | array
-     * @return mixed
+     * @note если передали второй аргумент будет служить значениями по умолчанию
+     *
+     * @param array|int|string|null $varName
+     * @param mixed|null $default
+     * @return array|float|int|string|null
      */
-    public static function get()
-    {
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
-            $varName = is_array($varName) ? $varName : (string)$varName;
-            $initDefault = false;
-            $default = null;
-
-            if (count(func_get_args()) >= 2) {
-                $default = func_get_arg(1);
-                $initDefault = true;
-            }
-
-            return static::getVariable($_GET, $varName, $initDefault, $default);
+    public static function get(
+        array|int|string|null $varName = null,
+        mixed $default = null
+    ): array|float|int|string|null {
+        if (is_null($varName)) {
+            return $_GET;
         }
 
-        return $_GET;
+        $varName = is_array($varName) ? $varName : (string)$varName;
+        $initDefault = false;
+
+        if (count(func_get_args()) >= 2) {
+            $initDefault = true;
+        }
+
+        return static::getVariable($_GET, $varName, $initDefault, $default);
     }
 
 
     /**
      * Возвращает все или указанную переменную
      *
-     * @param string | array
-     * @return mixed
+     * @param array|int|string|null $varName
+     * @param mixed|null $default
+     * @return array|float|int|string|null
      */
-    public static function post()
-    {
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
-            $varName = is_array($varName) ? $varName : (string)$varName;
-            $initDefault = false;
-            $default = null;
-
-            if (count(func_get_args()) >= 2) {
-                $default = func_get_arg(1);
-                $initDefault = true;
-            }
-
-            return static::getVariable($_POST, $varName, $initDefault, $default);
+    public static function post(
+        array|int|string|null $varName = null,
+        mixed $default = null
+    ): array|float|int|string|null {
+        if (is_null($varName)) {
+            return $_POST;
         }
 
-        return $_POST;
+        $varName = is_array($varName) ? $varName : (string)$varName;
+        $initDefault = false;
+
+        if (count(func_get_args()) >= 2) {
+            $initDefault = true;
+        }
+
+        return static::getVariable($_POST, $varName, $initDefault, $default);
     }
 
     /**
      * Возвращает все или указанную переменную
      *
-     * @param string | array
-     * @return mixed
+     * @param array|int|string|null $varName
+     * @param mixed|null $default
+     * @return array|float|int|string|null
      */
-    public static function put()
-    {
-        $_PUT = isset($GLOBALS['_PUT']) ? $GLOBALS['_PUT'] : [];
+    public static function put(
+        array|int|string|null $varName = null,
+        mixed $default = null
+    ): array|float|int|string|null {
+        $_PUT = $GLOBALS['_PUT'] ?? [];
 
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
-            $varName = is_array($varName) ? $varName : (string)$varName;
-            $initDefault = false;
-            $default = null;
-
-            if (count(func_get_args()) >= 2) {
-                $default = func_get_arg(1);
-                $initDefault = true;
-            }
-
-            return static::getVariable($_PUT, $varName, $initDefault, $default);
+        if (is_null($varName)) {
+            return $_PUT;
         }
 
-        return $_PUT;
+        $varName = is_array($varName) ? $varName : (string)$varName;
+        $initDefault = false;
+
+        if (count(func_get_args()) >= 2) {
+            $initDefault = true;
+        }
+
+        return static::getVariable($_PUT, $varName, $initDefault, $default);
     }
 
     /**
      * Возвращает все или указанную переменную
      *
-     * @param string | array
-     * @return mixed
+     * @param array|int|string|null $varName
+     * @param mixed|null $default
+     * @return array|float|int|string|null
      */
-    public static function delete()
-    {
-        $_PUT = isset($GLOBALS['_DELETE']) ? $GLOBALS['_DELETE'] : [];
+    public static function delete(
+        array|int|string|null $varName = null,
+        mixed $default = null
+    ): array|float|int|string|null {
+        $_DELETE = $GLOBALS['_DELETE'] ?? [];
 
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
-            $varName = is_array($varName) ? $varName : (string)$varName;
-            $initDefault = false;
-            $default = null;
-
-            if (count(func_get_args()) >= 2) {
-                $default = func_get_arg(1);
-                $initDefault = true;
-            }
-
-            return static::getVariable($_PUT, $varName, $initDefault, $default);
+        if (is_null($varName)) {
+            return $_DELETE;
         }
 
-        return $_PUT;
-    }
+        $varName = is_array($varName) ? $varName : (string)$varName;
+        $initDefault = false;
 
-
-    /**
-     * Возвращает все или указанную переменную
-     *
-     * @param string | array
-     * @return mixed
-     */
-    public static function file()
-    {
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
-            $varName = is_array($varName) ? $varName : (string)$varName;
-            $initDefault = false;
-            $default = null;
-
-            if (count(func_get_args()) >= 2) {
-                $default = func_get_arg(1);
-                $initDefault = true;
-            }
-
-            return static::getVariable($_FILES, $varName, $initDefault, $default);
+        if (count(func_get_args()) >= 2) {
+            $initDefault = true;
         }
 
-        return $_FILES;
+        return static::getVariable($_DELETE, $varName, $initDefault, $default);
     }
 
 
     /**
      * Возвращает все или указанную переменную
      *
-     * @param string | array
-     * @return mixed
+     * @param array|int|string|null $varName
+     * @param mixed|null $default
+     * @return array|int|string|null
      */
-    public static function any()
-    {
-        $_PUT = isset($GLOBALS['_PUT']) ? $GLOBALS['_PUT'] : [];
-        $_DELETE = isset($GLOBALS['_DELETE']) ? $GLOBALS['_DELETE'] : [];
-
-        if (count(func_get_args()) >= 1 && ! is_null($varName = func_get_arg(0))) {
-            $varName = is_array($varName) ? $varName : (string)$varName;
-            $initDefault = false;
-            $default = null;
-
-            if (count(func_get_args()) >= 2) {
-                $default = func_get_arg(1);
-                $initDefault = true;
-            }
-
-            if (is_array($varName)) {
-                $get = static::getVariable($_GET, $varName);
-                $put = static::getVariable($_PUT, $varName);
-                $delete = static::getVariable($_DELETE, $varName);
-                $post = static::getVariable($_POST, $varName, $initDefault, $default);
-
-                return array_merge((array)$get, (array)$put, (array)$delete, (array)$post);
-            }
-
-            $get = static::getVariable($_GET, $varName);
-            $put = static::getVariable($_PUT, $varName);
-            $delete = static::getVariable($_DELETE, $varName);
-            $post = static::getVariable($_POST, $varName);
-
-            $var = ! empty($GLOBALS['_PUT']) ? $put : (empty($GLOBALS['_DELETE']) ? $post : $delete);
-            $var = empty($var) ? $get : $var;
-
-            return is_null($var) && $initDefault ? $default : $var;
+    public static function file(
+        array|int|string|null $varName = null,
+        mixed $default = null
+    ): array|int|string|null {
+        if (is_null($varName)) {
+            return $_FILES;
         }
 
-        return array_merge($_GET, $_PUT, $_POST, $_DELETE);
+        $varName = is_array($varName) ? $varName : (string)$varName;
+        $initDefault = false;
+
+        if (count(func_get_args()) >= 2) {
+            $initDefault = true;
+        }
+
+        return static::getVariable($_FILES, $varName, $initDefault, $default);
+    }
+
+
+    /**
+     * Возвращает все или указанную переменную
+     *
+     * @param array|int|string|null $varName
+     * @param mixed|null $default
+     * @return array|float|int|string|null
+     */
+    public static function any(
+        array|int|string|null $varName = null,
+        mixed $default = null
+    ): array|float|int|string|null {
+        $_PUT = $GLOBALS['_PUT'] ?? [];
+        $_DELETE = $GLOBALS['_DELETE'] ?? [];
+
+        if (is_null($varName)) {
+            return array_merge($_GET, $_POST, (array)$_DELETE, (array)$_PUT);
+        }
+
+        $_ALL = array_merge($_GET, (array)$_PUT, (array)$_DELETE, $_POST);
+        $varName = is_array($varName) ? $varName : (string)$varName;
+        $initDefault = false;
+
+        if (count(func_get_args()) >= 2) {
+            $initDefault = true;
+        }
+
+        return static::getVariable($_ALL, $varName, $initDefault, $default);
     }
 }
