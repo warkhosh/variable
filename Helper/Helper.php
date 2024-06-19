@@ -12,13 +12,13 @@ namespace Warkhosh\Variable\Helper;
 class Helper
 {
     /**
-     * Проверка истинности значения;
+     * Проверка истинности значения
      *
-     * @param null $var
+     * @param mixed $var
      * @param bool $strict
      * @return bool
      */
-    static public function isTrue($var = null, $strict = false)
+    public static function isTrue(mixed $var = null, bool $strict = false): bool
     {
         if ($var === true) {
             return true;
@@ -38,13 +38,13 @@ class Helper
     }
 
     /**
-     * Проверка истинности значения;
+     * Проверка истинности значения
      *
-     * @param null $var
+     * @param mixed $var
      * @param bool $strict
      * @return bool
      */
-    static public function isFalse($var = null, $strict = false)
+    public static function isFalse(mixed $var = null, bool $strict = false): bool
     {
         if ($var === false) {
             return true;
