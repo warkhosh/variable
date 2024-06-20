@@ -1213,10 +1213,10 @@ class VarStr
             return;
         }
 
-        $str = VarStr::trim($str);
-        $str = mb_substr($str, 0, 50, self::ENCODING);
+        $date = VarStr::trim($str);
+        $date = mb_substr($date, 0, 50, self::ENCODING);
 
-        $dt = DateTime::createFromFormat($format, $str);
+        $dt = DateTime::createFromFormat($format, $date);
 
         if (! $dt) {
             throw new Exception(
