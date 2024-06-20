@@ -11,13 +11,13 @@ class VarInt
      *
      * @note: результат может быть отрицательным!
      *
-     * @param bool|float|int|string|null $num
+     * @param array|bool|float|int|string|null $num
      * @param int $default
      * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return int
      */
     public static function getMakeInteger(
-        bool|float|int|string|null $num = null,
+        array|bool|float|int|string|null $num = null,
         int $default = 0,
         bool $strict = true
     ): int {
