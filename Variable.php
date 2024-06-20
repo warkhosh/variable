@@ -17,7 +17,7 @@ class Variable
     /**
      * @var array|float|int|string|null
      */
-    protected $data;
+    protected array|float|int|string|null $data = null;
 
     /**
      * Тип переменной: массив значений или одно значение
@@ -33,14 +33,14 @@ class Variable
      *
      * @var array|float|int|string|null $default
      */
-    protected $default;
+    protected array|float|int|string|null $default = null;
 
     /**
      * Для замены пустых строк при отдаче значений
      *
      * @var string
      */
-    protected $convertAnEmptyString = '';
+    protected string $convertAnEmptyString = '';
 
 
     /**
