@@ -2,20 +2,21 @@
 
 namespace Warkhosh\Variable\Traits;
 
-use Warkhosh\Variable\Helper\Helper;
 use Warkhosh\Variable\VarArray;
 use Warkhosh\Variable\VarFloat;
 use Warkhosh\Variable\VariableOptions;
 use Warkhosh\Variable\VarInt;
 use Warkhosh\Variable\VarStr;
+use Exception;
+use Throwable;
 
 /**
  * Trait VariableMethod
  *
  * $data - Это база значения переменной или переменных.
- * Если в начале преобразовать эту переменную в нужный тип ( массив | строку )
+ * Если в начале преобразовать эту переменную в нужный тип (массив | строку)
  * последующие методы будет автоматически выполнять под этот тип алгоритмы!
- * Так мы сразу определяем тип значения переменной ( массив или все остальное )
+ * Так мы сразу определяем тип значения переменной (массив или все остальное)
  *
  * @method static $this array(string $delimiter = null)
  * @method static $this string(string $delimiter = null)
@@ -25,40 +26,40 @@ use Warkhosh\Variable\VarStr;
 trait VariableMethod
 {
     /**
-     * @var array | string | integer | float - $data
+     * @var array|float|int|string|null
      */
-    protected $data;
+    protected array|float|int|string|null $data = null;
 
     /**
      * Default значение
      *
-     * @note надо следить что-бы в значение по умолчанию не передавали массив или объект ( если этого не требует логика )
+     * @note надо следить что-бы в значение по умолчанию не передавали массив или объект (если этого не требует логика)
      *
-     * @var array | string | integer | float | null $default
+     * @var array|float|integer|string|null $default
      */
-    protected $default;
+    protected array|float|int|string|null $default = null;
 
     /**
-     * Для замены пустых строк при отдаче значений
+     * Служит значением которое будет заменять пустые строки если они получились при условии преобразования данных в строки
      *
      * @var string
      */
-    protected $convertAnEmptyString = '';
+    protected string $convertAnEmptyString = '';
 
     /**
      * Значение сценария по которому происходит преобразование значения
      *
      * @var string
      */
-    protected $__option;
+    protected string $__option = "";
 
     /**
-     * Записываем параметр для использования их как Default;
+     * Записываем параметр для использования их как Default
      *
-     * @param mixed $default
-     * @return $this;
+     * @param array|float|int|string|null $default
+     * @return $this
      */
-    public function byDefault($default)
+    public function byDefault(array|float|int|string|null $default): static
     {
         $this->default = $default;
 
@@ -69,10 +70,10 @@ trait VariableMethod
     /**
      * Возвращает значения по умолчанию
      *
-     * @param null $key
-     * @return mixed
+     * @param string|null $key
+     * @return array|float|int|string|null
      */
-    public function getDefault($key = null)
+    public function getDefault(?string $key = null): array|float|int|string|null
     {
         if (! is_null($key)) {
             if (isset($this->default[$key]) && array_key_exists($key, $this->default)) {
@@ -87,20 +88,22 @@ trait VariableMethod
 
 
     /**
-     * Объявление типа переменной с преобразованием в неё если она не такая.
+     * Объявление типа переменной с преобразованием в неё если она не такая
      *
      * @param string $type
-     * @param null   $arguments
+     * @param array $arguments
+     * @return void
+     * @throws Exception
      */
-    public function setType($type = 'data', $arguments = null)
+    public function setType(string $type = 'data', array $arguments = []): void
     {
         if ($type === 'array') {
             $this->dataType = 'array'; // для определения как отдавать значения
 
             if (! is_array($this->data)) {
-                // что-бы преобразование из текста сработало и первым элементом массива стал полученый текст,
+                // Что-бы преобразование из текста сработало и первым элементом массива стал полученный текст,
                 // нужен не пустой разделитель. Делаем разделитель запятая по умолчанию
-                $delimiter = isset($arguments[0]) ? $arguments[0] : ',';
+                $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
                 $this->toArray($delimiter);
             }
         }
@@ -109,7 +112,7 @@ trait VariableMethod
             $this->dataType = 'value'; // для определения как отдавать значения
 
             if (is_array($this->data)) {
-                $delimiter = isset($arguments[0]) ? $arguments[0] : ',';
+                $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
                 $this->toString($this->data, $delimiter);
             }
         }
@@ -129,11 +132,12 @@ trait VariableMethod
     /**
      * Магический метод для реализации вызова зарезервированных методов как функций
      *
-     * @param $name
-     * @param $arguments
+     * @param string $name
+     * @param array $arguments
      * @return $this
+     * @throws Exception
      */
-    public function __call($name, $arguments)
+    public function __call(string $name, array $arguments): static
     {
         switch ($name) {
             case "array":
@@ -147,25 +151,30 @@ trait VariableMethod
         }
 
         //Log::error('Call of unknown method name: ' . $name . " in class: " . get_called_class());
+        return $this;
     }
 
 
     /**
-     * Преобразование значения переменной в тип = массив!
+     * Преобразование значения переменной в массив!
      * Для последующих операций над переменной именно по сценарию массивов что-бы вернуть массив.
      *
-     * @note: Если передать третий параметр то это будет значением по умолчанию!
+     * @note: Если передать второй аргумент то он будет значением по умолчанию
      *
      * @param string|null $delimiter
      * @return $this
+     * @throws Exception
      */
-    public function toArray($delimiter = null)
+    public function toArray(?string $delimiter = null): static
     {
         $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
 
-        if (gettype($this->data) == 'string') {
-            $this->data = static::getToArray($this->data, $delimiter, $default);
+        if (! (is_null($default) || is_array($default))) {
+            throw new Exception("Default values are not an array");
+        }
 
+        if (gettype($this->data) == 'string') {
+            $this->data = static::getToArray($this->data, $delimiter, (array)$default);
         } else {
             $this->data = (array)$this->data;
         }
@@ -175,46 +184,49 @@ trait VariableMethod
 
 
     /**
-     * Преобразование значения переменной в тип = массив!
+     * Преобразование значения переменной в тип массив!
      * Для последующих операций над переменной именно по сценарию массивов что-бы вернуть массив.
      *
-     * @param array|int   $data
+     * @param array|float|int|string|null $data
      * @param string|null $delimiter
-     * @param array       $default
+     * @param array $default
      * @return array
      */
-    static public function getToArray($data, $delimiter = null, $default = [])
-    {
-        $return = [$default];
-
-        if (! is_array($data)) {
-
-            if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
-                if (mb_strlen($data = (gettype($data) !== 'string' ? VarStr::getMakeString($data) : $data)) > 0) {
-                    $return = explode($delimiter, $data);
-                } else {
-                    $return = [];
-                }
-            }
-
-        } else {
-            $return = $data;
+    public static function getToArray(
+        array|float|int|string|null $data,
+        ?string $delimiter = null,
+        array $default = []
+    ): array {
+        if (is_array($data)) {
+            return $data;
         }
 
-        return $return;
+        if (is_numeric($data)) {
+            return [$data];
+        }
+
+        if (is_string($data)) {
+            if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
+                return explode($delimiter, $data);
+            }
+
+            return empty($data) ? $default : [$data];
+        }
+
+        return $default;
     }
 
 
     /**
-     * Преобразование значения переменной в тип = строчный!
+     * Преобразование значения переменной в тип строка!
      * Для последующих операций над переменной именно по сценарию строчного что-бы вернуть одно значение переменной.
      *
-     * @note: Если передать второй параметр то это будет значением по умолчанию!
+     * @note: Если передать второй аргумент то он будет значением по умолчанию
      *
      * @param string|null $delimiter
      * @return $this
      */
-    public function toString($delimiter = null)
+    public function toString(?string $delimiter = null): static
     {
         $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
         $this->data = static::getToString($this->data, $delimiter, $default);
@@ -227,62 +239,77 @@ trait VariableMethod
      * Преобразование значения переменной в тип = строчный!
      * Для последующих операций над переменной именно по сценарию строчного что-бы вернуть одно значение переменной.
      *
-     * @param array|int   $data
+     * @param array|float|int|string|null $data
      * @param string|null $delimiter
-     * @param string      $default
+     * @param string $default
      * @return string
      */
-    static public function getToString($data, $delimiter = null, $default = '')
-    {
-        if (is_array($data)) {
-            $return = $default;
-
-            if (is_string($delimiter)) {
-                $return = join($delimiter, $data);
-            }
-
-        } else {
-            $return = $data;
+    public static function getToString(
+        array|float|int|string|null $data,
+        ?string $delimiter = null,
+        string $default = ''
+    ): string {
+        if (is_string($data)) {
+            return $data;
         }
 
-        return VarStr::getMakeString($return);
+        if (is_numeric($data)) {
+            return (string)$data;
+        }
+
+        if (is_array($data)) {
+            if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
+                return join($delimiter, $data);
+            }
+
+            return count($data) === 0 ? $default : join("", $data);
+        }
+
+        return $default;
     }
 
 
     /**
      * Преобразование значения в строку
      *
-     * @note: Если передать второй параметр то это будет значением по умолчанию!
-     *
      * @param bool $recursive
      * @return $this
+     * @throws Exception
      */
-    public function makeString($recursive = false)
+    private function makeString(bool $recursive = false): static
     {
-        $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
-        $this->data = static::getMakeString($this->data, $default, $recursive);
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_string($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an string");
+        }
+
+        $this->data = static::getMakeString($this->data, (string)$default, $recursive);
 
         return $this;
     }
 
 
     /**
-     * Преобразование значения в число с проверкой на минимальное значение
+     * Преобразование значения(й) в строку
      *
-     * @param mixed  $data
+     * @param mixed $data
      * @param string $default
-     * @param bool   $recursive
+     * @param bool $recursive
      * @return array|string
      */
-    static public function getMakeString($data, $default = '', $recursive = false)
-    {
+    public static function getMakeString(
+        array|float|int|string|null $data,
+        string $default = '',
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
 
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getMakeString($item, $default, $recursive);
 
                     } else {
@@ -300,30 +327,35 @@ trait VariableMethod
 
 
     /**
-     * Сокращённый метод работы со строкой с возвратом результата с вызовом метода get()
+     * Возвращает преобразованное значение(я) в строку в зависимости от указанного алгоритма
      *
      * @param string $option
-     * @param bool   $recursive - флаг для обхода потомков
-     * @param array  $remove    - символы для удаления из текста
-     * @return array | string
+     * @param bool $recursive флаг для обхода потомков
+     * @param array $remove символы для удаления из текста
+     * @return array|string
+     * @throws Exception
      */
-    public function getInput($option = 'small', $recursive = false, $remove = ["\t", "\n", "\r"])
-    {
+    public function getInput(
+        string $option = 'small',
+        bool $recursive = false,
+        array $remove = ["\t", "\n", "\r"]
+    ): array|string {
         return $this->input($option, $recursive, $remove)->get();
     }
 
 
     /**
-     * Сокращённый метод работы со строкой
+     * Преобразование значений в строку(и) в зависимости от указанного алгоритма
      *
      * @param string $option
-     * @param bool   $recursive - флаг для обхода потомков
-     * @param array  $remove    - символы для удаления из текста
+     * @param bool $recursive флаг для обхода потомков
+     * @param array $remove символы для удаления из текста
      * @return $this
+     * @throws Exception
      */
-    public function input($option = 'small', $recursive = false, $remove = ["\t", "\n", "\r"])
+    public function input(string $option = 'small', bool $recursive = false, array $remove = ["\t", "\n", "\r"]): static
     {
-        $this->__option = (string)$option;
+        $this->__option = $option;
         $this->makeString($recursive);
 
         if ($option === 'unchanged' || $option === 'raw') {
@@ -331,7 +363,9 @@ trait VariableMethod
         }
 
         if ($option === "tags" && in_array(",", $remove)) {
-            if (($index = array_search(",", $remove) !== false)) {
+            $index = array_search(",", $remove);
+
+            if ($index !== false) {
                 unset($remove[$index]);
             }
         }
@@ -344,38 +378,38 @@ trait VariableMethod
                 return $this->crop(14, $recursive)
                     ->makeFloat(0, "auto", true, $recursive)
                     ->numberFormat(0, '', '', $recursive);
-                break;
+
             case 'price-upward':
                 return $this->crop(14, $recursive)
                     ->makeFloat(0, "upward", true, $recursive)
                     ->numberFormat(0, '', '', $recursive);
-                break;
+
             case 'price-downward':
                 return $this->crop(14, $recursive)
                     ->makeFloat(0, "downward", true, $recursive)
                     ->numberFormat(0, '', '', $recursive);
-                break;
-            /**
-             * Преобразование значений в строку формата price с указанием копеек
-             */
+
+                /**
+                 * Преобразование значений в строку формата price с указанием копеек
+                 */
             case 'cost':
                 return $this->crop(14, $recursive)
                     ->makeFloat(2, "auto", true, $recursive)
                     ->numberFormat(2, '.', '', $recursive);
-                break;
+
             case 'cost-upward':
                 return $this->crop(14, $recursive)
                     ->makeFloat(2, "upward", true, $recursive)
                     ->numberFormat(2, '.', '', $recursive);
-                break;
+
             case 'cost-downward':
                 return $this->crop(14, $recursive)
                     ->makeFloat(2, "downward", true, $recursive)
                     ->numberFormat(2, '.', '', $recursive);
-                break;
-            /**
-             * Over
-             */
+
+                /**
+                 * Over
+                 */
             case 'xs':
             case 'xs-html-encode':
             case 'sm':
@@ -398,13 +432,13 @@ trait VariableMethod
                 }
 
                 // кодирует символы в сущности
-                if ($option === 'tags-html-encode' ||
-                    $option === 'xs-html-encode' ||
-                    $option === 'sm-html-encode' ||
-                    $option === 'small-html-encode' ||
-                    $option === 'text-html-encode' ||
-                    $option === 'mediumtext-html-encode' ||
-                    $option === 'longtext-html-encode') {
+                if ($option === 'tags-html-encode'
+                    || $option === 'xs-html-encode'
+                    || $option === 'sm-html-encode'
+                    || $option === 'small-html-encode'
+                    || $option === 'text-html-encode'
+                    || $option === 'mediumtext-html-encode'
+                    || $option === 'longtext-html-encode') {
                     self::htmlEntityEncode(ENT_COMPAT | ENT_HTML5, 'UTF-8', false, $recursive);
                 }
 
@@ -468,7 +502,7 @@ trait VariableMethod
             case 'mediumtext-html-decode':
                 $this->crop(5592000, $recursive);
 
-                if (in_array($option, ['mediumtext-html-decode' . 'tags-html-decode'])) { // кодирует сущности в символы
+                if ($option == 'mediumtext-html-decode'.'tags-html-decode') { // кодирует сущности в символы
                     self::htmlEntityDecode(ENT_COMPAT | ENT_HTML5, 'UTF-8', $recursive);
                 }
                 break;
@@ -482,12 +516,12 @@ trait VariableMethod
                 }
                 break;
 
-            /**
-             * Проверка в строке или массиве наличие в ней идентификаторов.
-             * Идентификаторы проходят проверки на целое положительно число.
-             *
-             * 1,2,3,4,5 ...
-             */
+                /**
+                 * Проверка в строке или массиве наличие в ней идентификаторов.
+                 * Идентификаторы проходят проверки на целое положительно число.
+                 *
+                 * 1,2,3,4,5 ...
+                 */
             case 'ids':
                 if ($option === 'ids') {
                     $this->ids();
@@ -504,118 +538,76 @@ trait VariableMethod
 
 
     /**
-     * Устанавливает как преобразовывать пустую строку по окончанию обработки и вывода значения
+     * Устанавливает во что преобразовывать пустую строку(и) если они получились при конвертации
      *
-     * @param mixed $var
+     * @param string $var
      * @return $this
      */
-    public function convertEmptyString($var = null)
+    public function convertEmptyString(string $var): static
     {
         $this->convertAnEmptyString = $var;
 
         return $this;
     }
 
-
-    /**
-     * Сокращённый метод работы с числами с плавающей точкой и возвратом результата с вызовом метода get()
-     *
-     * @param string $option
-     * @param string $round     [auto, upward, downward] - тип округления
-     * @param bool   $positive  - флаг положительного числа
-     * @param bool   $recursive - флаг для обхода потомков
-     * @return float | array
-     */
-    public function getFloat($option = null, $round = "auto", $positive = false, $recursive = false)
-    {
-        return $this->float($option, $round, $positive, $recursive)->get();
-    }
-
-    /**
-     * Сокращённый метод работы с числами с плавающей точкой
-     *
-     * @param string | integer $option    [$decimals] - если указали число считаем это определение точности
-     * @param string           $round     [auto, upward, downward] - тип округления десятичного значения
-     * @param bool             $positive  - флаг положительного числа
-     * @param bool             $recursive - флаг для обхода потомков
-     * @return $this
-     */
-    public function float($option = null, $round = "auto", $positive = false, $recursive = false)
-    {
-        if (is_string($option)) {
-            $this->__option = $option;
-        }
-
-        switch ($option) {
-            /**
-             * Преобразование значений в денежную единицу без копеек
-             */
-            case 'price':
-                return $this->makeFloat(0, $round, true, $recursive);
-                break;
-
-            /**
-             * Преобразование значений в денежную единицу с указанием копеек
-             */
-            case 'cost':
-                return $this->makeFloat(2, $round, true, $recursive);
-                break;
-        }
-
-        // если указали число считаем это за определение точности
-        $decimals = is_numeric($option) && $option >= 0 ? $option : 12;
-
-        return $this->makeFloat($decimals, $round, $positive, $recursive);
-    }
-
-
     /**
      * Преобразование значения в число с плавающей точкой
      *
      * @note: возможны отрицательные значения!
      *
-     * @param int    $decimals  - точность
-     * @param string $round     [auto, upward, downward] - тип округления десятичного значения
-     * @param bool   $positive  - флаг положительного числа, >= 0
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function makeFloat($decimals = 2, $round = "auto", $positive = true, $recursive = false)
-    {
-        $this->data = static::getMakeFloat($this->data, $decimals, $round, $this->getDefault(), $positive, $recursive);
+    private function makeFloat(
+        int $decimals = 2,
+        string $round = "auto",
+        bool $positive = true,
+        bool $recursive = false
+    ): static {
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+            throw new Exception("Default values are not an float");
+        }
+
+        $default = VarFloat::getMake($default);
+        $this->data = static::getMakeFloat($this->data, $decimals, $round, $default, $positive, $recursive);
 
         return $this;
     }
 
-
     /**
-     * Преобразование значения числа с плавающей точкой
+     * Преобразование значения(й) в число с плавающей точкой
      *
      * @note: возможны отрицательные значения!
      *
-     * @param array|int $data
-     * @param int       $decimals  - точность
-     * @param string    $round     [auto, upward, downward] - тип округления десятичного значения
-     * @param float     $default
-     * @param bool      $positive  - флаг положительного числа, >= 0
-     * @param bool      $recursive - флаг для обхода потомков
-     * @return array|int
+     * @param array|float|int|string|null $data
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param float $default
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|float
      */
-    static public function getMakeFloat(
-        $data,
-        $decimals = 2,
-        $round = "auto",
-        $default = 0.0,
-        $positive = true,
-        $recursive = false
-    ) {
+    public static function getMakeFloat(
+        array|float|int|string|null $data,
+        int $decimals = 2,
+        string $round = "auto",
+        float $default = 0.0,
+        bool $positive = true,
+        bool $recursive = false
+    ): array|float {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
 
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getMakeFloat($item, $decimals, $round, $default, $positive, $recursive);
 
                     } else {
@@ -630,7 +622,6 @@ trait VariableMethod
             }
 
         } else {
-
             if ($positive) {
                 $return = VarFloat::getMakePositive($data, $decimals, $round, $default);
 
@@ -642,270 +633,112 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
-     * Сокращённый метод работы с цифрами и возвратом результата с вызовом метода get()
+     * Возвращает преобразованное значение(я) в число с плавающей точкой в зависимости от указанного алгоритма
      *
-     * @param string $option
-     * @param bool   $positive
-     * @param bool   $recursive - флаг для обхода потомков
-     * @return integer | array
+     * @param int|string $option если указали число считаем его определением точности (decimals)
+     * @param string $round тип округления (auto, upward, downward)
+     * @param bool $positive флаг положительного числа
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|float
+     * @throws Exception
      */
-    public function getInteger($option = null, $positive = false, $recursive = false)
-    {
-        return $this->integer($option, $positive, $recursive)->get();
+    public function getFloat(
+        int|string $option,
+        string $round = "auto",
+        bool $positive = false,
+        bool $recursive = false
+    ): array|float {
+        return $this->float($option, $round, $positive, $recursive)->get();
     }
 
-
     /**
-     * Сокращённый метод работы с цифрами
+     * Преобразование значений в число(а) с плавающей точкой в зависимости от указанного алгоритма
      *
-     * @param string $option
-     * @param bool   $positive
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param int|string $option если указали число считаем его определением точности (decimals)
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param bool $positive флаг положительного числа
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function integer($option = null, $positive = false, $recursive = false)
-    {
+    public function float(
+        int|string $option = 12,
+        string $round = "auto",
+        bool $positive = false,
+        bool $recursive = false
+    ): static {
         if (is_string($option)) {
             $this->__option = $option;
         }
 
-        // для работы логики filter принудительно указываем флаг положительного числа в FALSE
-        if ($option === 'filter') {
-            $positive = false;
+        // Преобразование значений в денежную единицу без копеек
+        if ($option === 'price') {
+            return $this->makeFloat(0, $round, true, $recursive);
         }
 
-        // для переключателя делаем условие определения значения более мягкие и разрешаем on | yes | true ...
-        $strict = in_array($option, ['toggle', 'ids']) ? false : true;
-
-        $this->makeInteger($positive, $recursive, $strict);
-
-        /**
-         * Для проверки фильтров где допускаются значения от -1,0,1,2,3,4,5 ...
-         * -1 не определено
-         * 0 не выбрано
-         * 1,2,3,4,5 ...
-         */
-        if ($option === 'filter') {
-            $this->minInteger(-1, $recursive);
+        // Преобразование значений в денежную единицу с указанием копеек
+        if ($option === 'cost') {
+            return $this->makeFloat(2, $round, true, $recursive);
         }
 
-        switch ($option) {
-            /**
-             * Для проверки списков где допускаются значения от 0 (не выбрано), 1, 2, 3, 4, 5 ...
-             * Ещё подходит для определения ID где 0 допустима как запись не имеющая идентификатора ( новая )
-             */
-            case 'option':
-            case 'id':
-            case 'price':
-                $this->minInteger(0, $recursive);
-                break;
+        // если указали число считаем это за определение точности
+        $decimals = is_int($option) && $option >= 0 ? $option : 12;
 
-            case 'year':
-                $this->makeInteger(true, $recursive)->minInteger(1970, $recursive);
-                break;
-
-            /**
-             * Для пагинатора не допускаем значение страницы ниже один!
-             */
-            case 'page':
-            case 'pagination':
-                $this->makeInteger(true, $recursive)->minInteger(1, $recursive);
-                break;
-
-            /**
-             * Для переключателей нужно всего 2 значения 0) off и 1) on
-             * Не устанавливаем принудительное значение по умолчанию что-бы иметь возможность гибко настроить поведение!
-             */
-            case 'toggle':
-                $this->minInteger(0, $recursive)->maxInteger(1, false, $recursive);
-                break;
-
-            /**
-             * Проверка значений массива или текущего числа на наличие идентификатора(ов).
-             * Идентификаторы проходят проверки на целое положительно число.
-             *
-             * @note Если проверяемая переменная содержала строку с идентификаторами,
-             * она будет преобразована в число по правилам строгой типизации и только после будет произведена проверка на ID!
-             * @note Для работы со списками из строк, работайте с методом input('ids');
-             *
-             * 1,2,3,4,5 ...
-             */
-            case 'ids':
-                $this->ids(null, 'single', $recursive);
-                break;
-        }
-
-        return $this;
+        return $this->makeFloat($decimals, $round, $positive, $recursive);
     }
-
-
-    /**
-     * Преобразование значения в целые положительные числа, а пустые значения в null
-     *
-     * @param string $round     - [auto, upward, downward] - тип округления десятичного значения
-     * @param int    $decimals  - точность
-     * @param bool   $recursive - флаг для обхода потомков
-     * @return array | integer | null
-     */
-    public function getPrice($round = "auto", $decimals = 0, $recursive = false)
-    {
-        $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
-
-        return static::getMakePrice($data, $this->getDefault(), $recursive, $decimals, $round);
-    }
-
-
-    /**
-     * Заменяет переданные пустые значения на null или преобразовывает в integer
-     *
-     * @param string | array $data      - значения уже заранее очищены от всего кроме цифр
-     * @param null           $default   - значение по умолчанию
-     * @param bool           $recursive - флаг для обхода потомков
-     * @param int            $decimals  - точность
-     * @param string         $round     - [auto, upward, downward] - тип округления десятичного значения
-     * @return array | integer | null
-     */
-    static public function getMakePrice($data, $default = null, $recursive = false, $decimals = 0, $round = "auto")
-    {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $return[$key] = static::getMakePrice($item, $default, $recursive, $decimals, $round);
-
-                    } else {
-                        $item = is_string($item) ? $item : static::getMakeString($item);
-                        $return[$key] = static::getMakePrice($item, $default, false, $decimals, $round);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : static::getMakeString($data);
-
-            if (! empty(str_replace([".", ","], ["", ""], $data))) {
-                $data = VarFloat::getMakePositive($data, $decimals, $round);
-                $return = (int)static::getNumberFormat($data, $decimals, '', '', false);
-
-            } else {
-                $return = $default;
-            }
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Преобразование значения в число с плавающей запятой, а пустые значения в float
-     *
-     * @param string  $round     - [auto, upward, downward] - тип округления десятичного значения
-     * @param int     $decimals  - точность
-     * @param string  $separator - разделитель точности
-     * @param boolean $recursive - флаг для обхода потомков
-     * @return array | float | null
-     */
-    public function getCost($round = "auto", $decimals = 2, $separator = '.', $recursive = false)
-    {
-        $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
-
-        return static::getMakeCost($data, $this->getDefault(), $recursive, $decimals, $round, $separator);
-    }
-
-
-    /**
-     * Заменяет переданные пустые значения на null или преобразовывает в float
-     *
-     * @param string | array $data      - значения уже заранее очищены от всего кроме цифр, запятой и точки
-     * @param null           $default   - значение по умолчанию
-     * @param boolean        $recursive - флаг для обхода потомков
-     * @param int            $decimals  - точность
-     * @param string         $round     - [auto, upward, downward] - тип округления десятичного значения
-     * @param string         $separator - разделитель точности
-     * @return array | float | null
-     */
-    static public function getMakeCost(
-        $data,
-        $default = null,
-        $recursive = false,
-        $decimals = 2,
-        $round = "auto",
-        $separator = '.'
-    ) {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $return[$key] = static::getMakeCost($item, $default, $recursive, $decimals, $round, $separator);
-
-                    } else {
-                        $item = is_string($item) ? $item : static::getMakeString($item);
-                        $return[$key] = static::getMakeCost($item, $default, false, $decimals, $round, $separator);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : static::getMakeString($data);
-
-            if (! empty(str_replace([".", ","], ["", ""], $data))) {
-                $data = VarFloat::getMakePositive($data, $decimals, $round);
-                $return = (float)static::getNumberFormat($data, $decimals, $separator, '', false);
-
-            } else {
-                $return = $default;
-            }
-        }
-
-        return $return;
-    }
-
 
     /**
      * Преобразование значения в целое число
      *
      * @note: возможны отрицательные значения!
      *
-     * @param bool $positive  - флаг положительного числа, >= 0
-     * @param bool $recursive - флаг для обхода потомков
-     * @param bool $strict    - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return $this
+     * @throws Exception
      */
-    public function makeInteger($positive = true, $recursive = false, $strict = true)
+    private function makeInteger(bool $positive = true, bool $recursive = false, bool $strict = true): static
     {
-        $this->data = static::getMakeInteger($this->data, $this->getDefault(), $positive, $recursive, $strict);
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an number");
+        }
+
+        $this->data = static::getMakeInteger($this->data, (int)$default, $positive, $recursive, $strict);
 
         return $this;
     }
 
-
     /**
-     * Преобразование значения в целое число
+     * Преобразование значения(й) в целое число
      *
      * @note: возможны отрицательные значения!
      *
-     * @param array|int $data
-     * @param int       $default   - значение по умолчанию
-     * @param bool      $positive  - флаг положительного числа, >= 0
-     * @param bool      $recursive - флаг для обхода потомков
-     * @param bool      $strict    - флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param array|float|int|string|null $data
+     * @param int $default
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return array|int
+     * @throws Exception
      */
-    static public function getMakeInteger($data, $default = 0, $positive = true, $recursive = false, $strict = true)
-    {
+    public static function getMakeInteger(
+        array|float|int|string|null $data,
+        int $default = 0,
+        bool $positive = true,
+        bool $recursive = false,
+        bool $strict = true
+    ): array|int {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
 
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getMakeInteger($item, $default, $positive, $recursive);
 
                     } else {
@@ -919,8 +752,6 @@ trait VariableMethod
             }
 
         } else {
-            $data = $data === "" ? null : $data;
-
             if ($positive) {
                 $return = VarInt::getMakePositiveInteger($data, $default, $strict);
             } else {
@@ -933,89 +764,356 @@ trait VariableMethod
 
 
     /**
-     * Преобразование значения в целое число.
+     * Возвращает преобразованное значение(я) в целые числа в зависимости от указанного алгоритма
+     *
+     * @param string $option
+     * @param bool $positive
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|int
+     * @throws Exception
+     */
+    public function getInteger(string $option, bool $positive = false, bool $recursive = false): array|int
+    {
+        return $this->integer($option, $positive, $recursive)->get();
+    }
+
+
+    /**
+     * Преобразование значений в целое число(а) в зависимости от указанного алгоритма
+     * Сокращённый метод работы с цифрами
+     *
+     * @param string $option
+     * @param bool $positive
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     * @throws Exception
+     */
+    public function integer(string $option, bool $positive = false, bool $recursive = false): static
+    {
+        $this->__option = $option;
+
+        // для работы логики filter принудительно указываем флаг положительного числа в FALSE
+        if ($option === 'filter') {
+            $positive = false;
+        }
+
+        // для переключателя делаем условие определения значения более мягкие и разрешаем on|yes|true ...
+        $strict = ! in_array($option, ['toggle', 'ids']);
+
+        $this->makeInteger($positive, $recursive, $strict);
+
+        /**
+         * Для проверки фильтров, где допускаются значения от -1,0,1,2,3,4,5 ...
+         *
+         * @note -1 не определено, 0 не выбрано, 1,2,3,4,5 ...
+         */
+        if ($option === 'filter') {
+            $this->byDefault(-1)
+                ->minInteger($this->getDefault(), true, $recursive);
+        }
+
+        switch ($option) {
+            /**
+             * Для проверки списков, где допускаются значения от 0 (не выбрано), 1, 2, 3, 4, 5 ...
+             * Ещё подходит для определения ID где 0 допустима как запись не имеющая идентификатора (новая)
+             */
+            case 'option':
+            case 'id':
+            case 'price':
+                $this->byDefault(0)
+                    ->minInteger($this->getDefault(), true, $recursive);
+                break;
+
+            case 'year':
+                $this->byDefault(1970)
+                    ->makeInteger(true, $recursive)
+                    ->minInteger($this->getDefault(), true, $recursive);
+                break;
+
+                /**
+                 * Для пагинатора не допускаем значение страницы ниже один!
+                 */
+            case 'page':
+            case 'pagination':
+                $this->byDefault(1)
+                    ->makeInteger(true, $recursive)
+                    ->minInteger($this->getDefault(), true, $recursive);
+                break;
+
+                /**
+                 * Для переключателей нужно всего 2 значения 0) off и 1) on
+                 * Не устанавливаем принудительное значение по умолчанию что-бы иметь возможность гибко настроить поведение!
+                 */
+            case 'toggle':
+                $this->byDefault(0)
+                    ->minInteger(0, true, $recursive)
+                    ->maxInteger(1, false, $recursive);
+                break;
+
+                /**
+                 * Проверка значений массива или текущего числа на наличие идентификатора(ов).
+                 * Идентификаторы проходят проверки на целое положительно число.
+                 *
+                 * @note Если проверяемая переменная содержала строку с идентификаторами,
+                 * она будет преобразована в число по правилам строгой типизации и только после будет произведена проверка на ID!
+                 * @note Для работы со списками из строк, работайте с методом input('ids');
+                 *
+                 * 1,2,3,4,5 ...
+                 */
+            case 'ids':
+                $this->ids(null, 'single', $recursive);
+                break;
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * Возвращает преобразованное значение(я) в целое положительное число (денежную единицу без копеек)
+     *
+     * @note в методе нет аргумента $decimals поскольку price это всегда целое число у которого нет чисел после точки!
+     *
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|int
+     * @throws Exception
+     */
+    public function getPrice(string $round = "auto", bool $recursive = false): array|int
+    {
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an number");
+        }
+
+        $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
+
+        return static::getMakePrice($data, (int)$default, $recursive, $round);
+    }
+
+
+    /**
+     * Преобразование значения(й) в целое положительное число (денежную единицу без копеек)
+     *
+     * @note в методе нет аргумента $decimals поскольку price это всегда целое число у которого нет чисел после точки!
+     *
+     * @param array|float|int|string|null $data
+     * @param int $default
+     * @param bool $recursive флаг для обхода потомков
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @return array|int
+     * @throws Exception
+     */
+    public static function getMakePrice(
+        array|float|int|string|null $data,
+        int $default,
+        bool $recursive = false,
+        string $round = "auto"
+    ): array|int {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getMakePrice($item, $default, $recursive, $round);
+
+                    } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = static::getMakePrice($item, $default, false, $round);
+                    }
+                }
+            }
+
+        } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+
+            // Всегда преобразуем строку в float, на случай если передали значения не по типу
+            $cost = static::getMakeFloat($data, 0, $round, (float)$default, true);
+            $return = (int)static::getNumberFormat($cost, 0, '', '', $default);
+        }
+
+        return $return;
+    }
+
+
+    /**
+     * Возвращает преобразованное значение(я) в целое положительное число (денежную единицу с копейками)
+     *
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param int $decimals точность (символы после точки)
+     * @param string $separator разделитель точности
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|float
+     * @throws Exception
+     */
+    public function getCost(
+        string $round = "auto",
+        int $decimals = 2,
+        string $separator = '.',
+        bool $recursive = false
+    ): array|float {
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+            throw new Exception("Default values are not an float");
+        }
+
+        $default = VarFloat::getMake($default);
+        $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
+
+        return static::getMakeCost($data, $default, $recursive, $decimals, $round, $separator);
+    }
+
+
+    /**
+     * Заменяет переданные пустые значения на null или преобразовывает в float
+     *
+     * @param array|float|int|string|null $data
+     * @param float $default
+     * @param bool $recursive флаг для обхода потомков
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param string $separator разделитель точности
+     * @return array|float
+     */
+    public static function getMakeCost(
+        array|float|int|string|null $data,
+        float $default,
+        bool $recursive = false,
+        int $decimals = 2,
+        string $round = "auto",
+        string $separator = '.'
+    ): array|float {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getMakeCost($item, $default, $recursive, $decimals, $round, $separator);
+
+                    } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = static::getMakeCost($item, $default, false, $decimals, $round, $separator);
+                    }
+                }
+            }
+
+        } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+
+            // Всегда преобразуем строку в float, на случай если передали значения не по типу
+            $cost = static::getMakeFloat($data, 0, $round, $default, true);
+            $return = (int)static::getNumberFormat($cost, $decimals, $separator, '', $default);
+        }
+
+        return $return;
+    }
+
+    /**
+     * Преобразование значения(й) в целое число с проверкой, что они выше чем default
      *
      * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
-     * @note : возможны отрицательные значения!
+     * @note возможны отрицательные значения!
      *
-     * @param bool $recursive - флаг для обхода потомков
-     * @return array | integer
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|int
+     * @throws Exception
      */
-    public function getIntegerNotLess($recursive = false)
+    public function getIntegerNotLess(bool $recursive = false): array|int
     {
         return $this->integerNotLess($recursive)->get();
     }
 
 
     /**
-     * Преобразование значения в целое число.
+     * Преобразование значения(й) в целое число с проверкой, что они выше чем default
      *
      * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
-     * @note : возможны отрицательные значения!
+     * @note возможны отрицательные значения!
      *
-     * @param bool $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function integerNotLess($recursive = false)
+    public function integerNotLess(bool $recursive = false): static
     {
-        $this->data = static::getMinInteger($this->data, $this->getDefault(), $recursive);
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an number");
+        }
+
+        $this->data = static::getMinInteger($this->data, true, (int)$default, $recursive);
 
         return $this;
     }
 
 
     /**
-     * Преобразование значения в целое число с проверкой его на минимальное значение
-     * Более читабельный вариант если устанавливать правило минимального значение с отличным от default значения!
+     * Преобразование значения(й) в целое число с проверкой, что оно не ниже указанного минимального значения
      *
-     * @note: возможны отрицательные значения!
+     * @note возможны отрицательные значения!
      *
-     * @param int  $default   - значение по умолчанию
-     * @param bool $recursive - флаг для обхода потомков
+     * @param int $min число для проверки
+     * @param bool $toDefault флаг для установки default значения числам ниже проверяемого, в противном случае их значение будет только преобразовано в тип integer
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function minInteger($default = 0, $recursive = false)
+    public function minInteger(int $min = 0, bool $toDefault = true, bool $recursive = false): static
     {
-        $this->data = static::getMinInteger($this->data, $default, $recursive);
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an number");
+        }
+
+        $this->data = static::getMinInteger($this->data, $min, $toDefault, (int)$default, $recursive);
 
         return $this;
     }
 
 
     /**
-     * Преобразование значения в целое число с проверкой его на минимальное значение
+     * Возвращает преобразованное значение(я) в целое число с проверкой, что оно не ниже указанного минимального значения
      *
-     * @note: возможны отрицательные значения!
+     * @note возможны отрицательные значения!
      *
-     * @param mixed $data
-     * @param int   $default   - значение по умолчанию
-     * @param bool  $recursive - флаг для обхода потомков
+     * @param array|float|int|string|null $data
+     * @param int $min число для проверки
+     * @param bool $toDefault флаг для установки default значения числам ниже проверяемого, в противном случае их значение будет только преобразовано в тип integer
+     * @param int $default
+     * @param bool $recursive флаг для обхода потомков
      * @return array|int
      */
-    static public function getMinInteger($data, $default = 0, $recursive = false)
-    {
-        $default = VarInt::getMakeInteger($default);
-
+    public static function getMinInteger(
+        array|float|int|string|null $data,
+        int $min = 0,
+        bool $toDefault = true,
+        int $default = 0,
+        bool $recursive = false
+    ): array|int {
         if (is_array($data) && is_array($return = [])) {
-
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $return[$key] = static::getMinInteger($item, $default, $recursive);
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getMinInteger($item, $min, $recursive);
 
                     } else {
-                        $item = VarInt::getMakeInteger($item, $default);
-                        $return[$key] = $item >= $default ? $item : $default;
+                        $int = VarInt::getMakeInteger($item, $default);
+                        $return[$key] = $int >= $min ? $int : ($toDefault ? $default : $int);
                     }
                 }
             }
 
         } else {
-            $data = $data === "" ? null : $data;
-            $data = VarInt::getMakeInteger($data, $default);
-            $return = $data >= $default ? $data : $default;
+            $int = VarInt::getMakeInteger($data, $default);
+            $return = $int >= $min ? $int : ($toDefault ? $default : $int);
         }
 
         return $return;
@@ -1023,66 +1121,67 @@ trait VariableMethod
 
 
     /**
-     * Преобразование значения в целое число с проверкой его на максимальное значение
-     * Более читабельный вариант если устанавливать правило минимального значение с отличным от default значения!
+     *  Преобразование значения(й) в целое число с проверкой, что оно не выше указанного минимального значения
      *
      * @note: возможны отрицательные значения!
+     * @note $default тут нужен для логики когда проверка на max должна вернуть иные значения (помеченные)
      *
-     * @param int  $max
-     * @param bool $toDefault - флаг преобразования числа вышедего за пределы
-     * @param bool $recursive - флаг для обхода потомков
+     * @param int $max
+     * @param bool $toDefault флаг для установки default значения числам выше проверяемого, в противном случае их значение будет только преобразовано в тип integer
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function maxInteger($max = 0, $toDefault = true, $recursive = false)
+    public function maxInteger(int $max = 0, bool $toDefault = true, bool $recursive = false): static
     {
-        $this->data = static::getMaxInteger($this->data, $max, $toDefault, $this->getDefault(), $recursive);
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an number");
+        }
+
+        $this->data = static::getMaxInteger($this->data, $max, $toDefault, $default, $recursive);
 
         return $this;
     }
 
 
     /**
-     * Преобразование значения в целое число с проверкой его на максимальное значение
+     * Возвращает преобразованное значение(я) в целое число с проверкой, что оно не выше указанного минимального значения
      *
      * @note: возможны отрицательные значения!
      *
-     * @param mixed $data
-     * @param int   $max       - число предела
-     * @param bool  $toDefault - флаг преобразования числа вышедшего за пределы в default или max
-     * @param int   $default   - значение по умолчанию
-     * @param bool  $recursive - флаг для обхода потомков
+     * @param array|float|int|string|null $data
+     * @param int $max
+     * @param bool $toDefault флаг для установки default значения числам выше проверяемого, в противном случае их значение будет только преобразовано в тип integer
+     * @param int $default значение по умолчанию
+     * @param bool $recursive флаг для обхода потомков
      * @return array|int
      */
-    static public function getMaxInteger($data, $max = 0, $toDefault = true, $default = 0, $recursive = false)
-    {
-        $default = VarInt::getMakeInteger($default);
-
+    public static function getMaxInteger(
+        array|float|int|string|null $data,
+        int $max = 0,
+        bool $toDefault = true,
+        int $default = 0,
+        bool $recursive = false
+    ): array|int {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getMaxInteger($item, $max, $toDefault, $default, $recursive);
 
                     } else {
-                        $item = VarInt::getMakeInteger($item, $default);
-                        $return[$key] = $item;
-
-                        if ($item > $max) {
-                            $return[$key] = $toDefault ? $default : $max;
-                        }
+                        $int = VarInt::getMakeInteger($item, $default);
+                        $return[$key] = $int <= $max ? $int : ($toDefault ? $default : $int);
                     }
                 }
             }
         } else {
-            $data = $data === "" ? null : $data;
-            $data = VarInt::getMakeInteger($data, $default);
-            $return = $data;
-
-            if ($data > $max) {
-                $return = $toDefault ? $default : $max;
-            }
+            $int = VarInt::getMakeInteger($data, $default);
+            $return = $int <= $max ? $int : ($toDefault ? $default : $int);
         }
 
         return $return;
@@ -1094,19 +1193,27 @@ trait VariableMethod
      *
      * @note результат работы будет в виде строки и нужно не забывать после привести к нужному типу!
      *
-     * @param int    $decimals      - точность
-     * @param string $separator     - разделитель точности
-     * @param string $thousands_sep - разделитель тысяч
-     * @param bool   $recursive     - флаг для обхода потомков
+     * @param int $decimals точность (символы после точки)
+     * @param string $separator разделитель точности
+     * @param string $thousands_sep разделитель тысяч
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
     public function numberFormat(
-        $decimals = 2,
-        $separator = '.',
-        $thousands_sep = '',
-        $recursive = false
-    ) {
-        $this->data = static::getNumberFormat($this->data, $decimals, $separator, $thousands_sep, $this->getDefault(), $recursive);
+        int $decimals = 2,
+        string $separator = '.',
+        string $thousands_sep = '',
+        bool $recursive = false
+    ): static {
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+            throw new Exception("Default values are not an float");
+        }
+
+        $default = VarFloat::getMake($default);
+        $this->data = static::getNumberFormat($this->data, $decimals, $separator, $thousands_sep, $default, $recursive);
 
         return $this;
     }
@@ -1115,68 +1222,49 @@ trait VariableMethod
     /**
      * Форматирует число с разделением групп
      *
-     * @note результат работы будет в виде строки и нужно не забывать после привести к нужному типу!
+     * @note не допускается значение в $decimals меньше нуля
      *
-     * @param mixed  $data
-     * @param int    $decimals      - точность
-     * @param string $separator     - разделитель точности
-     * @param string $thousands_sep - разделитель тысяч
-     * @param int    $default       - значение по умолчанию
-     * @param bool   $recursive     - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param int $decimals точность (символы после точки)
+     * @param string $separator разделитель точности
+     * @param string $thousands_sep разделитель тысяч
+     * @param float|int $default
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getNumberFormat(
-        $data,
-        $decimals = 2,
-        $separator = '.',
-        $thousands_sep = '',
-        $default = 0,
-        $recursive = false
-    ) {
+    public static function getNumberFormat(
+        array|bool|float|int|string|null $data,
+        int $decimals = 2,
+        string $separator = '.',
+        string $thousands_sep = '',
+        float|int $default = 0,
+        bool $recursive = false
+    ): array|string {
         $decimals = $decimals >= 0 ? $decimals : 2;
 
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
-
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getNumberFormat($item, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : strval($item);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
 
-                        // Помощь при опечатках если разделители классические
-                        if ($separator == '.') {
-                            $item = VarStr::replaceOnce(",", ".", $item);
-                        } elseif ($separator == ',') {
-                            $item = VarStr::replaceOnce(".", ",", $item);
-                        }
-
-                        try {
-                            $return[$key] = number_format($item, $decimals, $separator, $thousands_sep);
-                        } catch (\Throwable $e) {
-                            $return[$key] = number_format($default, $decimals, $separator, $thousands_sep);
-                        }
+                        // Всегда преобразуем строку в float, на случай если передали значения не по типу
+                        $cost = static::getMakeFloat($item, 0, "auto", (float)$default, true);
+                        $return[$key] = (string)static::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : strval($data);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
 
-            // Помощь при опечатках если разделители классические
-            if ($separator == '.') {
-                $data = VarStr::replaceOnce(",", ".", $data);
-            } elseif ($separator == ',') {
-                $data = VarStr::replaceOnce(".", ",", $data);
-            }
-
-            try {
-                $return = number_format($data, $decimals, $separator, $thousands_sep);
-            } catch (\Throwable $e) {
-                $return = number_format($default, $decimals, $separator, $thousands_sep);
-            }
+            // Всегда преобразуем строку в float, на случай если передали значения не по типу
+            $cost = static::getMakeFloat($data, 0, "auto", (float)$default, true);
+            $return = (string)static::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
         }
 
         return $return;
@@ -1186,10 +1274,10 @@ trait VariableMethod
     /**
      * Преобразование значений в MD5-хэш
      *
-     * @param bool $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function makeMd5($recursive = false)
+    public function makeMd5(bool $recursive = false): static
     {
         $this->data = static::getMd5($this->data, $recursive);
 
@@ -1200,22 +1288,22 @@ trait VariableMethod
     /**
      * Преобразование значений в MD5-хэш
      *
-     * @param mixed $data
-     * @param bool  $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getMd5($data, $recursive = false)
+    public static function getMd5(array|bool|float|int|string|null $data, bool $recursive = false): array|string
     {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getMd5($item, $recursive);
 
                     } else {
-                        $return[$key] = md5($item);
+                        $return[$key] = md5(is_string($item) ? $item : VarStr::getMakeString($item));
                     }
                 }
             }
@@ -1231,10 +1319,10 @@ trait VariableMethod
      * Удаляет HTML и PHP-теги из данных
      *
      * @param string $allowable_tags
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function stripTags($allowable_tags = '', $recursive = false)
+    public function stripTags(string $allowable_tags = '', bool $recursive = false): static
     {
         $this->data = static::getStripTags($this->data, $allowable_tags, $recursive);
 
@@ -1245,27 +1333,32 @@ trait VariableMethod
     /**
      * Удаляет HTML и PHP-теги из данных
      *
-     * @param string $data
+     * @param array|bool|float|int|string|null $data
      * @param string $allowable_tags
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getStripTags($data = '', $allowable_tags = '', $recursive = false)
-    {
+    public static function getStripTags(
+        array|bool|float|int|string|null $data,
+        string $allowable_tags = '',
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getStripTags($item, $allowable_tags, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = strip_tags($item, $allowable_tags);
                     }
                 }
             }
         } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
             $return = strip_tags($data, $allowable_tags);
         }
 
@@ -1277,10 +1370,10 @@ trait VariableMethod
      * Вставляет HTML-код разрыва строки перед каждым переводом строки
      *
      * @param bool $is_xhtml
-     * @param bool $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function nl2br($is_xhtml = false, $recursive = false)
+    public function nl2br(bool $is_xhtml = false, bool $recursive = false): static
     {
         $this->data = static::getNl2br($this->data, $is_xhtml, $recursive);
 
@@ -1291,28 +1384,33 @@ trait VariableMethod
     /**
      * Вставляет HTML-код разрыва строки перед каждым переводом строки
      *
-     * @param string $data
-     * @param bool   $is_xhtml
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param bool $is_xhtml
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getNl2br($data = '', $is_xhtml = false, $recursive = false)
-    {
+    public static function getNl2br(
+        array|bool|float|int|string|null $data,
+        bool $is_xhtml = false,
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getNl2br($item, $is_xhtml, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = nl2br($item, $is_xhtml);
                     }
                 }
             }
 
         } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
             $return = nl2br($data, $is_xhtml);
         }
 
@@ -1323,12 +1421,12 @@ trait VariableMethod
     /**
      * Заменяет все вхождения строки поиска на строку замены
      *
-     * @param string|array $search    - искомое значение
-     * @param string|array $replace   - значение замены
-     * @param bool         $recursive - флаг для обхода потомков
+     * @param array|string $search искомое значение
+     * @param array|string $replace значение замены
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function strReplace($search = [], $replace = [], $recursive = false)
+    public function strReplace(array|string $search = [], array|string $replace = [], bool $recursive = false): static
     {
         $this->data = static::getStrReplace($this->data, $search, $replace, $recursive);
 
@@ -1339,29 +1437,35 @@ trait VariableMethod
     /**
      * Заменяет все вхождения строки поиска на строку замены
      *
-     * @param string|array $data      - строка или массив, в котором производится поиск и замена
-     * @param string|array $search    - искомое значение
-     * @param string|array $replace   - значение замены
-     * @param bool         $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param array|string $search искомое значение
+     * @param array|string $replace значение замены
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getStrReplace($data = '', $search = [], $replace = [], $recursive = false)
-    {
+    public static function getStrReplace(
+        array|bool|float|int|string|null $data,
+        array|string $search = [],
+        array|string $replace = [],
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getStrReplace($item, $search, $replace, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = str_replace($search, $replace, $item);
                     }
                 }
             }
 
         } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
             $return = str_replace($search, $replace, $data);
         }
 
@@ -1370,12 +1474,13 @@ trait VariableMethod
 
 
     /**
-     * Преобразовывает строку(и) в нижний регистр (lower-case).
+     * Преобразовывает строку(и) в нижний регистр (lower-case)
      *
-     * @param bool $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function lower($recursive = false)
+    public function lower(bool $recursive = false): static
     {
         $this->data = static::getLower($this->data, $recursive);
 
@@ -1384,29 +1489,32 @@ trait VariableMethod
 
 
     /**
-     * Преобразовывает строку(и) в нижний регистр (lower-case).
+     * Преобразовывает строку(и) в нижний регистр (lower-case)
      *
-     * @param string $data
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
+     * @throws Exception
      */
-    static public function getLower($data = '', $recursive = false)
+    public static function getLower(array|bool|float|int|string|null $data, bool $recursive = false): array|string
     {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getLower($item, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = VarStr::getLower($item);
                     }
                 }
             }
 
         } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
             $return = VarStr::getLower($data);
         }
 
@@ -1415,12 +1523,13 @@ trait VariableMethod
 
 
     /**
-     * Преобразовывает строку(и) в верхний регистр (upper-case).
+     * Преобразовывает строку(и) в верхний регистр (upper-case)
      *
      * @param bool $recursive - флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function upper($recursive = false)
+    public function upper(bool $recursive = false): static
     {
         $this->data = static::getUpper($this->data, $recursive);
 
@@ -1429,29 +1538,32 @@ trait VariableMethod
 
 
     /**
-     * Преобразовывает строку(и) в верхний регистр (upper-case).
+     * Преобразовывает строку(и) в верхний регистр (upper-case)
      *
-     * @param string $data
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param bool $recursive - флаг для обхода потомков
      * @return array|string
+     * @throws Exception
      */
-    static public function getUpper($data = '', $recursive = false)
+    public static function getUpper(array|bool|float|int|string|null $data, bool $recursive = false): array|string
     {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getUpper($item, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = VarStr::getUpper($item);
                     }
                 }
             }
 
         } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
             $return = VarStr::getUpper($data);
         }
 
@@ -1462,14 +1574,18 @@ trait VariableMethod
     /**
      * Удаляет экранирование символов
      *
-     * @param string|array $pattern     - Искомый шаблон. Может быть как строкой, так и массивом строк.
-     * @param string|array $replacement - Строка или массив строк для замены.
-     * @param bool         $recursive   - флаг для обхода потомков
-     * @param int          $limit       - Максимально возможное количество замен каждого шаблона для каждой строки subject. По умолчанию равно -1 (без ограничений).
+     * @param array|string $pattern искомый шаблон
+     * @param array|string $replacement
+     * @param bool $recursive флаг для обхода потомков
+     * @param int $limit максимально возможное количество замен каждого шаблона для каждой строки subject. По умолчанию равно -1 (без ограничений)
      * @return $this
      */
-    public function pregReplace($pattern = '', $replacement = '', $recursive = false, $limit = -1)
-    {
+    public function pregReplace(
+        array|string $pattern = '',
+        array|string $replacement = '',
+        bool $recursive = false,
+        int $limit = -1
+    ): static {
         $this->data = static::getPregReplace($this->data, $pattern, $replacement, $recursive, $limit);
 
         return $this;
@@ -1477,33 +1593,40 @@ trait VariableMethod
 
 
     /**
-     * Удаляет экранирование символов ( статически метод для использования в контексте класса )
+     * Удаляет экранирование символов (статически метод для использования в контексте класса)
      *
-     * @param string|array $data        -  Строка или массив строк для поиска и замены.
-     * @param string|array $pattern     - Искомый шаблон. Может быть как строкой, так и массивом строк.
-     * @param string|array $replacement - Строка или массив строк для замены.
-     * @param bool         $recursive   - флаг для обхода потомков
-     * @param int          $limit       - Максимально возможное количество замен каждого шаблона для каждой строки subject. По умолчанию равно -1 (без ограничений).
+     * @param array|bool|float|int|string|null $data
+     * @param array|string $pattern искомый шаблон
+     * @param array|string $replacement
+     * @param bool $recursive флаг для обхода потомков
+     * @param int $limit максимально возможное количество замен каждого шаблона для каждой строки subject. По умолчанию равно -1 (без ограничений)
      * @return array|string
      */
-    static public function getPregReplace($data, $pattern = '', $replacement = '', $recursive = false, $limit = -1)
-    {
+    public static function getPregReplace(
+        array|bool|float|int|string|null $data,
+        array|string $pattern = '',
+        array|string $replacement = '',
+        bool $recursive = false,
+        int $limit = -1
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getPregReplace($item, $pattern, $replacement, $recursive, $limit);
 
                     } else {
-                        $return[$key] = preg_replace($pattern, $replacement, (string)$item, $limit);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = preg_replace($pattern, $replacement, $item, $limit);
                     }
                 }
             }
 
         } else {
-            $return = preg_replace($pattern, $replacement, (string)$data, $limit);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = preg_replace($pattern, $replacement, $data, $limit);
         }
 
         return $return;
@@ -1513,10 +1636,10 @@ trait VariableMethod
     /**
      * Удаляет экранирование символов
      *
-     * @param bool $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function stripSlashes($recursive = false)
+    public function stripSlashes(bool $recursive = false): static
     {
         $this->data = static::getStripSlashes($this->data, $recursive);
 
@@ -1527,28 +1650,32 @@ trait VariableMethod
     /**
      * Удаляет экранирование символов
      *
-     * @param string|array $data
-     * @param bool         $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getStripSlashes($data, $recursive = false)
-    {
+    public static function getStripSlashes(
+        array|bool|float|int|string|null $data,
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getStripSlashes($item, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = stripslashes($item);
                     }
                 }
             }
 
         } else {
-            $return = stripslashes((string)$data);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = stripslashes($data);
         }
 
         return $return;
@@ -1558,12 +1685,12 @@ trait VariableMethod
     /**
      * Экранирует строку с помощью слешей
      *
-     * @note Экранируются следующие символы: одинарная кавычка ('), двойная кавычка ("), обратный слеш (\), NUL (байт NULL)
+     * @note Экранируются следующие символы: одинарная кавычка ['], двойная кавычка ["], обратный слеш [\], NUL (байт NULL)
      *
-     * @param bool $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function addSlashes($recursive = false)
+    public function addSlashes(bool $recursive = false): static
     {
         $this->data = static::getAddSlashes($this->data, $recursive);
 
@@ -1574,29 +1701,31 @@ trait VariableMethod
     /**
      * Экранирует строку с помощью слешей
      *
-     * @note Экранируются следующие символы: одинарная кавычка ('), двойная кавычка ("), обратный слеш (\), NUL (байт NULL)
+     * @note Экранируются следующие символы: одинарная кавычка ['], двойная кавычка ["], обратный слеш [\], NUL (байт NULL)
      *
-     * @param string|array $data
-     * @param bool         $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getAddSlashes($data, $recursive = false)
+    public static function getAddSlashes(array|bool|float|int|string|null $data, bool $recursive = false): array|string
     {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getAddSlashes($item, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = addslashes($item);
                     }
                 }
             }
         } else {
-            $return = addslashes((string)$data);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = addslashes($data);
         }
 
         return $return;
@@ -1606,15 +1735,17 @@ trait VariableMethod
     /**
      * Кодирует HTML-сущности в специальные символы
      *
-     * @example &amp;copy; > &copy; или &amp; > &
-     *
-     * @param int    $flags     - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding  - кодировка
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @example &amp;copy; > &copy; или &amp; > &
      */
-    public function htmlEntityDecode($flags = ENT_COMPAT | ENT_HTML5, $encoding = 'UTF-8', $recursive = false)
-    {
+    public function htmlEntityDecode(
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $recursive = false
+    ): static {
         $this->data = static::getHtmlEntityDecode($this->data, $flags, $encoding, $recursive);
 
         return $this;
@@ -1626,33 +1757,35 @@ trait VariableMethod
      *
      * @example: &amp;copy; > &copy; | &amp; > & | &quot; > " | &bull; > •
      *
-     * @param        $data
-     * @param int    $flags     - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding  - кодировка
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getHtmlEntityDecode(
-        $data,
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $recursive = false
-    ) {
+    public static function getHtmlEntityDecode(
+        array|bool|float|int|string|null $data,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getHtmlEntityDecode($item, $flags, $encoding, $recursive);
 
                     } else {
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
                         $return[$key] = html_entity_decode($item, $flags, $encoding);
                     }
                 }
             }
         } else {
-            $return = html_entity_decode((string)$data, $flags, $encoding);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = html_entity_decode($data, $flags, $encoding);
         }
 
         return $return;
@@ -1662,21 +1795,21 @@ trait VariableMethod
     /**
      * Кодирует только специальные символы в их HTML-сущности
      *
-     * @note    Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
+     * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
      * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
      *
-     * @param int    $flags        - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding     - кодировка
-     * @param bool   $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
-     * @param bool   $recursive    - флаг для обхода потомков
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
     public function htmlSpecialCharsEncode(
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $doubleEncode = true,
-        $recursive = false
-    ) {
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = true,
+        bool $recursive = false
+    ): static {
         $this->data = static::getHtmlSpecialCharsEncode($this->data, $flags, $encoding, $doubleEncode, $recursive);
 
         return $this;
@@ -1686,38 +1819,40 @@ trait VariableMethod
     /**
      * Кодирует только специальные символы в их HTML-сущности
      *
-     * @note    Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
+     * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
      * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
      *
-     * @param string|array $data
-     * @param int          $flags        - битовая маска из флагов определяющая режим обработки
-     * @param string       $encoding     - кодировка
-     * @param bool         $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
-     * @param bool         $recursive    - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getHtmlSpecialCharsEncode(
-        $data,
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $doubleEncode = false,
-        $recursive = false
-    ) {
+    public static function getHtmlSpecialCharsEncode(
+        array|bool|float|int|string|null $data,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false,
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
 
                     } else {
-                        $return[$key] = htmlspecialchars((string)$item, $flags, $encoding, $doubleEncode);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = htmlspecialchars($item, $flags, $encoding, $doubleEncode);
                     }
                 }
             }
         } else {
-            $return = htmlspecialchars((string)$data, $flags, $encoding, $doubleEncode);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = htmlspecialchars($data, $flags, $encoding, $doubleEncode);
         }
 
         return $return;
@@ -1725,24 +1860,24 @@ trait VariableMethod
 
 
     /**
-     * Кодирует ( все допустимые! ) символы в соответствующие HTML-сущности
+     * Кодирует (все допустимые!) символы в соответствующие HTML-сущности
      * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
      *
-     * @note    для преобразования только символов &, ", ', <, > используйте self::htmlSpecialCharsEncode() !
+     * @note для преобразования только символов &, ", ', <, > используйте self::htmlSpecialCharsEncode() !
      * @example & > &amp; | " > &quot;
      *
-     * @param int    $flags        - битовая маска из флагов определяющая режим обработки
-     * @param string $encoding     - кодировка
-     * @param bool   $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
-     * @param bool   $recursive    - флаг для обхода потомков
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
     public function htmlEntityEncode(
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $doubleEncode = false,
-        $recursive = false
-    ) {
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false,
+        bool $recursive = false
+    ): static {
         $this->data = static::getHtmlEntityEncode($this->data, $flags, $encoding, $doubleEncode, $recursive);
 
         return $this;
@@ -1750,41 +1885,43 @@ trait VariableMethod
 
 
     /**
-     * Кодирует ( все допустимые! ) символы в соответствующие HTML-сущности
+     * Кодирует (все допустимые!) символы в соответствующие HTML-сущности
      * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
      *
-     * @note    для преобразования только символов &, ", ', <, > используйте self::htmlSpecialCharsEncode() !
+     * @note для преобразования только символов &, ", ', <, > используйте self::htmlSpecialCharsEncode() !
      * @example & > &amp; | " > &quot;
      *
-     * @param string|array $data
-     * @param int          $flags        - битовая маска из флагов определяющая режим обработки
-     * @param string       $encoding     - кодировка
-     * @param bool         $doubleEncode - при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
-     * @param bool         $recursive    - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getHtmlEntityEncode(
-        $data,
-        $flags = ENT_COMPAT | ENT_HTML5,
-        $encoding = 'UTF-8',
-        $doubleEncode = false,
-        $recursive = false
-    ) {
+    public static function getHtmlEntityEncode(
+        array|bool|float|int|string|null $data,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false,
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
 
                     } else {
-                        $return[$key] = htmlentities((string)$item, $flags, $encoding, $doubleEncode);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = htmlentities($item, $flags, $encoding, $doubleEncode);
                     }
                 }
             }
         } else {
-            $return = htmlentities((string)$data, $flags, $encoding, $doubleEncode);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = htmlentities($data, $flags, $encoding, $doubleEncode);
         }
 
         return $return;
@@ -1795,10 +1932,11 @@ trait VariableMethod
      * Перевод данных в дату с проверкой по формату
      *
      * @param string $format
-     * @param bool   $recursive - флаг для обхода потомков
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function makeDate($format = 'Y-m-d', $recursive = false)
+    public function makeDate(string $format = 'Y-m-d', bool $recursive = false): static
     {
         $this->data = static::getMakeDate($this->data, $this->getDefault(), $format, $recursive);
 
@@ -1809,31 +1947,52 @@ trait VariableMethod
     /**
      * Проверка даты по указанному формату
      *
-     * @param mixed  $data
-     * @param mixed  $default
+     * @note пустые значения будут заполнены значениями из $default!
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param string $default
      * @param string $format
-     * @param bool   $recursive - флаг для обхода потомков
-     * @return array|null|string
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     * @throws Exception
      */
-    static public function getMakeDate($data, $default = null, $format = 'Y-m-d', $recursive = false)
-    {
+    public static function getMakeDate(
+        array|bool|float|int|string|null $data,
+        string $default,
+        string $format = 'Y-m-d',
+        bool $recursive = false
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
 
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getMakeDate($item, $default, $format, $recursive);
 
                     } else {
-                        $return[$key] = ! is_string($item) ? $default : VarStr::makeDate($item, $default, $format);
+                        $item = trim(is_string($item) ? $item : VarStr::getMakeString($item));
+
+                        try {
+                            VarStr::makeDate($item, $format);
+                            $return[$key] = $item !== "" ? $item : $default;
+                        } catch (Throwable) {
+                            $return[$key] = $default;
+                        }
                     }
                 }
             }
 
         } else {
-            $return = ! is_string($data) ? $default : VarStr::makeDate($data, $default, $format);
+            $data = trim(is_string($data) ? $data : VarStr::getMakeString($data));
+
+            try {
+                VarStr::makeDate($data, $format);
+                $return = $data !== "" ? $data : $default;
+            } catch (Throwable) {
+                $return = $default;
+            }
         }
 
         return $return;
@@ -1841,13 +2000,13 @@ trait VariableMethod
 
 
     /**
-     * Удаляет пробелы из начала и конца строки (или другие символы при передачи их вторым параметром )
+     * Удаляет пробелы из начала и конца строки (или другие символы при передаче их вторым параметром)
      *
-     * @param null|array|string $removeChar
-     * @param bool              $recursive - флаг для обхода потомков
+     * @param array|string $removeChar
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function trim($removeChar = " \t\n\r\0\x0B", $recursive = false)
+    public function trim(array|string $removeChar = " \t\n\r\0\x0B", bool $recursive = false): static
     {
         $this->data = static::getTrim($this->data, $removeChar, $recursive);
 
@@ -1856,37 +2015,48 @@ trait VariableMethod
 
 
     /**
-     * Удаляет пробелы из начала и конца строки (или другие символы при передачи их вторым параметром )
+     * Удаляет пробелы из начала и конца строки (или другие символы при передаче их вторым параметром)
      *
-     * @param string|array      $data
-     * @param null|array|string $removeChar - список символов для удаления
-     * @param bool              $recursive  - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param array|string $removeChar список символов для удаления
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getTrim($data = '', $removeChar = " \t\n\r\0\x0B", $recursive = false)
-    {
-        if (is_array($data) && is_array($default = [])) {
+    public static function getTrim(
+        array|bool|float|int|string|null $data,
+        array|string $removeChar = " \t\n\r\0\x0B",
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            reset($data);
 
-            if (count($data) > 0) {
-                $default = VarArray::trim($data, $removeChar, $recursive);
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $return[$key] = static::getTrim($item, $removeChar, $recursive);
+
+                } else {
+                    $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                    $return[$key] = VarStr::trim($item, $removeChar);
+                }
             }
 
         } else {
-            $default = VarStr::trim($data, $removeChar);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = VarStr::trim($data, $removeChar);
         }
 
-        return $default;
+        return $return;
     }
 
 
     /**
      * Удаление указанных символов из значений
      *
-     * @param null|array|string $removeChar
-     * @param bool              $recursive - флаг для обхода потомков
+     * @param array|string $removeChar
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function removeSymbol($removeChar = ["\n", "\r", "\t"], $recursive = false)
+    public function removeSymbol(array|string $removeChar = ["\n", "\r", "\t"], bool $recursive = false): static
     {
         $this->data = static::getRemoveSymbol($this->data, $removeChar, $recursive);
 
@@ -1897,46 +2067,51 @@ trait VariableMethod
     /**
      * Удаление указанных символов из значений
      *
-     * @param string|array      $data
-     * @param null|array|string $removeChar
-     * @param bool              $recursive - флаг для обхода потомков
-     * @return string
+     * @param array|bool|float|int|string|null $data
+     * @param array|string $removeChar
+     * @param bool $recursive - флаг для обхода потомков
+     * @return array|string
      */
-    static public function getRemoveSymbol($data = '', $removeChar = ["\n", "\r", "\t"], $recursive = false)
-    {
+    public static function getRemoveSymbol(
+        array|bool|float|int|string|null $data,
+        array|string $removeChar = ["\n", "\r", "\t"],
+        bool $recursive = false
+    ): array|string {
         $removeChar = is_array($removeChar) ? $removeChar : [VarStr::getMakeString($removeChar)];
 
-        if (is_array($data) && is_array($default = [])) {
-
+        if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $default[$key] = static::getRemoveSymbol($item, $removeChar, $recursive);
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getRemoveSymbol($item, $removeChar, $recursive);
 
                     } else {
-                        $default[$key] = VarStr::getRemoveSymbol($item, $removeChar);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = VarStr::getRemoveSymbol($item, $removeChar);
                     }
                 }
             }
 
         } else {
-            $default = VarStr::getRemoveSymbol($data, $removeChar);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = VarStr::getRemoveSymbol($data, $removeChar);
         }
 
-        return $default;
+        return $return;
     }
 
 
     /**
      * Удаление значений из массива
      *
-     * @param array $remove    ['', 0, null, 'null']
-     * @param bool  $recursive - флаг для обхода потомков
+     * @param array $remove ['', 0, null, 'null']
+     * @param bool $recursive - флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function removeItems($remove = ['', 0, null, 'null'], $recursive = false)
+    public function removeItems(array $remove = ['', 0, null, 'null'], bool $recursive = false): static
     {
         $this->data = static::getRemoveItems($this->data, $remove, $recursive);
 
@@ -1945,32 +2120,35 @@ trait VariableMethod
 
 
     /**
-     * Удаление значений из массива ( для строк поведение не предусмотрено! )
+     * Удаление значений из массива
      *
-     * @param string $data
-     * @param array  $remove    ['', 0, null, 'null']
-     * @param bool   $recursive - флаг для обхода потомков
-     * @return array
+     * @param array|bool|float|int|string|null $data
+     * @param array $remove ['', 0, null, 'null']
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     * @throws Exception
      */
-    static public function getRemoveItems($data = '', $remove = [0, '', null, 'null'], $recursive = false)
-    {
-        if (is_array($data) && count($data) > 0) {
+    public static function getRemoveItems(
+        array|bool|float|int|string|null $data,
+        array $remove = [0, '', null, 'null'],
+        bool $recursive = false
+    ): array|string {
+        if (is_string($data)) {
+            throw new Exception("Для строк поведение не предусмотрено!");
+        }
+
+        if (count($data) > 0) {
             reset($data);
 
-            if ($recursive === true) {
-                foreach ($data as $key => $item) {
-                    if (is_array($item)) {
-                        $data[$key] = static::getRemoveItems($item, $remove, $recursive);
-                    } else {
-                        if (in_array($item, $remove)) {
-                            $data[$key] = null;
-                            unset($data[$key]);
-                        }
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $data[$key] = static::getRemoveItems($item, $remove, $recursive);
+                } else {
+                    if (in_array($item, $remove)) {
+                        $data[$key] = null;
+                        unset($data[$key]);
                     }
                 }
-
-            } else {
-                $data = VarArray::getRemove($data, $remove);
             }
         }
 
@@ -1979,13 +2157,13 @@ trait VariableMethod
 
 
     /**
-     * Обрезает строку до 250 символов ( без всяких условий )
+     * Обрезает строку до 250 символов (без всяких условий)
      *
-     * @param null|int $length
-     * @param bool     $recursive - флаг для обхода потомков
+     * @param int $length
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function crop($length = 250, $recursive = false)
+    public function crop(int $length = 250, bool $recursive = false): static
     {
         $this->data = static::getCrop($this->data, $length, $recursive);
 
@@ -1996,52 +2174,57 @@ trait VariableMethod
     /**
      * Обрезает строку до указанных символов
      *
-     * @param string|array $data
-     * @param null|int     $length
-     * @param bool         $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param int $length
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getCrop($data = '', $length = 250, $recursive = false)
-    {
-        if (is_null($length)) {
-            return $data;
-        }
-
-        if (is_array($data) && is_array($default = [])) {
-
+    public static function getCrop(
+        array|bool|float|int|string|null $data,
+        int $length = 250,
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $default[$key] = static::getCrop($item, $length, $recursive);
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getCrop($item, $length, $recursive);
 
                     } else {
-                        $default[$key] = VarStr::crop($item, $length);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = VarStr::crop($item, $length);
                     }
                 }
             }
 
         } else {
-            $default = VarStr::crop(VarStr::getMakeString($data), $length);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = VarStr::crop(VarStr::getMakeString($data), $length);
         }
 
-        return $default;
+        return $return;
     }
 
 
     /**
      * Сокращает текст по параметрам
      *
-     * @param null|int  $length
-     * @param string    $end
-     * @param bool|true $transform - преобразование символов
-     * @param bool|true $smart     - флаг включающий умную систему резки с учётом целостности слов
-     * @param bool      $recursive - флаг для обхода потомков
+     * @param int $length
+     * @param string $end
+     * @param bool $transform преобразование символов
+     * @param bool $smart флаг включающий умную систему резки с учётом целостности слов
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function reduce($length = 250, $end = '', $transform = true, $smart = true, $recursive = false)
-    {
+    public function reduce(
+        int $length = 250,
+        string $end = '',
+        bool $transform = true,
+        bool $smart = true,
+        bool $recursive = false
+    ): static {
         $this->data = static::getReduce($this->data, $length, $end, $transform, $smart, $recursive);
 
         return $this;
@@ -2051,61 +2234,55 @@ trait VariableMethod
     /**
      * Сокращает текст по параметрам
      *
-     * @param string|array $data
-     * @param null|int     $length
-     * @param string       $end
-     * @param bool|true    $transform - преобразование символов
-     * @param bool|true    $smart     - флаг включающий умную систему резки с учётом целостности слов
-     * @param bool         $recursive - флаг для обхода потомков
+     * @param array|bool|float|int|string|null $data
+     * @param int $length
+     * @param string $end
+     * @param bool $transform преобразование символов
+     * @param bool $smart флаг включающий умную систему резки с учётом целостности слов
+     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      */
-    static public function getReduce(
-        $data = '',
-        $length = 250,
-        $end = '',
-        $transform = true,
-        $smart = true,
-        $recursive = false
-    ) {
-        if (is_null($length)) {
-            return $data;
-        }
-
-        $default = VarStr::getMakeString($data);
-
-        if (is_string($data) && mb_strlen($data) > 0) {
-            return VarStr::reduce($data, $length, $end, $transform, $smart);
-        }
-
-        if (is_array($data) && is_array($default = [])) {
-
+    public static function getReduce(
+        array|bool|float|int|string|null $data,
+        int $length = 250,
+        string $end = '',
+        bool $transform = true,
+        bool $smart = true,
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $default[$key] = static::getReduce($item, $length, $end, $transform, $smart, $recursive);
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getReduce($item, $length, $end, $transform, $smart, $recursive);
 
                     } else {
-                        $default[$key] = VarStr::reduce($item, $length, $end, $transform, $smart);
+                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $return[$key] = VarStr::reduce($item, $length, $end, $transform, $smart);
                     }
                 }
             }
+        } else {
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $return = VarStr::reduce($data, $length, $end, $transform, $smart);
         }
 
-        return $default;
+        return $return;
     }
 
 
     /**
-     * Альтернатива in_array но только тут ещё значения default
+     * Возвращает значение(я) которое были проверены через $needle (как in_array), но только тут ещё значения default
      *
      * @param array $needle
-     * @param bool  $strict
-     * @param bool  $recursive - флаг для обхода потомков
+     * @param bool $strict
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function inArray(array $needle = [], $strict = false, $recursive = false)
+    public function inArray(array $needle = [], bool $strict = false, bool $recursive = false): static
     {
         $this->data = static::getInArray($this->data, $this->getDefault(), $needle, $strict, $recursive);
 
@@ -2114,51 +2291,42 @@ trait VariableMethod
 
 
     /**
-     * Альтернатива in_array но только тут ещё значения default
+     * Возвращает значение(я) которое были проверены через $needle (как in_array), но только тут ещё значения default
      *
-     * @param array $data
-     * @param       $default
+     * @param array|bool|float|int|string|null $data
+     * @param string $default
      * @param array $needle
-     * @param bool  $strict
-     * @param bool  $recursive - флаг для обхода потомков
-     * @return bool
+     * @param bool $strict
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     * @throws Exception
      */
-    static public function getInArray($data, $default, $needle = [], $strict = false, $recursive = false)
-    {
-        if (is_array($data) && is_array($return = [])) {
-
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
-                        $return[$key] = static::getInArray($item, $default, $needle, $strict, $recursive);
-
-                    } else {
-                        $item = static::getTrim(VarStr::getMakeString($item));
-                        $return[$key] = in_array($item, $needle, $strict) ? $item : $default;
-                    }
-                }
-            }
-
-        } else {
-            $data = static::getTrim(VarStr::getMakeString($data));
-            $return = in_array($data, $needle, $strict) ? $data : $default;
+    public static function getInArray(
+        array|bool|float|int|string|null $data,
+        string $default,
+        array $needle = [],
+        bool $strict = false,
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data)) {
+            throw new Exception("Для массива поведение не предусмотрено!");
         }
 
-        return $return;
+        $data = static::getTrim(VarStr::getMakeString($data));
+
+        return in_array($data, $needle, $strict) ? $data : $default;
     }
 
 
     /**
-     * Проверка строки или массива строк в которых содержатся списки идентификаторов.
+     * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
-     * @param string|null $delimiter - разделитель строки
-     * @param string      $unique    - флаг для проверки значений на уникальное повторение
-     * @param bool        $recursive - флаг для обхода потомков
+     * @param string $delimiter разделитель строки
+     * @param string $unique флаг для проверки значений на уникальное повторение
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      */
-    public function ids($delimiter = ',', $unique = 'single', $recursive = false)
+    public function ids(string $delimiter = ',', string $unique = 'single', bool $recursive = false): static
     {
         $this->data = static::getIds($this->data, $this->getDefault(), $delimiter, $unique, $recursive);
 
@@ -2167,38 +2335,43 @@ trait VariableMethod
 
 
     /**
-     * Проверка строки или массива строк в которых содержатся списки идентификаторов.
+     * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
      * @note ID это число больше нуля. Если условие наличия числа в проверках не подтверждается и значения $default не равны числу больше нуля,
      * данные будут сокращены или совсем не созданы!
      * @note Если данные являются массивом и надо только проверить их значения, следует указать значение разделителя как NULL
      *
-     * @param array|string $data
-     * @param mixed        $default   - значение по умолчанию
-     * @param string|null  $delimiter - разделитель строки
-     * @param string       $unique    - флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
-     * @param bool         $recursive - флаг для обхода потомков
-     * @param array        $tmp
+     * @param array|bool|float|int|string|null $data
+     * @param mixed $default значение по умолчанию
+     * @param string $delimiter разделитель строки
+     * @param string $unique флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
+     * @param bool $recursive флаг для обхода потомков
+     * @param array $tmp
      * @return array|string
      */
-    static function getIds($data, $default = null, $delimiter = ',', $unique = 'single', $recursive = false, &$tmp = [])
-    {
+    public static function getIds(
+        array|bool|float|int|string|null $data,
+        mixed $default = null,
+        string $delimiter = ',',
+        string $unique = 'single',
+        bool $recursive = false,
+        array &$tmp = []
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
-
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive, $tmp);
 
                     } else {
-                        $items = static::getTrim($item);
+                        $items = trim(is_string($item) ? $item : VarStr::getMakeString($item));
 
                         // логика разбития строки массива по разделителю
-                        if (! is_null($delimiter) && $items != '') {
+                        if ($items !== '') {
                             $items = VarStr::explode($delimiter, $items, []);
-                            $items = VarArray::getRemove(static::getMinInteger($items), 0);
+                            $items = VarArray::getRemove(static::getMinInteger($items), [0]);
 
                             // Проверка на уникальность в текущем списке
                             $items = $unique === 'single' ? array_unique($items) : $items;
@@ -2261,7 +2434,7 @@ trait VariableMethod
                 $return = static::getIds([$data], $default, $delimiter, $unique, $recursive, $tmp);
 
                 // Поскольку указали проверку по массиву,
-                // на выходе то-же будет массив и надо делать проверку на наличие разделителя ( on может быть NULL )
+                // на выходе то-же будет массив и надо делать проверку на наличие разделителя (on может быть NULL)
                 if (is_array($return)) {
                     $return = is_null($delimiter) ? join('', $return) : join($delimiter, $return);
                 }
@@ -2276,47 +2449,54 @@ trait VariableMethod
 
 
     /**
-     * Проверка строку или массива строк в которых содержатся теги с указанным разделителем.
+     * Проверка строку или массива строк в которых содержатся теги с указанным разделителем
      *
-     * @param string|null $delimiter - разделитель строки
-     * @param string      $unique    - флаг для проверки значений на уникальное повторение
-     * @param bool        $recursive - флаг для обхода потомков
+     * @param string $delimiter разделитель строки
+     * @param string $unique флаг для проверки значений на уникальное повторение
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function tags($delimiter = ',', $unique = 'single', $recursive = false)
+    public function tags(string $delimiter = ',', string $unique = 'single', bool $recursive = false): static
     {
-        $this->data = static::getTags($this->data, $this->getDefault(), $delimiter, $unique, $recursive);
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_numeric($default) || is_string($default))) {
+            throw new Exception("Default values are not an string");
+        }
+
+        $this->data = static::getTags($this->data, (string)$default, $delimiter, $unique, $recursive);
 
         return $this;
     }
 
 
     /**
-     * Проверка строку или массива строк в которых содержатся теги с указанным разделителем.
+     * Проверка строку или массива строк в которых содержатся теги с указанным разделителем
      *
-     * @param array|string $data      - значения
-     * @param mixed        $default   - значение по умолчанию
-     * @param string|null  $delimiter - разделитель строки
-     * @param string       $unique    - флаг для проверки значений на уникальное повторение ( в рамках одной строки )
-     * @param bool         $recursive - флаг для обхода потомков
-     * @param array        $tmp
+     * @param array|bool|float|int|string|null $data
+     * @param string $default значение по умолчанию
+     * @param string $delimiter разделитель строки
+     * @param string $unique флаг для проверки значений на уникальное повторение (в рамках одной строки)
+     * @param bool $recursive флаг для обхода потомков
+     * @param array $tmp
      * @return array|string
      */
-    static function getTags(
-        $data,
-        $default = null,
-        $delimiter = ',',
-        $unique = 'single',
-        $recursive = false,
-        &$tmp = []
-    ) {
+    public static function getTags(
+        array|bool|float|int|string|null $data,
+        string $default,
+        string $delimiter = ',',
+        string $unique = 'single',
+        bool $recursive = false,
+        array &$tmp = []
+    ): array|string {
         if (is_array($data) && is_array($return = [])) {
 
             if (count($data) > 0) {
                 reset($data);
 
                 foreach ($data as $key => $item) {
-                    if ($recursive === true && is_array($item)) {
+                    if ($recursive && is_array($item)) {
                         $current = [];
                         $return[$key] = static::getTags($item, $default, $delimiter, $unique, $recursive, $current);
 
@@ -2349,7 +2529,8 @@ trait VariableMethod
             }
 
         } else {
-            $data = VarStr::explode(",", strval($data), ['']);
+            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = VarStr::explode(",", $data, ['']);
 
             foreach ($data as $key => $str) {
                 if (empty($str)) {
