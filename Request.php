@@ -2,7 +2,7 @@
 
 namespace Warkhosh\Variable;
 
-use Warkhosh\Variable\Traits\Singleton;
+use Warkhosh\Component\Traits\Singleton;
 
 /**
  * Class Request
