@@ -137,13 +137,15 @@ trait VariableMethod
      */
     public function toArray(?string $delimiter = null): static
     {
-        $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
-
-        if (! (is_null($default) || is_array($default))) {
-            throw new Exception("Default values are not an array");
-        }
-
         if (gettype($this->data) == 'string') {
+            $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
+
+            // Проверка типа только для строк, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+            // К примеру get('status_id', -1, 'array')->getInteger('filter');
+            if (! (is_null($default) || is_array($default))) {
+                throw new Exception("Default values are not an array");
+            }
+
             $this->data = static::getToArray($this->data, $delimiter, (array)$default);
         } else {
             $this->data = (array)$this->data;
