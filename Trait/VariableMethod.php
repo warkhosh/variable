@@ -8,7 +8,6 @@ use Warkhosh\Variable\VariableOptions;
 use Warkhosh\Variable\VarInt;
 use Warkhosh\Variable\VarStr;
 use Exception;
-use Throwable;
 
 /**
  * Trait VariableMethod
@@ -25,33 +24,8 @@ use Throwable;
  */
 trait VariableMethod
 {
-    /**
-     * @var array|float|int|string|null
-     */
-    protected array|float|int|string|null $data = null;
-
-    /**
-     * Default значение
-     *
-     * @note надо следить что-бы в значение по умолчанию не передавали массив или объект (если этого не требует логика)
-     *
-     * @var array|float|integer|string|null $default
-     */
-    protected array|float|int|string|null $default = null;
-
-    /**
-     * Служит значением которое будет заменять пустые строки если они получились при условии преобразования данных в строки
-     *
-     * @var string
-     */
-    protected string $convertAnEmptyString = '';
-
-    /**
-     * Значение сценария по которому происходит преобразование значения
-     *
-     * @var string
-     */
-    protected string $__option = "";
+    use VariableData;
+    use VariableExtendedMethod;
 
     /**
      * Записываем параметр для использования их как Default
@@ -65,7 +39,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Возвращает значения по умолчанию
@@ -85,7 +58,6 @@ trait VariableMethod
 
         return $this->default;
     }
-
 
     /**
      * Объявление типа переменной с преобразованием в неё если она не такая
@@ -128,7 +100,6 @@ trait VariableMethod
         }
     }
 
-
     /**
      * Магический метод для реализации вызова зарезервированных методов как функций
      *
@@ -153,7 +124,6 @@ trait VariableMethod
         //Log::error('Call of unknown method name: ' . $name . " in class: " . get_called_class());
         return $this;
     }
-
 
     /**
      * Преобразование значения переменной в массив!
@@ -181,7 +151,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Преобразование значения переменной в тип массив!
@@ -216,7 +185,6 @@ trait VariableMethod
         return $default;
     }
 
-
     /**
      * Преобразование значения переменной в тип строка!
      * Для последующих операций над переменной именно по сценарию строчного что-бы вернуть одно значение переменной.
@@ -233,7 +201,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Преобразование значения переменной в тип = строчный!
@@ -268,7 +235,6 @@ trait VariableMethod
         return $default;
     }
 
-
     /**
      * Преобразование значения в строку
      *
@@ -288,7 +254,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Преобразование значения(й) в строку
@@ -325,7 +290,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Возвращает преобразованное значение(я) в строку в зависимости от указанного алгоритма
      *
@@ -342,7 +306,6 @@ trait VariableMethod
     ): array|string {
         return $this->input($option, $recursive, $remove)->get();
     }
-
 
     /**
      * Преобразование значений в строку(и) в зависимости от указанного алгоритма
@@ -535,7 +498,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Устанавливает во что преобразовывать пустую строку(и) если они получились при конвертации
@@ -762,7 +724,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Возвращает преобразованное значение(я) в целые числа в зависимости от указанного алгоритма
      *
@@ -776,7 +737,6 @@ trait VariableMethod
     {
         return $this->integer($option, $positive, $recursive)->get();
     }
-
 
     /**
      * Преобразование значений в целое число(а) в зависимости от указанного алгоритма
@@ -868,7 +828,6 @@ trait VariableMethod
         return $this;
     }
 
-
     /**
      * Возвращает преобразованное значение(я) в целое положительное число (денежную единицу без копеек)
      *
@@ -891,7 +850,6 @@ trait VariableMethod
 
         return static::getMakePrice($data, (int)$default, $recursive, $round);
     }
-
 
     /**
      * Преобразование значения(й) в целое положительное число (денежную единицу без копеек)
@@ -937,7 +895,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Возвращает преобразованное значение(я) в целое положительное число (денежную единицу с копейками)
      *
@@ -965,7 +922,6 @@ trait VariableMethod
 
         return static::getMakeCost($data, $default, $recursive, $decimals, $round, $separator);
     }
-
 
     /**
      * Заменяет переданные пустые значения на null или преобразовывает в float
@@ -1013,46 +969,6 @@ trait VariableMethod
     }
 
     /**
-     * Преобразование значения(й) в целое число с проверкой, что они выше чем default
-     *
-     * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
-     * @note возможны отрицательные значения!
-     *
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|int
-     * @throws Exception
-     */
-    public function getIntegerNotLess(bool $recursive = false): array|int
-    {
-        return $this->integerNotLess($recursive)->get();
-    }
-
-
-    /**
-     * Преобразование значения(й) в целое число с проверкой, что они выше чем default
-     *
-     * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
-     * @note возможны отрицательные значения!
-     *
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    public function integerNotLess(bool $recursive = false): static
-    {
-        $default = $this->getDefault();
-
-        if (! (is_null($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an number");
-        }
-
-        $this->data = static::getMinInteger($this->data, true, (int)$default, $recursive);
-
-        return $this;
-    }
-
-
-    /**
      * Преобразование значения(й) в целое число с проверкой, что оно не ниже указанного минимального значения
      *
      * @note возможны отрицательные значения!
@@ -1075,7 +991,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Возвращает преобразованное значение(я) в целое число с проверкой, что оно не ниже указанного минимального значения
@@ -1119,7 +1034,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      *  Преобразование значения(й) в целое число с проверкой, что оно не выше указанного минимального значения
      *
@@ -1144,7 +1058,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Возвращает преобразованное значение(я) в целое число с проверкой, что оно не выше указанного минимального значения
@@ -1187,7 +1100,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Форматирует число с разделением групп
      *
@@ -1217,7 +1129,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Форматирует число с разделением групп
@@ -1270,307 +1181,6 @@ trait VariableMethod
         return $return;
     }
 
-
-    /**
-     * Преобразование значений в MD5-хэш
-     *
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     */
-    public function makeMd5(bool $recursive = false): static
-    {
-        $this->data = static::getMd5($this->data, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Преобразование значений в MD5-хэш
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     */
-    public static function getMd5(array|bool|float|int|string|null $data, bool $recursive = false): array|string
-    {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMd5($item, $recursive);
-
-                    } else {
-                        $return[$key] = md5(is_string($item) ? $item : VarStr::getMakeString($item));
-                    }
-                }
-            }
-        } else {
-            $return = md5(VarStr::getMakeString($data));
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Удаляет HTML и PHP-теги из данных
-     *
-     * @param string $allowable_tags
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     */
-    public function stripTags(string $allowable_tags = '', bool $recursive = false): static
-    {
-        $this->data = static::getStripTags($this->data, $allowable_tags, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Удаляет HTML и PHP-теги из данных
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param string $allowable_tags
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     */
-    public static function getStripTags(
-        array|bool|float|int|string|null $data,
-        string $allowable_tags = '',
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getStripTags($item, $allowable_tags, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = strip_tags($item, $allowable_tags);
-                    }
-                }
-            }
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = strip_tags($data, $allowable_tags);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Вставляет HTML-код разрыва строки перед каждым переводом строки
-     *
-     * @param bool $is_xhtml
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     */
-    public function nl2br(bool $is_xhtml = false, bool $recursive = false): static
-    {
-        $this->data = static::getNl2br($this->data, $is_xhtml, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Вставляет HTML-код разрыва строки перед каждым переводом строки
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param bool $is_xhtml
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     */
-    public static function getNl2br(
-        array|bool|float|int|string|null $data,
-        bool $is_xhtml = false,
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getNl2br($item, $is_xhtml, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = nl2br($item, $is_xhtml);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = nl2br($data, $is_xhtml);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Заменяет все вхождения строки поиска на строку замены
-     *
-     * @param array|string $search искомое значение
-     * @param array|string $replace значение замены
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     */
-    public function strReplace(array|string $search = [], array|string $replace = [], bool $recursive = false): static
-    {
-        $this->data = static::getStrReplace($this->data, $search, $replace, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Заменяет все вхождения строки поиска на строку замены
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param array|string $search искомое значение
-     * @param array|string $replace значение замены
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     */
-    public static function getStrReplace(
-        array|bool|float|int|string|null $data,
-        array|string $search = [],
-        array|string $replace = [],
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getStrReplace($item, $search, $replace, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = str_replace($search, $replace, $item);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = str_replace($search, $replace, $data);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Преобразовывает строку(и) в нижний регистр (lower-case)
-     *
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    public function lower(bool $recursive = false): static
-    {
-        $this->data = static::getLower($this->data, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Преобразовывает строку(и) в нижний регистр (lower-case)
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     * @throws Exception
-     */
-    public static function getLower(array|bool|float|int|string|null $data, bool $recursive = false): array|string
-    {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getLower($item, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = VarStr::getLower($item);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = VarStr::getLower($data);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Преобразовывает строку(и) в верхний регистр (upper-case)
-     *
-     * @param bool $recursive - флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    public function upper(bool $recursive = false): static
-    {
-        $this->data = static::getUpper($this->data, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Преобразовывает строку(и) в верхний регистр (upper-case)
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param bool $recursive - флаг для обхода потомков
-     * @return array|string
-     * @throws Exception
-     */
-    public static function getUpper(array|bool|float|int|string|null $data, bool $recursive = false): array|string
-    {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getUpper($item, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = VarStr::getUpper($item);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = VarStr::getUpper($data);
-        }
-
-        return $return;
-    }
-
-
     /**
      * Удаляет экранирование символов
      *
@@ -1590,7 +1200,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Удаляет экранирование символов (статически метод для использования в контексте класса)
@@ -1632,106 +1241,6 @@ trait VariableMethod
         return $return;
     }
 
-
-    /**
-     * Удаляет экранирование символов
-     *
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     */
-    public function stripSlashes(bool $recursive = false): static
-    {
-        $this->data = static::getStripSlashes($this->data, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Удаляет экранирование символов
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     */
-    public static function getStripSlashes(
-        array|bool|float|int|string|null $data,
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getStripSlashes($item, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = stripslashes($item);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = stripslashes($data);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * Экранирует строку с помощью слешей
-     *
-     * @note Экранируются следующие символы: одинарная кавычка ['], двойная кавычка ["], обратный слеш [\], NUL (байт NULL)
-     *
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     */
-    public function addSlashes(bool $recursive = false): static
-    {
-        $this->data = static::getAddSlashes($this->data, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Экранирует строку с помощью слешей
-     *
-     * @note Экранируются следующие символы: одинарная кавычка ['], двойная кавычка ["], обратный слеш [\], NUL (байт NULL)
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     */
-    public static function getAddSlashes(array|bool|float|int|string|null $data, bool $recursive = false): array|string
-    {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getAddSlashes($item, $recursive);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = addslashes($item);
-                    }
-                }
-            }
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = addslashes($data);
-        }
-
-        return $return;
-    }
-
-
     /**
      * Кодирует HTML-сущности в специальные символы
      *
@@ -1750,7 +1259,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Кодирует HTML-сущности в специальные символы
@@ -1791,7 +1299,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Кодирует только специальные символы в их HTML-сущности
      *
@@ -1814,7 +1321,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Кодирует только специальные символы в их HTML-сущности
@@ -1858,7 +1364,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Кодирует (все допустимые!) символы в соответствующие HTML-сущности
      * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
@@ -1882,7 +1387,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Кодирует (все допустимые!) символы в соответствующие HTML-сущности
@@ -1927,78 +1431,6 @@ trait VariableMethod
         return $return;
     }
 
-
-    /**
-     * Перевод данных в дату с проверкой по формату
-     *
-     * @param string $format
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    public function makeDate(string $format = 'Y-m-d', bool $recursive = false): static
-    {
-        $this->data = static::getMakeDate($this->data, $this->getDefault(), $format, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Проверка даты по указанному формату
-     *
-     * @note пустые значения будут заполнены значениями из $default!
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param string $default
-     * @param string $format
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     * @throws Exception
-     */
-    public static function getMakeDate(
-        array|bool|float|int|string|null $data,
-        string $default,
-        string $format = 'Y-m-d',
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data) && is_array($return = [])) {
-
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMakeDate($item, $default, $format, $recursive);
-
-                    } else {
-                        $item = trim(is_string($item) ? $item : VarStr::getMakeString($item));
-
-                        try {
-                            VarStr::makeDate($item, $format);
-                            $return[$key] = $item !== "" ? $item : $default;
-                        } catch (Throwable) {
-                            $return[$key] = $default;
-                        }
-                    }
-                }
-            }
-
-        } else {
-            $data = trim(is_string($data) ? $data : VarStr::getMakeString($data));
-
-            try {
-                VarStr::makeDate($data, $format);
-                $return = $data !== "" ? $data : $default;
-            } catch (Throwable) {
-                $return = $default;
-            }
-        }
-
-        return $return;
-    }
-
-
     /**
      * Удаляет пробелы из начала и конца строки (или другие символы при передаче их вторым параметром)
      *
@@ -2012,7 +1444,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Удаляет пробелы из начала и конца строки (или другие символы при передаче их вторым параметром)
@@ -2048,7 +1479,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Удаление указанных символов из значений
      *
@@ -2062,7 +1492,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Удаление указанных символов из значений
@@ -2102,60 +1531,6 @@ trait VariableMethod
         return $return;
     }
 
-
-    /**
-     * Удаление значений из массива
-     *
-     * @param array $remove ['', 0, null, 'null']
-     * @param bool $recursive - флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    public function removeItems(array $remove = ['', 0, null, 'null'], bool $recursive = false): static
-    {
-        $this->data = static::getRemoveItems($this->data, $remove, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Удаление значений из массива
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param array $remove ['', 0, null, 'null']
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     * @throws Exception
-     */
-    public static function getRemoveItems(
-        array|bool|float|int|string|null $data,
-        array $remove = [0, '', null, 'null'],
-        bool $recursive = false
-    ): array|string {
-        if (is_string($data)) {
-            throw new Exception("Для строк поведение не предусмотрено!");
-        }
-
-        if (count($data) > 0) {
-            reset($data);
-
-            foreach ($data as $key => $item) {
-                if ($recursive && is_array($item)) {
-                    $data[$key] = static::getRemoveItems($item, $remove, $recursive);
-                } else {
-                    if (in_array($item, $remove)) {
-                        $data[$key] = null;
-                        unset($data[$key]);
-                    }
-                }
-            }
-        }
-
-        return $data;
-    }
-
-
     /**
      * Обрезает строку до 250 символов (без всяких условий)
      *
@@ -2169,7 +1544,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Обрезает строку до указанных символов
@@ -2207,7 +1581,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Сокращает текст по параметрам
      *
@@ -2229,7 +1602,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Сокращает текст по параметрам
@@ -2272,52 +1644,6 @@ trait VariableMethod
         return $return;
     }
 
-
-    /**
-     * Возвращает значение(я) которое были проверены через $needle (как in_array), но только тут ещё значения default
-     *
-     * @param array $needle
-     * @param bool $strict
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    public function inArray(array $needle = [], bool $strict = false, bool $recursive = false): static
-    {
-        $this->data = static::getInArray($this->data, $this->getDefault(), $needle, $strict, $recursive);
-
-        return $this;
-    }
-
-
-    /**
-     * Возвращает значение(я) которое были проверены через $needle (как in_array), но только тут ещё значения default
-     *
-     * @param array|bool|float|int|string|null $data
-     * @param string $default
-     * @param array $needle
-     * @param bool $strict
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|string
-     * @throws Exception
-     */
-    public static function getInArray(
-        array|bool|float|int|string|null $data,
-        string $default,
-        array $needle = [],
-        bool $strict = false,
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data)) {
-            throw new Exception("Для массива поведение не предусмотрено!");
-        }
-
-        $data = static::getTrim(VarStr::getMakeString($data));
-
-        return in_array($data, $needle, $strict) ? $data : $default;
-    }
-
-
     /**
      * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
@@ -2332,7 +1658,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Проверка строки или массива строк в которых содержатся списки идентификаторов
@@ -2447,7 +1772,6 @@ trait VariableMethod
         return $return;
     }
 
-
     /**
      * Проверка строку или массива строк в которых содержатся теги с указанным разделителем
      *
@@ -2469,7 +1793,6 @@ trait VariableMethod
 
         return $this;
     }
-
 
     /**
      * Проверка строку или массива строк в которых содержатся теги с указанным разделителем
