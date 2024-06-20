@@ -1399,7 +1399,7 @@ class VarArray
      * @param array $data
      * @param int $max число предела
      * @param bool $toDefault флаг преобразования числа вышедшего за пределы в default или max
-     * @param int $default значение по умолчанию
+     * @param int $default
      * @param bool $recursive
      * @return array
      */
@@ -1443,7 +1443,7 @@ class VarArray
      * @param array $data
      * @param int $max число предела
      * @param bool $toDefault флаг преобразования числа вышедшего за пределы в default или max
-     * @param int $default значение по умолчанию
+     * @param int $default
      * @param bool $recursive
      * @return void
      */

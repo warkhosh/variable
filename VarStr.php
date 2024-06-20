@@ -861,7 +861,7 @@ class VarStr
             return rawurlencode($str); // кодирует строку по RFC 3986
         }
 
-        // Возвращает строку, в которой все не цифро-буквенные символы, кроме -_. должны быть заменены знаком процента (%),
+        // Возвращает строку, в которой все не цифро-буквенные символы, кроме (-_.) должны быть заменены знаком процента (%),
         // за которым следует два шестнадцатеричных числа, а пробелы закодированы как знак сложения (+).
         // Строка кодируется тем же способом, что и POST-данные веб-формы, то есть по типу контента application/x-www-form-urlencoded
         return urlencode($str);
@@ -871,12 +871,13 @@ class VarStr
      * Форматирует переданное значение с разделением групп
      *
      * @param mixed $str
-     * @param int $decimals точность (цело число больше нуля)
+     * @param int $decimals точность (символы после точки)
      * @param string $separator разделитель точности
      * @param string $thousands_sep разделитель тысяч
      * @param float|int $default
      * @return string
      * @throws Exception
+     * @deprecated в trait VariableMethod есть одноименный метод и следует все переписать на Variable::getNumberFormat()
      */
     public static function getNumberFormat(
         ?string $str,
