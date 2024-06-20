@@ -48,8 +48,8 @@ class VarFloat
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
      * @param bool|float|int|string|null $var
-     * @param int $decimals точность
-     * @param string $round [auto, upward, downward] - тип округления
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления (auto, upward, downward)
      * @param float $default
      * @return float
      */
@@ -100,8 +100,8 @@ class VarFloat
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
      * @param bool|float|int|string|null $var
-     * @param int $decimals точность
-     * @param string $round [auto, upward, downward] - тип округления
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления (auto, upward, downward)
      * @param float $default
      * @return float
      */
@@ -120,7 +120,7 @@ class VarFloat
      * Округляет число типа float
      *
      * @param bool|float|int|string|null $var
-     * @param int $decimals
+     * @param int $decimals точность (символы после точки)
      * @param string $round
      * @param float $default
      * @return float
@@ -164,6 +164,37 @@ class VarFloat
         }
 
         return $default;
+    }
+
+    /**
+     * Возвращает результат мягкой проверки значения на float для последующей конвертации без ошибок
+     *
+     * @note в основном это проверка для строк, и не стоит перед этим методом пренебрегать проверками типа: is_null, is_array...
+     *
+     * @param mixed $data
+     * @return bool
+     * @example echo VarFloat::isStringOnFloat($price) ? VarFloat::getMake($price) : 0.0
+     */
+    public static function isStringOnFloat(mixed $data): bool
+    {
+        if (is_float($data)) {
+            return true;
+        }
+
+        if (is_string($data)) {
+            $separator = localeconv()['decimal_point'];
+
+            // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
+            if ($separator === ',' && mb_strpos($data, '.', 0, 'UTF-8') === false) {
+                $data = VarStr::replaceOnce($separator, '.', $data);
+            }
+
+            if (is_numeric($data) && is_float($data + 0)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
