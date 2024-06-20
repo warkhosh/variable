@@ -457,10 +457,10 @@ class VarArray
      * Сгладьте многомерный массив на один уровень
      *
      * @param array $array
-     * @param int $depth
+     * @param int $depth максимальный уровень глубины для алгоритма обхода массива (0 = INF)
      * @return array
      */
-    public static function getFlatten(array $array = [], int $depth = INF): array
+    public static function getFlatten(array $array = [], int $depth = 0): array
     {
         if (! is_array($array)) {
             return [];
@@ -518,10 +518,10 @@ class VarArray
      * Сглаживание многомерного массива в один уровень
      *
      * @param array $array
-     * @param int $depth
+     * @param int $depth максимальный уровень глубины для алгоритма обхода массива (0 = INF)
      * @return void
      */
-    public static function flatten(array &$array = [], int $depth = INF): void
+    public static function flatten(array &$array = [], int $depth = 0): void
     {
         $array = static::getFlatten($array, $depth);
     }
