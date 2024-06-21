@@ -872,7 +872,7 @@ class VarStr
      *
      * @note этот метод преобразовывает строку, а в Variable::getNumberFormat() рассчитан да объект Variable который может быть массивом!
      *
-     * @param mixed $str
+     * @param float|string|null $str
      * @param int $decimals точность (символы после точки)
      * @param string $separator разделитель точности
      * @param string $thousands_sep разделитель тысяч
@@ -881,25 +881,25 @@ class VarStr
      * @throws Exception
      */
     public static function getNumberFormat(
-        ?string $str,
+        float|string|null $str,
         int $decimals = 2,
         string $separator = '.',
         string $thousands_sep = '',
         float|int $default = 0
     ): string {
-        $decimals = $decimals > 0 ? $decimals : 2;
+        $decimals = $decimals >= 0 ? $decimals : 2;
 
         if (is_null($str) || $str === "") {
             return number_format((float)$default, $decimals, $separator, $thousands_sep);
         }
 
-        $price = preg_replace('/[^0-9\,\.\s]/', '', $str);
+        $price = preg_replace('/[^0-9\,\.\s]/', '', (string)$str);
 
-        if ($str !== $price) {
+        if ((string)$str !== $price) {
             throw new Exception("Incorrect number");
         }
 
-        $str = static::trim($str);
+        $str = static::trim((string)$str);
         $dotParts = explode(".", $str);
         $commaParts = explode(",", $str);
         $spaceParts = explode(" ", $str);
