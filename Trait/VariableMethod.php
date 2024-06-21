@@ -356,67 +356,43 @@ trait VariableMethod
              * Преобразование значений в строку формата price без копеек
              */
             case 'price':
-                return $this->crop(50, $recursive)
-                    ->minInteger(0, true, $recursive)
-                    ->makeFloat(0, "auto", true, $recursive)
-                    ->makeString($recursive)
-                    ->removeSymbol("0");
-                //return $this->crop(14, $recursive)
-                //    ->makeFloat(0, "auto", true, $recursive)
-                //    ->numberFormat(0, '', '', $recursive);
+                return $this->crop(25, $recursive)
+                    ->numberFormat(0, '', '', $recursive);
 
             case 'price-upward':
-                return $this->crop(50, $recursive)
+                return $this->crop(25, $recursive)
                     ->minInteger(0, true, $recursive)
                     ->makeFloat(0, "upward", true, $recursive)
                     ->makeString($recursive)
                     ->removeSymbol("0");
-                //return $this->crop(14, $recursive)
-                //    ->makeFloat(0, "upward", true, $recursive)
-                //    ->numberFormat(0, '', '', $recursive);
 
             case 'price-downward':
-                return $this->crop(50, $recursive)
+                return $this->crop(25, $recursive)
                     ->minInteger(0, true, $recursive)
                     ->makeFloat(0, "downward", true, $recursive)
                     ->makeString($recursive)
                     ->removeSymbol("0");
-                //return $this->crop(14, $recursive)
-                //    ->makeFloat(0, "downward", true, $recursive)
-                //    ->numberFormat(0, '', '', $recursive);
 
                 /**
                  * Преобразование значений в строку формата price с указанием копеек
                  */
             case 'cost':
-                return $this->crop(50, $recursive)
-                    ->minInteger(0, true, $recursive)
-                    ->makeFloat(2, "auto", true, $recursive)
-                    ->makeString($recursive)
-                    ->removeSymbol("0");
-                //return $this->crop(14, $recursive)
-                //    ->makeFloat(2, "auto", true, $recursive)
-                //    ->numberFormat(2, '.', '', $recursive);
+                return $this->crop(25, $recursive)
+                    ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-upward':
-                return $this->crop(50, $recursive)
+                return $this->crop(25, $recursive)
                     ->minInteger(0, true, $recursive)
                     ->makeFloat(2, "upward", true, $recursive)
                     ->makeString($recursive)
                     ->removeSymbol("0");
-                //return $this->crop(14, $recursive)
-                //    ->makeFloat(2, "upward", true, $recursive)
-                //    ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-downward':
-                return $this->crop(50, $recursive)
+                return $this->crop(25, $recursive)
                     ->minInteger(0, true, $recursive)
                     ->makeFloat(2, "downward", true, $recursive)
                     ->makeString($recursive)
                     ->removeSymbol("0");
-                //return $this->crop(14, $recursive)
-                //    ->makeFloat(2, "downward", true, $recursive)
-                //    ->numberFormat(2, '.', '', $recursive);
 
                 /**
                  * Over
@@ -1282,7 +1258,7 @@ trait VariableMethod
                         $item = is_string($item) ? $item : VarStr::getMakeString($item);
 
                         // Всегда преобразуем строку в float, на случай если передали значения не по типу
-                        $cost = static::getMakeFloat($item, 0, "auto", (float)$default, true);
+                        $cost = static::getMakeFloat($item, $decimals, "auto", (float)$default, true);
                         $return[$key] = VarStr::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
                     }
                 }
