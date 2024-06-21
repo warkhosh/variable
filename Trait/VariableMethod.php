@@ -1291,7 +1291,7 @@ trait VariableMethod
             $data = is_string($data) ? $data : VarStr::getMakeString($data);
 
             // Всегда преобразуем строку в float, на случай если передали значения не по типу
-            $cost = static::getMakeFloat($data, 0, "auto", (float)$default, true);
+            $cost = static::getMakeFloat($data, $decimals, "auto", (float)$default, true);
             $return = VarStr::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
         }
 
