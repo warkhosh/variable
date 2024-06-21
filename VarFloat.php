@@ -12,12 +12,16 @@ class VarFloat
     /**
      * Преобразование значения в строку
      *
-     * @param float|int|string $var значение числа
+     * @param float|int|string|null $var значение числа
      * @param string|null $separator разделитель точности
      * @return string
      */
-    public static function makeString(float|int|string $var = 0, ?string $separator = null): string
+    public static function makeString(float|int|string|null $var = 0, ?string $separator = null): string
     {
+        if (is_null($var) || is_bool($var) || $var === "") {
+            return "";
+        }
+
         $var = strval($var);
 
         if (is_null($separator)) {
