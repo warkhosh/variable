@@ -357,7 +357,7 @@ trait VariableMethod
              */
             case 'price':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero($recursive)
+                    ->stringWithGreaterZero("auto", $recursive)
                     ->numberFormat(0, '.', '', $recursive);
 
             case 'price-upward':
@@ -375,7 +375,7 @@ trait VariableMethod
                  */
             case 'cost':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero($recursive)
+                    ->stringWithGreaterZero("auto", $recursive)
                     ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-upward':
