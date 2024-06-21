@@ -794,7 +794,13 @@ trait VariableMethod
         // для переключателя делаем условие определения значения более мягкие и разрешаем on|yes|true ...
         $strict = ! in_array($option, ['toggle', 'ids']);
 
-        $this->makeInteger($positive, $recursive, $strict);
+        // Отдельный алгоритм для исходных данных если идёт обработка сценария работы с ценой
+        if (in_array($option, ['price', 'price-upward', 'price-downward'])) {
+            $round = $option === "price" ? "auto" : ($option === "price-upward" ? "upward" : "downward");
+            $this->makeFloat(0, $round);
+        } else {
+            $this->makeInteger($positive, $recursive, $strict);
+        }
 
         /**
          * Для проверки фильтров, где допускаются значения от -1,0,1,2,3,4,5 ...
