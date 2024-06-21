@@ -1,0 +1,176 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Warkhosh\Variable;
+
+use DateTimeZone;
+use Exception;
+use DateTime;
+
+class Watchmaker extends DateTime
+{
+    /**
+     * The day constants.
+     */
+    public const SUNDAY = 0;
+    public const MONDAY = 1;
+    public const TUESDAY = 2;
+    public const WEDNESDAY = 3;
+    public const THURSDAY = 4;
+    public const FRIDAY = 5;
+    public const SATURDAY = 6;
+
+    /**
+     * Number of X in Y.
+     */
+    public const YEARS_PER_CENTURY = 100;
+    public const YEARS_PER_DECADE = 10;
+    public const MONTHS_PER_YEAR = 12;
+    public const MONTHS_PER_QUARTER = 3;
+    public const WEEKS_PER_YEAR = 52;
+    public const DAYS_PER_WEEK = 7;
+    public const HOURS_PER_DAY = 24;
+    public const MINUTES_PER_HOUR = 60;
+    public const SECONDS_PER_MINUTE = 60;
+
+    /**
+     * Default format to use for __toString method when type juggling occurs.
+     *
+     * @var string
+     */
+    public const DEFAULT_TO_STRING_FORMAT = 'Y-m-d H:i:s';
+
+    /**
+     * Format to use for __toString method when type juggling occurs.
+     *
+     * @var string
+     */
+    protected static string $toStringFormat = self::DEFAULT_TO_STRING_FORMAT;
+
+    /**
+     * First day of week.
+     *
+     * @var int
+     */
+    protected static int $weekStartsAt = self::MONDAY;
+
+    /**
+     * Last day of week.
+     *
+     * @var int
+     */
+    protected static int $weekEndsAt = self::SUNDAY;
+
+    /**
+     * Days of weekend.
+     *
+     * @var array
+     */
+    protected static array $weekendDays = [
+        self::SATURDAY,
+        self::SUNDAY,
+    ];
+
+    /**
+     * Names of days of the week.
+     *
+     * @var array
+     */
+    protected static array $days = [
+        self::SUNDAY => 'Воскресенье',
+        self::MONDAY => 'Понедельник',
+        self::TUESDAY => 'Вторник',
+        self::WEDNESDAY => 'Среда',
+        self::THURSDAY => 'Четверг',
+        self::FRIDAY => 'Пятница',
+        self::SATURDAY => 'Суббота',
+    ];
+
+    /**
+     * Create a new DateTime instance.
+     *
+     * @param string|null $time
+     * @param DateTimeZone|null $tz
+     * @throws Exception
+     */
+    public function __construct(?string $time = null, DateTimeZone|null $tz = null)
+    {
+        parent::__construct(empty($time) ? 'now' : $time, $tz);
+    }
+
+
+    /**
+     * Метод для создания даты после запуска конструктора, например: если вызван через фасад.
+     *
+     * @param string|null $time
+     * @param DateTimeZone|null $tz
+     * @return static
+     * @throws Exception
+     */
+    public static function init(?string $time = null, DateTimeZone|null $tz = null): static
+    {
+        return new Watchmaker(empty($time) ? 'now' : $time, $tz);
+    }
+
+    /**
+     * @param int|null $time
+     * @param DateTimeZone|null $tz
+     * @return static
+     * @throws Exception
+     */
+    public function initTimestamp(?int $time = null, DateTimeZone|null $tz = null): static
+    {
+        return (new Watchmaker('now', $tz))->setTimestamp($time);
+    }
+
+
+    /**
+     * Изменить формат даты по умолчанию
+     *
+     * @param string $format
+     * @return $this
+     */
+    public function defaultFormat(string $format = 'Y-m-d H:i:s'): static
+    {
+        static::$toStringFormat = $format;
+
+        return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->format(static::$toStringFormat);
+    }
+
+
+    /**
+     * Перевод строки в указанный формат даты (с простыми проверками на ложную дату)
+     *
+     * @note null значения не переводятся!
+     *
+     * @param string $format
+     * @param string|null $str
+     * @return string|null
+     */
+    public function makeFormat(string $format = 'Y-m-d', ?string $str = null): string|null
+    {
+        if (is_null($str)) {
+            return $this->format($format);
+        }
+
+        $str = str_replace(['00-00-0000', '0000-00-00', '__-__-____', '____-__-__'], '', $str);
+        $str = VarStr::crop(VarStr::getRemoveSymbol(VarStr::trim($str)));
+        $str = empty($str) || isEmpty($str) ? null : $str;
+
+        if (is_null($str)) {
+            return null;
+        }
+
+        return date_create($str)->format($format);
+    }
+}

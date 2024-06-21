@@ -1187,6 +1187,7 @@ class VarStr
      * @param string|null $str
      * @param string $format
      * @return bool
+     * @deprecated методы с датой теперь в VarDateTime!
      */
     public static function validateDateTime(?string $str = null, string $format = 'Y-m-d H:i:s'): bool
     {
@@ -1205,12 +1206,16 @@ class VarStr
      *
      * @param string|null $str
      * @param string $format
+     * @param string|null $default
      * @return void
      * @throws Exception
+     * @deprecated методы с датой теперь в VarDateTime!
      */
-    public static function makeDate(?string &$str, string $format = 'Y-m-d'): void
+    public static function makeDate(?string &$str, string $format = 'Y-m-d', ?string $default = null): void
     {
         if (is_null($str) || $str === "") {
+            $str = $default;
+
             return;
         }
 
