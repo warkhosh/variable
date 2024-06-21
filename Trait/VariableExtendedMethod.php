@@ -4,6 +4,7 @@ namespace Warkhosh\Variable\Traits;
 
 use Throwable;
 use Warkhosh\Variable\VarDateTime;
+use Warkhosh\Variable\VarFloat;
 use Warkhosh\Variable\VarStr;
 use Exception;
 
@@ -101,6 +102,71 @@ trait VariableExtendedMethod
         $this->data = static::getMinInteger($this->data, true, (int)$default, $recursive);
 
         return $this;
+    }
+
+    /**
+     * Преобразование значения(й) в положительное число и тип строка
+     *
+     * @param string $round тип округления (auto, upward, downward)
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     * @throws Exception
+     */
+    public function stringWithGreaterZero(string $round = "auto", bool $recursive = false): static
+    {
+        $default = $this->getDefault();
+
+        if (! (is_null($default) || is_string($default) || is_numeric($default))) {
+            throw new Exception("Default values are not an string");
+        }
+
+        $this->data = static::getStringWithGreaterZero($this->data, $round, (string)$default, $recursive);
+
+        return $this;
+    }
+
+    /**
+     * Возвращает преобразованное значение(я) в положительное число и тип строка
+     *
+     * @param array|float|int|string|null $data
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param string|null $default
+     * @param bool $recursive
+     * @return array|string
+     */
+    public static function getStringWithGreaterZero(
+        array|float|int|string|null $data,
+        string $round = "auto",
+        ?string $default = null,
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getStringWithGreaterZero($item, $default, $recursive);
+
+                    } else {
+                        $number = is_numeric($item) ? $item : (string)$default;
+                        $number = VarFloat::isStringOnFloat($number)
+                            ? VarFloat::getMakePositive($number, 12, $round)
+                            : intval($number);
+                        $return[$key] = strval($number >= 0 ? VarFloat::makeString($number) : $default);
+                    }
+                }
+            }
+
+        } else {
+            $number = is_numeric($data) ? $data : (string)$default;
+            $number = VarFloat::isStringOnFloat($number)
+                ? VarFloat::getMakePositive($number, 12, $round)
+                : intval($number);
+            $return = strval($number >= 0 ? VarFloat::makeString($number) : $default);
+        }
+
+        return $return;
     }
 
     /**

@@ -357,42 +357,36 @@ trait VariableMethod
              */
             case 'price':
                 return $this->crop(25, $recursive)
-                    ->numberFormat(0, '', '', $recursive);
+                    ->stringWithGreaterZero($recursive)
+                    ->numberFormat(0, '.', '', $recursive);
 
             case 'price-upward':
                 return $this->crop(25, $recursive)
-                    ->minInteger(0, true, $recursive)
-                    ->makeFloat(0, "upward", true, $recursive)
-                    ->makeString($recursive)
-                    ->removeSymbol("0");
+                    ->stringWithGreaterZero("upward", $recursive)
+                    ->numberFormat(0, '.', '', $recursive);
 
             case 'price-downward':
                 return $this->crop(25, $recursive)
-                    ->minInteger(0, true, $recursive)
-                    ->makeFloat(0, "downward", true, $recursive)
-                    ->makeString($recursive)
-                    ->removeSymbol("0");
+                    ->stringWithGreaterZero("downward", $recursive)
+                    ->numberFormat(0, '.', '', $recursive);
 
                 /**
                  * Преобразование значений в строку формата price с указанием копеек
                  */
             case 'cost':
                 return $this->crop(25, $recursive)
+                    ->stringWithGreaterZero($recursive)
                     ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-upward':
                 return $this->crop(25, $recursive)
-                    ->minInteger(0, true, $recursive)
-                    ->makeFloat(2, "upward", true, $recursive)
-                    ->makeString($recursive)
-                    ->removeSymbol("0");
+                    ->stringWithGreaterZero("upward", $recursive)
+                    ->numberFormat(2, '', '', $recursive);
 
             case 'cost-downward':
                 return $this->crop(25, $recursive)
-                    ->minInteger(0, true, $recursive)
-                    ->makeFloat(2, "downward", true, $recursive)
-                    ->makeString($recursive)
-                    ->removeSymbol("0");
+                    ->stringWithGreaterZero("downward", $recursive)
+                    ->numberFormat(2, '', '', $recursive);
 
                 /**
                  * Over
