@@ -811,6 +811,18 @@ trait VariableMethod
                     ->makeInteger(true, $recursive, false);
                 break;
 
+            case 'price-upward':
+                $this->minInteger(0, true, $recursive)
+                    ->makeFloat(0, "upward", true, $recursive)
+                    ->makeInteger(true, $recursive, false);
+                break;
+
+            case 'price-downward':
+                $this->minInteger(0, true, $recursive)
+                    ->makeFloat(0, "downward", true, $recursive)
+                    ->makeInteger(true, $recursive, false);
+                break;
+
                 /**
                  * Преобразование значений в денежную единицу с учетом копеек не укладывается в тип integer
                  */
