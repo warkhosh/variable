@@ -2,6 +2,8 @@
 
 namespace Warkhosh\Variable\Traits;
 
+use Throwable;
+use Warkhosh\Variable\VarDateTime;
 use Warkhosh\Variable\VarStr;
 use Exception;
 
@@ -530,7 +532,7 @@ trait VariableExtendedMethod
                         $item = trim(is_string($item) ? $item : VarStr::getMakeString($item));
 
                         try {
-                            VarStr::makeDate($item, $format);
+                            $item = VarDateTime::getConvertDateTime($item, $format);
                             $return[$key] = $item !== "" ? $item : $default;
                         } catch (Throwable) {
                             $return[$key] = $default;
@@ -543,7 +545,7 @@ trait VariableExtendedMethod
             $data = trim(is_string($data) ? $data : VarStr::getMakeString($data));
 
             try {
-                VarStr::makeDate($data, $format);
+                $data = VarDateTime::getConvertDateTime($data, $format);
                 $return = $data !== "" ? $data : $default;
             } catch (Throwable) {
                 $return = $default;
