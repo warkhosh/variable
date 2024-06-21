@@ -137,15 +137,17 @@ trait VariableMethod
      */
     public function toArray(?string $delimiter = null): static
     {
-        if (gettype($this->data) == 'string') {
-            $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
+        $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
 
-            // Проверка типа только для строк, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-            // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
             if (! (is_null($default) || is_array($default))) {
                 throw new Exception("Default values are not an array");
             }
+        }
 
+        if (gettype($this->data) == 'string') {
             $this->data = static::getToArray($this->data, $delimiter, (array)$default);
         } else {
             $this->data = (array)$this->data;
@@ -195,10 +197,20 @@ trait VariableMethod
      *
      * @param string|null $delimiter
      * @return $this
+     * @throws Exception
      */
     public function toString(?string $delimiter = null): static
     {
         $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
+
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_string($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an string");
+            }
+        }
+
         $this->data = static::getToString($this->data, $delimiter, $default);
 
         return $this;
@@ -248,8 +260,12 @@ trait VariableMethod
     {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_string($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an string");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_string($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an string");
+            }
         }
 
         $this->data = static::getMakeString($this->data, (string)$default, $recursive);
@@ -534,8 +550,12 @@ trait VariableMethod
     ): static {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
-            throw new Exception("Default values are not an float");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+                throw new Exception("Default values are not an float");
+            }
         }
 
         $default = VarFloat::getMake($default);
@@ -667,8 +687,12 @@ trait VariableMethod
     {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an number");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an number");
+            }
         }
 
         $this->data = static::getMakeInteger($this->data, (int)$default, $positive, $recursive, $strict);
@@ -844,8 +868,12 @@ trait VariableMethod
     {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an number");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an number");
+            }
         }
 
         $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
@@ -915,8 +943,12 @@ trait VariableMethod
     ): array|float {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
-            throw new Exception("Default values are not an float");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+                throw new Exception("Default values are not an float");
+            }
         }
 
         $default = VarFloat::getMake($default);
@@ -985,8 +1017,12 @@ trait VariableMethod
     {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an number");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an number");
+            }
         }
 
         $this->data = static::getMinInteger($this->data, $min, $toDefault, (int)$default, $recursive);
@@ -1052,8 +1088,12 @@ trait VariableMethod
     {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an number");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an number");
+            }
         }
 
         $this->data = static::getMaxInteger($this->data, $max, $toDefault, $default, $recursive);
@@ -1122,8 +1162,12 @@ trait VariableMethod
     ): static {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
-            throw new Exception("Default values are not an float");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+                throw new Exception("Default values are not an float");
+            }
         }
 
         $default = VarFloat::getMake($default);
@@ -1787,8 +1831,12 @@ trait VariableMethod
     {
         $default = $this->getDefault();
 
-        if (! (is_null($default) || is_numeric($default) || is_string($default))) {
-            throw new Exception("Default values are not an string");
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default) || is_string($default))) {
+                throw new Exception("Default values are not an string");
+            }
         }
 
         $this->data = static::getTags($this->data, (string)$default, $delimiter, $unique, $recursive);
