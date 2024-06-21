@@ -657,12 +657,12 @@ trait VariableMethod
         }
 
         // Преобразование значений в денежную единицу без копеек
-        if ($option === 'price') {
+        if (in_array($option, ['price', 'price-upward', 'price-downward'])) {
             return $this->makeFloat(0, $round, true, $recursive);
         }
 
         // Преобразование значений в денежную единицу с учетом копеек
-        if ($option === 'cost') {
+        if (in_array($option, ['cost', 'cost-upward', 'cost-downward'])) {
             return $this->makeFloat(2, $round, true, $recursive);
         }
 
