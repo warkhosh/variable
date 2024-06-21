@@ -356,37 +356,67 @@ trait VariableMethod
              * Преобразование значений в строку формата price без копеек
              */
             case 'price':
-                return $this->crop(14, $recursive)
+                return $this->crop(50, $recursive)
+                    ->minInteger(0, true, $recursive)
                     ->makeFloat(0, "auto", true, $recursive)
-                    ->numberFormat(0, '', '', $recursive);
+                    ->makeString($recursive)
+                    ->removeSymbol("0");
+                //return $this->crop(14, $recursive)
+                //    ->makeFloat(0, "auto", true, $recursive)
+                //    ->numberFormat(0, '', '', $recursive);
 
             case 'price-upward':
-                return $this->crop(14, $recursive)
+                return $this->crop(50, $recursive)
+                    ->minInteger(0, true, $recursive)
                     ->makeFloat(0, "upward", true, $recursive)
-                    ->numberFormat(0, '', '', $recursive);
+                    ->makeString($recursive)
+                    ->removeSymbol("0");
+                //return $this->crop(14, $recursive)
+                //    ->makeFloat(0, "upward", true, $recursive)
+                //    ->numberFormat(0, '', '', $recursive);
 
             case 'price-downward':
-                return $this->crop(14, $recursive)
+                return $this->crop(50, $recursive)
+                    ->minInteger(0, true, $recursive)
                     ->makeFloat(0, "downward", true, $recursive)
-                    ->numberFormat(0, '', '', $recursive);
+                    ->makeString($recursive)
+                    ->removeSymbol("0");
+                //return $this->crop(14, $recursive)
+                //    ->makeFloat(0, "downward", true, $recursive)
+                //    ->numberFormat(0, '', '', $recursive);
 
                 /**
                  * Преобразование значений в строку формата price с указанием копеек
                  */
             case 'cost':
-                return $this->crop(14, $recursive)
+                return $this->crop(50, $recursive)
+                    ->minInteger(0, true, $recursive)
                     ->makeFloat(2, "auto", true, $recursive)
-                    ->numberFormat(2, '.', '', $recursive);
+                    ->makeString($recursive)
+                    ->removeSymbol("0");
+                //return $this->crop(14, $recursive)
+                //    ->makeFloat(2, "auto", true, $recursive)
+                //    ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-upward':
-                return $this->crop(14, $recursive)
+                return $this->crop(50, $recursive)
+                    ->minInteger(0, true, $recursive)
                     ->makeFloat(2, "upward", true, $recursive)
-                    ->numberFormat(2, '.', '', $recursive);
+                    ->makeString($recursive)
+                    ->removeSymbol("0");
+                //return $this->crop(14, $recursive)
+                //    ->makeFloat(2, "upward", true, $recursive)
+                //    ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-downward':
-                return $this->crop(14, $recursive)
+                return $this->crop(50, $recursive)
+                    ->minInteger(0, true, $recursive)
                     ->makeFloat(2, "downward", true, $recursive)
-                    ->numberFormat(2, '.', '', $recursive);
+                    ->makeString($recursive)
+                    ->removeSymbol("0");
+                //return $this->crop(14, $recursive)
+                //    ->makeFloat(2, "downward", true, $recursive)
+                //    ->numberFormat(2, '.', '', $recursive);
 
                 /**
                  * Over
@@ -661,7 +691,7 @@ trait VariableMethod
             return $this->makeFloat(0, $round, true, $recursive);
         }
 
-        // Преобразование значений в денежную единицу с указанием копеек
+        // Преобразование значений в денежную единицу с учетом копеек
         if ($option === 'cost') {
             return $this->makeFloat(2, $round, true, $recursive);
         }
@@ -806,9 +836,18 @@ trait VariableMethod
             case 'option':
             case 'id':
             case 'price':
-                $this->byDefault(0)
-                    ->minInteger($this->getDefault(), true, $recursive);
+                $this->minInteger(0, true, $recursive)
+                    ->makeFloat(0, "auto", true, $recursive)
+                    ->makeInteger(true, $recursive, false);
                 break;
+
+                /**
+                 * Преобразование значений в денежную единицу с учетом копеек не укладывается в тип integer
+                 */
+                //case 'cost':
+                //    return $this->minInteger(0, true, $recursive)
+                //        ->makeFloat(2, "auto", true, $recursive)
+                //        ->makeInteger(true, $recursive, false);
 
             case 'year':
                 $this->byDefault(1970)
@@ -863,22 +902,26 @@ trait VariableMethod
      * @param bool $recursive флаг для обхода потомков
      * @return array|int
      * @throws Exception
+     * @deprecated Метод больше не поддерживается!!!
      */
     public function getPrice(string $round = "auto", bool $recursive = false): array|int
     {
-        $default = $this->getDefault();
+        throw new Exception(
+            "Метод больше не поддерживается, используйте базовые input(), getInput(), float(), getFloat(), integer(), getInteger()"
+        );
+        //$default = $this->getDefault();
 
         // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number");
-            }
-        }
+        //if ($this->dataType !== 'array') {
+        //    if (! (is_null($default) || is_numeric($default))) {
+        //        throw new Exception("Default values are not an number");
+        //    }
+        //}
 
-        $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
+        //$data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
 
-        return static::getMakePrice($data, (int)$default, $recursive, $round);
+        //return static::getMakePrice($data, (int)$default, $recursive, $round);
     }
 
     /**
@@ -892,6 +935,7 @@ trait VariableMethod
      * @param string $round тип округления десятичного значения (auto, upward, downward)
      * @return array|int
      * @throws Exception
+     * @deprecated Метод больше не поддерживается!!!
      */
     public static function getMakePrice(
         array|float|int|string|null $data,
@@ -899,30 +943,34 @@ trait VariableMethod
         bool $recursive = false,
         string $round = "auto"
     ): array|int {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
+        throw new Exception(
+            "Метод больше не поддерживается, используйте базовые input(), getInput(), float(), getFloat(), integer(), getInteger()"
+        );
 
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMakePrice($item, $default, $recursive, $round);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = static::getMakePrice($item, $default, false, $round);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-
-            // Всегда преобразуем строку в float, на случай если передали значения не по типу
-            $cost = static::getMakeFloat($data, 0, $round, (float)$default, true);
-            $return = (int)static::getNumberFormat($cost, 0, '', '', $default);
-        }
-
-        return $return;
+        //if (is_array($data) && is_array($return = [])) {
+        //    if (count($data) > 0) {
+        //        reset($data);
+        //
+        //        foreach ($data as $key => $item) {
+        //            if ($recursive && is_array($item)) {
+        //                $return[$key] = static::getMakePrice($item, $default, $recursive, $round);
+        //
+        //            } else {
+        //                $item = is_string($item) ? $item : VarStr::getMakeString($item);
+        //                $return[$key] = (int)VarStr::getNumberFormat($item, $default, false, $round);
+        //            }
+        //        }
+        //    }
+        //
+        //} else {
+        //    $data = is_string($data) ? $data : VarStr::getMakeString($data);
+        //
+        //    // Всегда преобразуем строку в float, на случай если передали значения не по типу
+        //    $cost = static::getMakeFloat($data, 0, $round, (float)$default, true);
+        //    $return = (int)VarStr::getNumberFormat($cost, 0, '', '', $default);
+        //}
+        //
+        //return $return;
     }
 
     /**
@@ -934,6 +982,7 @@ trait VariableMethod
      * @param bool $recursive флаг для обхода потомков
      * @return array|float
      * @throws Exception
+     * @deprecated Метод больше не поддерживается!!!
      */
     public function getCost(
         string $round = "auto",
@@ -941,24 +990,28 @@ trait VariableMethod
         string $separator = '.',
         bool $recursive = false
     ): array|float {
-        $default = $this->getDefault();
+        throw new Exception(
+            "Метод больше не поддерживается, используйте базовые input(), getInput(), float(), getFloat(), integer(), getInteger()"
+        );
 
+        //$default = $this->getDefault();
+        //
         // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
-                throw new Exception("Default values are not an float");
-            }
-        }
-
-        $default = VarFloat::getMake($default);
-        $data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
-
-        return static::getMakeCost($data, $default, $recursive, $decimals, $round, $separator);
+        //if ($this->dataType !== 'array') {
+        //    if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+        //        throw new Exception("Default values are not an float");
+        //    }
+        //}
+        //
+        //$default = VarFloat::getMake($default);
+        //$data = $this->input('sm')->pregReplace("/[^0-9\.\,]/", "")->get();
+        //
+        //return static::getMakeCost($data, $default, $recursive, $decimals, $round, $separator);
     }
 
     /**
-     * Заменяет переданные пустые значения на null или преобразовывает в float
+     * Преобразование значения(й) в целое положительное число (денежную единицу с копейками)
      *
      * @param array|float|int|string|null $data
      * @param float $default
@@ -967,6 +1020,8 @@ trait VariableMethod
      * @param string $round тип округления десятичного значения (auto, upward, downward)
      * @param string $separator разделитель точности
      * @return array|float
+     * @throws Exception
+     * @deprecated Метод больше не поддерживается!!!
      */
     public static function getMakeCost(
         array|float|int|string|null $data,
@@ -976,30 +1031,45 @@ trait VariableMethod
         string $round = "auto",
         string $separator = '.'
     ): array|float {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
+        throw new Exception(
+            "Метод больше не поддерживается, используйте базовые input(), getInput(), float(), getFloat(), integer(), getInteger()"
+        );
 
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMakeCost($item, $default, $recursive, $decimals, $round, $separator);
-
-                    } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
-                        $return[$key] = static::getMakeCost($item, $default, false, $decimals, $round, $separator);
-                    }
-                }
-            }
-
-        } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-
-            // Всегда преобразуем строку в float, на случай если передали значения не по типу
-            $cost = static::getMakeFloat($data, 0, $round, $default, true);
-            $return = (int)static::getNumberFormat($cost, $decimals, $separator, '', $default);
-        }
-
-        return $return;
+        //if (is_array($data) && is_array($return = [])) {
+        //    if (count($data) > 0) {
+        //        reset($data);
+        //
+        //        foreach ($data as $key => $item) {
+        //            if ($recursive && is_array($item)) {
+        //                $return[$key] = static::getMakeCost($item, $default, $recursive, $decimals, $round, $separator);
+        //
+        //            } else {
+        //                $item = is_string($item) ? $item : VarStr::getMakeString($item);
+        //                //$return[$key] = static::getMakeFloat($item, 0, $round, $default, true);
+        //                //$return[$key] = VarStr::getNumberFormat($item, $default, false, $decimals, $round);
+        //
+        //                // Работаем со значением с точностью до десятичных
+        //                $item = VarFloat::getMakePositive($item, $decimals, $round, $default);
+        //
+        //                // Преобразуем float в string для getNumberFormat
+        //                $item = VarFloat::makeString($item);
+        //
+        //                // Преобразуем значение в денежную единицу
+        //                $return[$key] = VarStr::getNumberFormat($item, $decimals, $separator, '', $default);
+        //            }
+        //        }
+        //    }
+        //
+        //} else {
+        //    $data = is_string($data) ? $data : VarStr::getMakeString($data);
+        //
+        //    // Всегда преобразуем строку в float, на случай если передали значения не по типу
+        //    //$return = static::getMakeFloat($data, 0, $round, $default, true);
+        //    $return = VarFloat::getMakePositive($data, $decimals, $round, $default);
+        //    //$return = (int)VarStr::getNumberFormat($cost, $decimals, $separator, '', $default);
+        //}
+        //
+        //return $return;
     }
 
     /**
@@ -1188,6 +1258,7 @@ trait VariableMethod
      * @param float|int $default
      * @param bool $recursive флаг для обхода потомков
      * @return array|string
+     * @throws Exception
      */
     public static function getNumberFormat(
         array|bool|float|int|string|null $data,
@@ -1212,7 +1283,7 @@ trait VariableMethod
 
                         // Всегда преобразуем строку в float, на случай если передали значения не по типу
                         $cost = static::getMakeFloat($item, 0, "auto", (float)$default, true);
-                        $return[$key] = (string)static::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
+                        $return[$key] = VarStr::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
                     }
                 }
             }
@@ -1221,7 +1292,7 @@ trait VariableMethod
 
             // Всегда преобразуем строку в float, на случай если передали значения не по типу
             $cost = static::getMakeFloat($data, 0, "auto", (float)$default, true);
-            $return = (string)static::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
+            $return = VarStr::getNumberFormat($cost, $decimals, $separator, $thousands_sep, $default);
         }
 
         return $return;
