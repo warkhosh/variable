@@ -870,6 +870,8 @@ class VarStr
     /**
      * Форматирует переданное значение с разделением групп
      *
+     * @note этот метод преобразовывает строку, а в Variable::getNumberFormat() рассчитан да объект Variable который может быть массивом!
+     *
      * @param mixed $str
      * @param int $decimals точность (символы после точки)
      * @param string $separator разделитель точности
@@ -877,7 +879,6 @@ class VarStr
      * @param float|int $default
      * @return string
      * @throws Exception
-     * @deprecated в trait VariableMethod есть одноименный метод и следует все переписать на Variable::getNumberFormat()
      */
     public static function getNumberFormat(
         ?string $str,
