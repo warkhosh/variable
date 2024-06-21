@@ -63,13 +63,13 @@ class VarFloat
         string $round = "auto",
         float $default = 0.0
     ): float {
-        if (is_null($var) || is_numeric($var) || is_bool($var)) {
+        if (is_null($var) || is_bool($var)) {
             return floatval($var);
         }
 
-        if (is_string($var)) {
+        if (is_string($var) || is_numeric($var)) {
             $separator = localeconv()['decimal_point'];
-            $var = VarStr::trim($var);
+            $var = VarStr::trim((string)$var);
 
             // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
             if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
