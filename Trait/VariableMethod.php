@@ -657,13 +657,21 @@ trait VariableMethod
         }
 
         // Преобразование значений в денежную единицу без копеек
-        if (in_array($option, ['price', 'price-upward', 'price-downward'])) {
-            return $this->makeFloat(0, $round, true, $recursive);
+        if ($option === 'price') {
+            return $this->makeFloat(0, "auto", true, $recursive);
+        } elseif ($option === 'price-upward') {
+            return $this->makeFloat(0, "upward", true, $recursive);
+        } elseif ($option === 'price-downward') {
+            return $this->makeFloat(0, "downward", true, $recursive);
         }
 
         // Преобразование значений в денежную единицу с учетом копеек
-        if (in_array($option, ['cost', 'cost-upward', 'cost-downward'])) {
-            return $this->makeFloat(2, $round, true, $recursive);
+        if ($option === 'cost') {
+            return $this->makeFloat(2, "auto", true, $recursive);
+        } elseif ($option === 'cost-upward') {
+            return $this->makeFloat(2, "upward", true, $recursive);
+        } elseif ($option === 'cost-downward') {
+            return $this->makeFloat(2, "downward", true, $recursive);
         }
 
         // если указали число считаем это за определение точности
