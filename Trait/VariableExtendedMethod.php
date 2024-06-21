@@ -105,14 +105,15 @@ trait VariableExtendedMethod
     }
 
     /**
-     * Преобразование значения(й) в положительное число и тип строка
+     * Преобразование значения(й) в положительную цену для товара с типом строка
      *
      * @param string $round тип округления (auto, upward, downward)
+     * @param int $decimals точность (символы после точки)
      * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
      */
-    public function stringWithGreaterZero(string $round = "auto", bool $recursive = false): static
+    public function stringWithGreaterZero(string $round = "auto", int $decimals = 12, bool $recursive = false): static
     {
         $default = $this->getDefault();
 
@@ -120,16 +121,19 @@ trait VariableExtendedMethod
             throw new Exception("Default values are not an string");
         }
 
-        $this->data = static::getStringWithGreaterZero($this->data, $round, (string)$default, $recursive);
+        $this->data = static::getStringWithGreaterZero($this->data, $round, $decimals, (string)$default, $recursive);
 
         return $this;
     }
 
     /**
-     * Возвращает преобразованное значение(я) в положительное число и тип строка
+     * Возвращает преобразованное значение(я) в положительную цену для товара с типом строка
+     *
+     * @note decimals тут специально передают точность ($decimals), что-бы сразу преобразовать значения, а то number_format может по своему округлить!
      *
      * @param array|float|int|string|null $data
      * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param int $decimals точность (символы после точки)
      * @param string|null $default
      * @param bool $recursive
      * @return array|string
@@ -137,6 +141,7 @@ trait VariableExtendedMethod
     public static function getStringWithGreaterZero(
         array|float|int|string|null $data,
         string $round = "auto",
+        int $decimals = 12,
         ?string $default = null,
         bool $recursive = false
     ): array|string {
@@ -151,7 +156,7 @@ trait VariableExtendedMethod
                     } else {
                         $number = is_numeric($item) ? $item : (string)$default;
                         $number = VarFloat::isStringOnFloat($number)
-                            ? VarFloat::getMakePositive($number, 12, $round)
+                            ? VarFloat::getMakePositive($number, $decimals, $round)
                             : intval($number);
                         $return[$key] = strval($number >= 0 ? VarFloat::makeString($number) : $default);
                     }
@@ -161,7 +166,7 @@ trait VariableExtendedMethod
         } else {
             $number = is_numeric($data) ? $data : (string)$default;
             $number = VarFloat::isStringOnFloat($number)
-                ? VarFloat::getMakePositive($number, 12, $round)
+                ? VarFloat::getMakePositive($number, $decimals, $round)
                 : intval($number);
             $return = strval($number >= 0 ? VarFloat::makeString($number) : $default);
         }

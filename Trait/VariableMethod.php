@@ -357,17 +357,17 @@ trait VariableMethod
              */
             case 'price':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero("auto", $recursive)
+                    ->stringWithGreaterZero("auto", 0, $recursive)
                     ->numberFormat(0, '.', '', $recursive);
 
             case 'price-upward':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero("upward", $recursive)
+                    ->stringWithGreaterZero("upward", 0, $recursive)
                     ->numberFormat(0, '.', '', $recursive);
 
             case 'price-downward':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero("downward", $recursive)
+                    ->stringWithGreaterZero("downward", 0, $recursive)
                     ->numberFormat(0, '.', '', $recursive);
 
                 /**
@@ -375,17 +375,17 @@ trait VariableMethod
                  */
             case 'cost':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero("auto", $recursive)
+                    ->stringWithGreaterZero("auto", 2, $recursive)
                     ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-upward':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero("upward", $recursive)
+                    ->stringWithGreaterZero("upward", 2, $recursive)
                     ->numberFormat(2, '', '', $recursive);
 
             case 'cost-downward':
                 return $this->crop(25, $recursive)
-                    ->stringWithGreaterZero("downward", $recursive)
+                    ->stringWithGreaterZero("downward", 2, $recursive)
                     ->numberFormat(2, '', '', $recursive);
 
                 /**
