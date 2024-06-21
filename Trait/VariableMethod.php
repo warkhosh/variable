@@ -381,12 +381,12 @@ trait VariableMethod
             case 'cost-upward':
                 return $this->crop(25, $recursive)
                     ->stringWithGreaterZero("upward", 2, $recursive)
-                    ->numberFormat(2, '', '', $recursive);
+                    ->numberFormat(2, '.', '', $recursive);
 
             case 'cost-downward':
                 return $this->crop(25, $recursive)
                     ->stringWithGreaterZero("downward", 2, $recursive)
-                    ->numberFormat(2, '', '', $recursive);
+                    ->numberFormat(2, '.', '', $recursive);
 
                 /**
                  * Over
