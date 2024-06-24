@@ -1209,13 +1209,19 @@ class VarArray
      *
      * @param array|float|int|string $keys ключи которые надо исключить
      * @param array $array массив в котором убираем значения по ключам
+     * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
+     * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
      * @return array
      */
-    public static function getItemsExtract(array|float|int|string $keys = [], array $array = []): array
-    {
+    public static function getItemsExtract(
+        array|float|int|string $keys = [],
+        array $array = [],
+        bool $required = true,
+        mixed $default = null
+    ): array {
         if (gettype($array) === 'array' && count($array) > 0) {
             foreach ($array as &$rows) {
-                static::extract($keys, $rows);
+                static::extract($keys, $rows, $required, $default);
             }
 
             reset($array);
