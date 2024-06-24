@@ -1124,14 +1124,16 @@ class VarArray
     /**
      * Извлекает (по ссылке) из массива данные по указанным ключам
      *
-     * @param array|float|int|string $keys
+     * @note в результате работы в массиве $arr останутся только данные с ключами которые указаны с $keys
+     *
+     * @param array|bool|float|int|string|null $keys
      * @param array $arr
      * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
      * @param mixed $default значение используется совместно с $required = TRUE
      * @return void
      */
     public static function extract(
-        array|float|int|string $keys,
+        array|bool|float|int|string|null $keys,
         array &$arr = [],
         bool $required = true,
         mixed $default = null
@@ -1139,7 +1141,7 @@ class VarArray
         // Сценарий плоского извлечения
         if (is_array($keys) && count($keys) > 0 && is_array($return = [])) {
             foreach ($keys as $key) {
-                if (isset($arr[$key]) && array_key_exists($key, $arr)) {
+                if (array_key_exists($key, $arr)) {
                     $return[$key] = $arr[$key];
                     unset($arr[$key]);
 
@@ -1151,24 +1153,31 @@ class VarArray
             $arr = $return;
 
         } else {
-            if (is_string($keys) || is_numeric($keys) > 0) {
-                $return = $default;
-                $parts = explode('.', (string)$keys);
+            $return = $default;
+
+            if (is_string($keys) && mb_strlen($keys) > 0) {
+                $parts = explode('.', $keys);
+            } elseif (is_numeric($keys)) {
+                $parts = [$keys];
+            }
+
+            if (isset($parts)) {
                 $last = $parts[count($parts) - 1];
 
                 while (count($parts) >= 1) {
-                    $part = array_shift($parts);
+                    $part = array_shift($parts); // Извлекает первый элемент массива
 
                     // переходим на уровень ниже
-                    if ($last != $part && isset($arr[$part]) && is_array($arr[$part])) {
+                    if ($last != $part && is_array($arr[$part])) {
                         $arr = &$arr[$part];
+                        continue;
 
                     } else {
                         // сюда попадают когда дошли до нужного уровня или массив не имеет больше потомков
                         $parts = [];
 
                         // смотрим наличие последнего ключа для проверки и удаление по нему его значений
-                        if ($last == $part && isset($arr[$last]) && array_key_exists($last, $arr)) {
+                        if ($last == $part && array_key_exists($last, $arr)) {
                             $return = $arr[$last];
                             unset($arr[$last]);
 
@@ -1179,7 +1188,6 @@ class VarArray
                 }
 
                 $arr = $return;
-
             } else {
                 $arr = $default;
             }
@@ -1187,7 +1195,7 @@ class VarArray
     }
 
     /**
-     * Извлекает в массиве один или несколько ключей из переданных значений
+     * Обходит коллекцию и в уже её значениях массива извлекает один или несколько ключей из переданных значений
      *
      * @note в извлекаемых ключах допускается точка для вложенного действия
      *
