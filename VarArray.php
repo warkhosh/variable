@@ -1107,13 +1107,13 @@ class VarArray
      * @param array|float|int|string $keys
      * @param array $arr
      * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
-     * @param mixed $default значение используется совместно с $required = TRUE
+     * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
      * @return array
      */
     public static function getExtract(
         array|float|int|string $keys,
         array $arr = [],
-        bool $required = true,
+        bool $required = false,
         mixed $default = null
     ): array {
         static::extract($keys, $arr, $required, $default);
@@ -1129,13 +1129,13 @@ class VarArray
      * @param array|bool|float|int|string|null $keys
      * @param array $arr
      * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
-     * @param mixed $default значение используется совместно с $required = TRUE
+     * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
      * @return void
      */
     public static function extract(
         array|bool|float|int|string|null $keys,
         array &$arr = [],
-        bool $required = true,
+        bool $required = false,
         mixed $default = null
     ): void {
         // Сценарий плоского извлечения
@@ -1153,8 +1153,6 @@ class VarArray
             $arr = $return;
 
         } else {
-            $return = $default;
-
             if (is_string($keys) && mb_strlen($keys) > 0) {
                 $parts = explode('.', $keys);
             } elseif (is_numeric($keys)) {
@@ -1178,18 +1176,17 @@ class VarArray
 
                         // смотрим наличие последнего ключа для проверки и удаление по нему его значений
                         if ($last == $part && array_key_exists($last, $arr)) {
-                            $return = $arr[$last];
-                            unset($arr[$last]);
+                            if ($required) {
+                                $arr[$last] = $default;
+                            } else {
+                                unset($arr[$last]);
+                            }
 
                         } elseif ($required) {
-                            $return = $default;
+                            $arr[$last] = $default;
                         }
                     }
                 }
-
-                $arr = $return;
-            } else {
-                $arr = $default;
             }
         }
     }
