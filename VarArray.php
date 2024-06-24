@@ -1108,17 +1108,15 @@ class VarArray
      *
      * @param array|bool|float|int|string|null $keys
      * @param array $arr
-     * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
-     * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
+     * @param mixed $default
      * @return array
      */
     public static function getExtract(
         array|bool|float|int|string|null $keys,
         array $arr = [],
-        bool $required = true,
         mixed $default = null
     ): array {
-        static::extract($keys, $arr, $required, $default);
+        static::extract($keys, $arr, $default);
 
         return $arr;
     }
@@ -1130,14 +1128,12 @@ class VarArray
      *
      * @param array|bool|float|int|string|null $keys
      * @param array $arr
-     * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
-     * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
+     * @param mixed $default
      * @return void
      */
     public static function extract(
         array|bool|float|int|string|null $keys,
         array &$arr = [],
-        bool $required = true,
         mixed $default = null
     ): void {
         // Сценарий плоского извлечения
@@ -1146,8 +1142,7 @@ class VarArray
                 if (array_key_exists($key, $arr)) {
                     $return[$key] = $arr[$key];
                     unset($arr[$key]);
-
-                } elseif ($required) {
+                } else {
                     $return[$key] = $default;
                 }
             }
@@ -1177,7 +1172,7 @@ class VarArray
                         if ($last == $part) {
                             if (array_key_exists($last, $arr)) {
                                 $arr = [$last => $arr[$last]];
-                            } elseif ($required) {
+                            } else {
                                 $arr = [$last => $default];
                             }
                         }
@@ -1209,19 +1204,17 @@ class VarArray
      *
      * @param array|float|int|string $keys ключи которые надо исключить
      * @param array $array массив в котором убираем значения по ключам
-     * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
-     * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
+     * @param mixed $default
      * @return array
      */
     public static function getItemsExtract(
         array|float|int|string $keys = [],
         array $array = [],
-        bool $required = true,
         mixed $default = null
     ): array {
         if (gettype($array) === 'array' && count($array) > 0) {
             foreach ($array as &$rows) {
-                static::extract($keys, $rows, $required, $default);
+                static::extract($keys, $rows, $default);
             }
 
             reset($array);
