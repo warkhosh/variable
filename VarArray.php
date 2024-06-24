@@ -1102,18 +1102,20 @@ class VarArray
     }
 
     /**
-     * Возвращает из массива данные по указанным ключам
+     * Возвращает массив в котором только присутствует(ют) указанный(е) ключ(и)
      *
-     * @param array|float|int|string $keys
+     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
+     *
+     * @param array|bool|float|int|string|null $keys
      * @param array $arr
      * @param bool $required флаг обязательного наличия ключей при возврате равное указанному
      * @param mixed $default значение используется только совместно с $required (ключи со значением не удалиться, а замениться на $default)
      * @return array
      */
     public static function getExtract(
-        array|float|int|string $keys,
+        array|bool|float|int|string|null $keys,
         array $arr = [],
-        bool $required = false,
+        bool $required = true,
         mixed $default = null
     ): array {
         static::extract($keys, $arr, $required, $default);
@@ -1122,9 +1124,9 @@ class VarArray
     }
 
     /**
-     * Извлекает (по ссылке) из массива данные по указанным ключам
+     * В значениях массива оставляет только указанные ключи и их значения
      *
-     * @note в результате работы в массиве $arr останутся только данные с ключами которые указаны с $keys
+     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
      *
      * @param array|bool|float|int|string|null $keys
      * @param array $arr
@@ -1135,7 +1137,7 @@ class VarArray
     public static function extract(
         array|bool|float|int|string|null $keys,
         array &$arr = [],
-        bool $required = false,
+        bool $required = true,
         mixed $default = null
     ): void {
         // Сценарий плоского извлечения
@@ -1172,18 +1174,12 @@ class VarArray
 
                     } else {
                         // сюда попадают когда дошли до нужного уровня или массив не имеет больше потомков
-                        $parts = [];
-
-                        // смотрим наличие последнего ключа для проверки и удаление по нему его значений
-                        if ($last == $part && array_key_exists($last, $arr)) {
-                            if ($required) {
-                                $arr[$last] = $default;
-                            } else {
-                                unset($arr[$last]);
+                        if ($last == $part) {
+                            if (array_key_exists($last, $arr)) {
+                                $arr = [$last => $arr[$last]];
+                            } elseif ($required) {
+                                $arr = [$last => $default];
                             }
-
-                        } elseif ($required) {
-                            $arr[$last] = $default;
                         }
                     }
                 }
@@ -1192,32 +1188,24 @@ class VarArray
     }
 
     /**
-     * Обходит коллекцию и в уже её значениях массива извлекает один или несколько ключей из переданных значений
+     * Обходит коллекцию и её значениях оставляет только указанный(е) ключ(и) и их значения
      *
-     * @note в извлекаемых ключах допускается точка для вложенного действия
+     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
      *
      * @param array|float|int|string $keys ключи которые надо извлечь и оставить
      * @param array $array массив в котором производим извлечения
      * @return void
+     * @throws Exception
      */
     public static function itemsExtract(array|float|int|string $keys, array &$array): void
     {
-        if (gettype($array) === 'array' && count($array) > 0) {
-            foreach ($array as &$rows) {
-                static::extract($keys, $rows);
-            }
-
-            reset($array);
-
-        } else {
-            $array = [];
-        }
+        throw new Exception("метод больше не поддерживается, перепишите на getItemsExtract()");
     }
 
     /**
-     * Извлекает в массиве один или несколько ключей из переданных значений
+     * Обходит коллекцию и её значениях оставляет только указанный(е) ключ(и) и их значения
      *
-     * @note в извлекаемых ключах допускается точка для вложенного действия
+     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
      *
      * @param array|float|int|string $keys ключи которые надо исключить
      * @param array $array массив в котором убираем значения по ключам
