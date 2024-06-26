@@ -748,6 +748,9 @@ trait VariableMethod
             }
 
         } else {
+            // Сбрасываем пустые данные до NULL, при конвертации это позволит более корректно установить $default
+            $data = $data === "" ? null : $data;
+
             if ($positive) {
                 $return = VarInt::getMakePositiveInteger($data, $default, $strict);
             } else {

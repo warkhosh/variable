@@ -21,19 +21,18 @@ class VarInt
         int $default = 0,
         bool $strict = true
     ): int {
-        if (is_null($num) || is_bool($num)) {
+        if (is_null($num)) {
             return $default;
-        }
-
-        if (is_numeric($num) || is_float($num)) {
+        } elseif (is_bool($num) || is_numeric($num) || is_float($num)) {
             return intval($num);
         }
 
         if (is_string($num)) {
             if (! $strict) {
                 return match (strtolower(trim($num))) {
+                    '0', 'false', 'off', 'no' => 0,
                     '1', 'true', 'on', 'yes' => 1,
-                    default => 0,
+                    default => intval($num),
                 };
             }
 
@@ -62,18 +61,21 @@ class VarInt
             throw new Exception("The default value must be a positive integer");
         }
 
-        if (is_string($num)) {
-            if (! $strict) {
-                return match (strtolower(trim($num))) {
-                    '1', 'true', 'on', 'yes' => 1,
-                    default => 0,
-                };
-            }
-
+        if (is_null($num)) {
+            $num = $default;
+        } elseif (is_bool($num) || is_numeric($num) || is_float($num)) {
             $num = intval($num);
         }
 
-        if (is_null($num) || is_bool($num) || is_numeric($num)) {
+        if (is_string($num)) {
+            if (! $strict) {
+                return match (strtolower(trim($num))) {
+                    '0', 'false', 'off', 'no' => 0,
+                    '1', 'true', 'on', 'yes' => 1,
+                    default => intval($num),
+                };
+            }
+
             $num = intval($num);
         }
 
