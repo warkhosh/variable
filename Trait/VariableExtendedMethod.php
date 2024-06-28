@@ -67,7 +67,7 @@ trait VariableExtendedMethod
     }
 
     /**
-     * Преобразование значения(й) в целое число с проверкой, что они выше чем default
+     * Преобразование значения(й) в целое число с проверкой, что они выше или равны нулю
      *
      * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
      * @note возможны отрицательные значения!
@@ -82,7 +82,7 @@ trait VariableExtendedMethod
     }
 
     /**
-     * Преобразование значения(й) в целое число с проверкой, что они выше чем default
+     * Преобразование значения(й) в целое число с проверкой, что они выше или равны нулю
      *
      * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
      * @note возможны отрицательные значения!
@@ -99,7 +99,7 @@ trait VariableExtendedMethod
             throw new Exception("Default values are not an number");
         }
 
-        $this->data = static::getMinInteger($this->data, true, (int)$default, $recursive);
+        $this->data = static::getMinInteger($this->data, 0, (int)$default, $recursive);
 
         return $this;
     }

@@ -885,7 +885,7 @@ trait VariableMethod
                  * 1,2,3,4,5 ...
                  */
             case 'ids':
-                $this->ids(null, 'single', $recursive);
+                $this->ids(',', 'single', $recursive);
                 break;
         }
 
