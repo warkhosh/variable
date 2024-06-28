@@ -501,8 +501,9 @@ trait VariableMethod
                  * Проверка в строке или массиве наличие в ней идентификаторов.
                  * Для строк будет дополнительная операция по разделению её на части через $delimiter в виде запятой.
                  * Все значения проходят проверки на целое положительно число больше нуля!
-                 *
                  * 1,2,3,4,5 ...
+                 *
+                 * @note если вам надо сохранить порядок в списке значений через запятую, то input("text") и далее сами преобразовывайте
                  */
             case 'ids':
                 if ($option === 'ids') {
@@ -1788,25 +1789,23 @@ trait VariableMethod
     /**
      * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
-     * @note ID это число больше нуля. Если условие наличия числа в проверках не подтверждается и значения $default не равны числу больше нуля,
-     * данные будут сокращены или совсем не созданы!
      * @note Если данные являются массивом и надо только проверить их значения, следует указать значение разделителя как NULL
+     * @note Осознано сохраняем порядок массива
      *
      * @param array|bool|float|int|string|null $data
      * @param mixed $default значение по умолчанию
      * @param string|null $delimiter разделитель строки
-     * @param string $unique флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
+     * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
      * @param bool $recursive флаг для обхода потомков
-     * @param array $tmp
      * @return array|string
+     * @throws Exception
      */
     public static function getIds(
         array|bool|float|int|string|null $data,
         mixed $default = null,
         string|null $delimiter = ',',
-        string $unique = 'single',
+        string $unique = 'row',
         bool $recursive = false,
-        array &$tmp = []
     ): array|string {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
@@ -1814,7 +1813,7 @@ trait VariableMethod
 
                 foreach ($data as $key => $item) {
                     if ($recursive && is_array($item)) {
-                        $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive, $tmp);
+                        $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive);
 
                     } else {
                         $items = trim(is_string($item) ? $item : VarStr::getMakeString($item));
@@ -1822,36 +1821,26 @@ trait VariableMethod
                         // логика разбития строки массива по разделителю
                         if (! empty($delimiter)) {
                             $items = VarStr::explode($delimiter, $items, []);
-                            $items = VarArray::getRemove(static::getMinInteger($items));
+                            $items = VarArray::getRemove(static::getMinInteger($items, 0));
 
                             if (count($items) > 0) {
                                 // Проверка на уникальность в текущем списке
-                                $items = $unique === 'single' ? array_unique($items) : $items;
+                                $items = $unique === 'row' ? array_unique($items) : $items;
                                 $return[$key] = join($delimiter, $items);
                             } else {
                                 $return[$key] = (intval($default) > 0 ? (string)$default : '');
                             }
 
                         } else {
-                            $id = intval($item);
+                            $id = VarInt::getMakePositiveInteger($item, (int)$default, true);
 
                             if ($id > 0) {
                                 $return[$key] = (string)$id;
-
-                                // Если указали проверять все значения на уникальность, записываем текущие значения в список всех данных
-                                if ($unique == 'all' && ! in_array($id, $tmp)) {
-                                    $tmp[] = $id;
-                                }
-
                             } else {
                                 $return[$key] = (intval($default) > 0 ? (string)$default : '');
                             }
                         }
                     }
-                }
-
-                if (count($return)) {
-                    $return = array_values($return);
                 }
             }
 
@@ -1862,29 +1851,19 @@ trait VariableMethod
             } elseif (gettype($data) === 'string') {
                 // логика разбития строки массива по разделителю
                 if (is_string($delimiter)) {
-                    $items = (array)VarStr::explode($delimiter, $data);
-                    $items = VarArray::getRemove(static::getMinInteger($items), [0]);
+                    $items = VarStr::explode($delimiter, $data);
+                    $items = VarArray::getRemove(static::getMinInteger($items, 0));
 
                     // Проверка на уникальность в текущем списке
-                    $items = (array)array_unique($items);
+                    $items = $unique === 'row' ? array_unique($items) : $items;
                     $return = count($items) > 0
                         ? join($delimiter, $items)
                         : (intval($default) > 0 ? (string)$default : '');
 
                 } else { // без разделителя строку конвертируем в число
-                    $id = intval($data);
+                    $id = VarInt::getMakePositiveInteger($data, (int)$default, true);
                     $return = $id > 0 ? $id : (intval($default) > 0 ? (string)$default : '');
                 }
-
-                // Закомментировал
-                //} elseif (! empty($data)) {
-                //    $return = static::getIds([$data], $default, $delimiter, $unique, $recursive, $tmp);
-                //
-                //    // Поскольку указали проверку по массиву,
-                //    // на выходе то-же будет массив и надо делать проверку на наличие разделителя (on может быть NULL)
-                //    if (is_array($return)) {
-                //        $return = is_null($delimiter) ? join('', $return) : join($delimiter, $return);
-                //    }
 
             } else {
                 $return = intval($default) > 0 ? (string)$default : '';

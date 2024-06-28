@@ -79,7 +79,10 @@ class VarInt
                 };
             }
 
-            $num = intval($num);
+            $num = trim(strip_tags($num));
+            $int = intval($num);
+
+            $num = mb_strlen($int) === mb_strlen($num) ? $int : $default;
         }
 
         return $num >= 0 ? $num : $default;
