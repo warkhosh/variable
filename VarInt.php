@@ -36,7 +36,10 @@ class VarInt
                 };
             }
 
-            return intval($num);
+            $num = trim(strip_tags($num));
+            $int = intval($num);
+
+            return mb_strlen($int) === mb_strlen($num) ? $int : $default;
         }
 
         return $default;
