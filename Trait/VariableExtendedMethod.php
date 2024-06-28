@@ -55,7 +55,7 @@ trait VariableExtendedMethod
             }
         }
 
-        if (count($data) > 0) {
+        if (is_array($data) && count($data) > 0) {
             reset($data);
 
             foreach ($data as $key => $item) {
