@@ -16,36 +16,43 @@ use Exception;
 trait VariableExtendedMethod
 {
     /**
-     * Удаление значений из массива
+     * Удаление значений из данных
      *
-     * @param array $remove ['', 0, null, 'null']
-     * @param bool $recursive - флаг для обхода потомков
+     * @param array $remove ['', 0,  '0', null, 'null']
+     * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
      */
-    public function removeItems(array $remove = ['', 0, null, 'null'], bool $recursive = false): static
+    public function removeItems(array $remove = ['', 0, '0', null, 'null'], bool $recursive = false): static
     {
-        $this->data = static::getRemoveItems($this->data, $remove, $recursive);
+        $default = $this->getDefault();
+        $this->data = static::getRemoveItems($this->data, $remove, $default, $recursive);
 
         return $this;
     }
 
     /**
-     * Удаление значений из массива
+     * Удаление значений из данных
      *
      * @param array|bool|float|int|string|null $data
-     * @param array $remove ['', 0, null, 'null']
+     * @param array $remove ['', 0, '0', null, 'null']
+     * @param array|bool|float|int|string|null $default
      * @param bool $recursive флаг для обхода потомков
      * @return array|string
      * @throws Exception
      */
     public static function getRemoveItems(
-        array|bool|float|int|string|null $data,
-        array $remove = [0, '', null, 'null'],
+        float|array|bool|int|string|null $data,
+        array $remove = ['', 0, '0', null, 'null'],
+        float|array|bool|int|string|null $default = null,
         bool $recursive = false
     ): array|string {
         if (is_string($data)) {
-            throw new Exception("Для строк поведение не предусмотрено!");
+            foreach ($remove as $rem) {
+                if ($data === $rem) {
+                    $data = $default;
+                }
+            }
         }
 
         if (count($data) > 0) {
@@ -53,7 +60,7 @@ trait VariableExtendedMethod
 
             foreach ($data as $key => $item) {
                 if ($recursive && is_array($item)) {
-                    $data[$key] = static::getRemoveItems($item, $remove, $recursive);
+                    $data[$key] = static::getRemoveItems($item, $remove, $default, $recursive);
                 } else {
                     if (in_array($item, $remove)) {
                         $data[$key] = null;
