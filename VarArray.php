@@ -658,7 +658,8 @@ class VarArray
      */
     public static function explode(string $delimiter, string $string, ?array $delete = ['', 0, null]): array
     {
-        return VarArray::getRemove(explode($delimiter, $string), VarHelper::getArrayWrap($delete, false));
+        $list = explode($delimiter, $string);
+        return VarArray::getRemove(VarArray::trim($list), VarHelper::getArrayWrap($delete, false));
     }
 
     /**
