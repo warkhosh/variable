@@ -11,7 +11,7 @@ class VarInt
      *
      * @note: результат может быть отрицательным!
      *
-     * @param array|bool|float|int|string|null $num
+     * @param mixed $num
      * @param int $default
      * @param bool $strict флаг для преобразования дополнительных строковых значений типа "on|off/no|yes/false|true" в число
      * @return int
@@ -21,7 +21,7 @@ class VarInt
         int $default = 0,
         bool $strict = true
     ): int {
-        if (is_null($num)) {
+        if (is_null($num) || is_object($num)) {
             return $default;
         } elseif (is_bool($num) || is_numeric($num) || is_float($num)) {
             return intval($num);

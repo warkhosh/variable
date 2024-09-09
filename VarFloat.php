@@ -51,20 +51,24 @@ class VarFloat
      * @note: $round = upward, округляет десятичные значения в большую сторону если они выходят за пределы точности [$decimals]
      * @note: $round = downward, округляет десятичные значения в меньшую сторону если они выходят за пределы точности [$decimals]. В данном случае символы по правую сторону будут отрезаны.
      *
-     * @param bool|float|int|string|null $var
+     * @param mixed $var
      * @param int $decimals точность (символы после точки)
      * @param string $round тип округления (auto, upward, downward)
      * @param float $default
      * @return float
      */
     public static function getMake(
-        bool|float|int|string|null $var = 0,
+        mixed $var = 0,
         int $decimals = 12,
         string $round = "auto",
         float $default = 0.0
     ): float {
         if (is_null($var) || is_bool($var)) {
             return floatval($var);
+        }
+
+        if (is_object($var)) {
+            return $default;
         }
 
         if (is_string($var) || is_numeric($var)) {

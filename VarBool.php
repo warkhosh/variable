@@ -7,7 +7,7 @@ class VarBool
     /**
      * Преобразовывает и возвращает переданное значения в логическое значение
      *
-     * @param array|bool|float|int|string|null $bool
+     * @param mixed $bool
      * @param bool $default
      * @param bool $strict флаг для преобразования дополнительных строковых значений типа "1|0/on|off/yes|no" в логическое значение
      * @return int
@@ -17,7 +17,7 @@ class VarBool
         bool $default = false,
         bool $strict = true
     ): int {
-        if (is_null($bool)) {
+        if (is_null($bool) || is_object($bool)) {
             return $default;
         } elseif (is_bool($bool) || is_numeric($bool) || is_float($bool)) {
             return boolval($bool);
