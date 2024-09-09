@@ -58,23 +58,37 @@ class VarStr
      * Преобразование переданного значения в текст
      *
      * @param mixed $str
+     * @param string $default
      * @return string
      */
-    public static function getMakeString(mixed $str = ''): string
+    public static function getMake(mixed $str = '', string $default = ''): string
     {
-        if (gettype($str) === 'string') {
+        if (is_string($str)) {
             return $str;
-        }
-
-        if (is_null($str) || is_array($str) || is_object($str)) {
-            return '';
-        }
-
-        if (is_bool($str)) {
-            return ($str === true ? 'true' : 'false');
+        } elseif (is_null($str)) {
+            return $default;
+        } elseif (is_object($str)) {
+            return $default;
+        } elseif (is_bool($str)) {
+            return $str ? "true" : "false";
+        } elseif (is_numeric($str) || is_float($str)) {
+            return strval($str);
         }
 
         return strval($str);
+    }
+
+    /**
+     * Преобразование переданного значения в текст
+     *
+     * @param mixed $str
+     * @param string $default
+     * @return string
+     * @deprecated заменить метод на VarStr::getMake
+     */
+    public static function getMakeString(mixed $str = '', string $default = ''): string
+    {
+        return static::getMake($str, $default);
     }
 
     /**
@@ -85,7 +99,7 @@ class VarStr
      */
     public static function makeString(mixed &$str = ''): void
     {
-        $str = static::getMakeString($str);
+        $str = static::getMake($str);
     }
 
     /**

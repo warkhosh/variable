@@ -220,14 +220,14 @@ trait VariableExtendedMethod
                         $return[$key] = static::getStrReplace($item, $search, $replace, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = str_replace($search, $replace, $item);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = str_replace($search, $replace, $data);
         }
 
@@ -270,14 +270,14 @@ trait VariableExtendedMethod
                         $return[$key] = static::getNl2br($item, $is_xhtml, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = nl2br($item, $is_xhtml);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = nl2br($data, $is_xhtml);
         }
 
@@ -320,13 +320,13 @@ trait VariableExtendedMethod
                         $return[$key] = static::getStripTags($item, $allowable_tags, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = strip_tags($item, $allowable_tags);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = strip_tags($data, $allowable_tags);
         }
 
@@ -364,12 +364,12 @@ trait VariableExtendedMethod
                         $return[$key] = static::getMd5($item, $recursive);
 
                     } else {
-                        $return[$key] = md5(is_string($item) ? $item : VarStr::getMakeString($item));
+                        $return[$key] = md5(is_string($item) ? $item : VarStr::getMake($item));
                     }
                 }
             }
         } else {
-            $return = md5(VarStr::getMakeString($data));
+            $return = md5(VarStr::getMake($data));
         }
 
         return $return;
@@ -408,14 +408,14 @@ trait VariableExtendedMethod
                         $return[$key] = static::getLower($item, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = VarStr::getLower($item);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = VarStr::getLower($data);
         }
 
@@ -455,14 +455,14 @@ trait VariableExtendedMethod
                         $return[$key] = static::getUpper($item, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = VarStr::getUpper($item);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = VarStr::getUpper($data);
         }
 
@@ -504,13 +504,13 @@ trait VariableExtendedMethod
                         $return[$key] = static::getAddSlashes($item, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = addslashes($item);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = addslashes($data);
         }
 
@@ -550,14 +550,14 @@ trait VariableExtendedMethod
                         $return[$key] = static::getStripSlashes($item, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = stripslashes($item);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = stripslashes($data);
         }
 
@@ -607,7 +607,7 @@ trait VariableExtendedMethod
                         $return[$key] = static::getMakeDate($item, $default, $format, $recursive);
 
                     } else {
-                        $item = trim(is_string($item) ? $item : VarStr::getMakeString($item));
+                        $item = trim(is_string($item) ? $item : VarStr::getMake($item));
 
                         try {
                             $item = VarDateTime::getConvertDateTime($item, $format);
@@ -620,7 +620,7 @@ trait VariableExtendedMethod
             }
 
         } else {
-            $data = trim(is_string($data) ? $data : VarStr::getMakeString($data));
+            $data = trim(is_string($data) ? $data : VarStr::getMake($data));
 
             try {
                 $data = VarDateTime::getConvertDateTime($data, $format);
@@ -671,7 +671,7 @@ trait VariableExtendedMethod
             throw new Exception("Для массива поведение не предусмотрено!");
         }
 
-        $data = static::getTrim(VarStr::getMakeString($data));
+        $data = static::getTrim(VarStr::getMake($data));
 
         return in_array($data, $needle, $strict) ? $data : $default;
     }

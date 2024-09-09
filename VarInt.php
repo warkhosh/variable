@@ -13,11 +13,11 @@ class VarInt
      *
      * @param array|bool|float|int|string|null $num
      * @param int $default
-     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @param bool $strict флаг для преобразования дополнительных строковых значений типа "on|off/no|yes/false|true" в число
      * @return int
      */
-    public static function getMakeInteger(
-        array|bool|float|int|string|null $num = null,
+    public static function getMake(
+        mixed $num = null,
         int $default = 0,
         bool $strict = true
     ): int {
@@ -28,21 +28,41 @@ class VarInt
         }
 
         if (is_string($num)) {
+            $num = strtolower(trim(strip_tags($num)));
+
             if (! $strict) {
-                return match (strtolower(trim($num))) {
-                    '0', 'false', 'off', 'no' => 0,
-                    '1', 'true', 'on', 'yes' => 1,
+                return match ($num) {
+                    'false', 'off', 'no' => 0,
+                    'true', 'on', 'yes' => 1,
                     default => intval($num),
                 };
             }
 
-            $num = trim(strip_tags($num));
-            $int = intval($num);
+            $val = intval($num);
 
-            return mb_strlen($int) === mb_strlen($num) ? $int : $default;
+            return $num === strval($val) ? $val : $default;
         }
 
         return $default;
+    }
+
+    /**
+     * Преобразовывает и возвращает переданное значения в целое число
+     *
+     * @note: результат может быть отрицательным!
+     *
+     * @param array|bool|float|int|string|null $num
+     * @param int $default
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @return int
+     * @deprecated заменить метод на VarInt::getMake
+     */
+    public static function getMakeInteger(
+        array|bool|float|int|string|null $num = null,
+        int $default = 0,
+        bool $strict = true
+    ): int {
+        return static::getMake($num, $default, $strict);
     }
 
 
@@ -119,7 +139,7 @@ class VarInt
         int $min = 0,
         int $max = 1
     ): int {
-        $num = static::getMakeInteger($num, $default);
+        $num = static::getMake($num, $default);
 
         if ($num >= $min && $num <= $max) {
             return $num;

@@ -281,7 +281,7 @@ trait VariableMethod
      * @param bool $recursive
      * @return array|string
      */
-    public static function getMakeString(
+    private static function getMakeString(
         array|float|int|string|null $data,
         string $default = '',
         bool $recursive = false
@@ -296,13 +296,13 @@ trait VariableMethod
                         $return[$key] = static::getMakeString($item, $default, $recursive);
 
                     } else {
-                        $return[$key] = is_null($item) ? $default : VarStr::getMakeString($item);
+                        $return[$key] = is_null($item) ? $default : VarStr::getMake($item);
                     }
                 }
             }
 
         } else {
-            $return = is_null($data) ? $default : VarStr::getMakeString($data);
+            $return = is_null($data) ? $default : VarStr::getMake($data);
         }
 
         return $return;
@@ -579,7 +579,7 @@ trait VariableMethod
      * @param bool $recursive флаг для обхода потомков
      * @return array|float
      */
-    public static function getMakeFloat(
+    private static function getMakeFloat(
         array|float|int|string|null $data,
         int $decimals = 2,
         string $round = "auto",
@@ -723,7 +723,7 @@ trait VariableMethod
      * @return array|int
      * @throws Exception
      */
-    public static function getMakeInteger(
+    private static function getMakeInteger(
         array|float|int|string|null $data,
         int $default = 0,
         bool $positive = true,
@@ -743,7 +743,7 @@ trait VariableMethod
                         if ($positive) {
                             $return[$key] = VarInt::getMakePositiveInteger($item, $default, $strict);
                         } else {
-                            $return[$key] = VarInt::getMakeInteger($item, $default, $strict);
+                            $return[$key] = VarInt::getMake($item, $default, $strict);
                         }
                     }
                 }
@@ -756,7 +756,7 @@ trait VariableMethod
             if ($positive) {
                 $return = VarInt::getMakePositiveInteger($data, $default, $strict);
             } else {
-                $return = VarInt::getMakeInteger($data, $default, $strict);
+                $return = VarInt::getMake($data, $default, $strict);
             }
         }
 
@@ -966,14 +966,14 @@ trait VariableMethod
         //                $return[$key] = static::getMakePrice($item, $default, $recursive, $round);
         //
         //            } else {
-        //                $item = is_string($item) ? $item : VarStr::getMakeString($item);
+        //                $item = is_string($item) ? $item : VarStr::getMake($item);
         //                $return[$key] = (int)VarStr::getNumberFormat($item, $default, false, $round);
         //            }
         //        }
         //    }
         //
         //} else {
-        //    $data = is_string($data) ? $data : VarStr::getMakeString($data);
+        //    $data = is_string($data) ? $data : VarStr::getMake($data);
         //
         //    // Всегда преобразуем строку в float, на случай если передали значения не по типу
         //    $cost = static::getMakeFloat($data, 0, $round, (float)$default, true);
@@ -1054,7 +1054,7 @@ trait VariableMethod
         //                $return[$key] = static::getMakeCost($item, $default, $recursive, $decimals, $round, $separator);
         //
         //            } else {
-        //                $item = is_string($item) ? $item : VarStr::getMakeString($item);
+        //                $item = is_string($item) ? $item : VarStr::getMake($item);
         //                //$return[$key] = static::getMakeFloat($item, 0, $round, $default, true);
         //                //$return[$key] = VarStr::getNumberFormat($item, $default, false, $decimals, $round);
         //
@@ -1071,7 +1071,7 @@ trait VariableMethod
         //    }
         //
         //} else {
-        //    $data = is_string($data) ? $data : VarStr::getMakeString($data);
+        //    $data = is_string($data) ? $data : VarStr::getMake($data);
         //
         //    // Всегда преобразуем строку в float, на случай если передали значения не по типу
         //    //$return = static::getMakeFloat($data, 0, $round, $default, true);
@@ -1138,14 +1138,14 @@ trait VariableMethod
                         $return[$key] = static::getMinInteger($item, $min, $recursive);
 
                     } else {
-                        $int = VarInt::getMakeInteger($item, $default);
+                        $int = VarInt::getMake($item, $default);
                         $return[$key] = $int >= $min ? $int : ($toDefault ? $default : $int);
                     }
                 }
             }
 
         } else {
-            $int = VarInt::getMakeInteger($data, $default);
+            $int = VarInt::getMake($data, $default);
             $return = $int >= $min ? $int : ($toDefault ? $default : $int);
         }
 
@@ -1209,13 +1209,13 @@ trait VariableMethod
                         $return[$key] = static::getMaxInteger($item, $max, $toDefault, $default, $recursive);
 
                     } else {
-                        $int = VarInt::getMakeInteger($item, $default);
+                        $int = VarInt::getMake($item, $default);
                         $return[$key] = $int <= $max ? $int : ($toDefault ? $default : $int);
                     }
                 }
             }
         } else {
-            $int = VarInt::getMakeInteger($data, $default);
+            $int = VarInt::getMake($data, $default);
             $return = $int <= $max ? $int : ($toDefault ? $default : $int);
         }
 
@@ -1289,7 +1289,7 @@ trait VariableMethod
                         $return[$key] = static::getNumberFormat($item, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
 
                         // Всегда преобразуем строку в float, на случай если передали значения не по типу
                         $cost = static::getMakeFloat($item, $decimals, "auto", (float)$default, true);
@@ -1298,7 +1298,7 @@ trait VariableMethod
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
 
             // Всегда преобразуем строку в float, на случай если передали значения не по типу
             $cost = static::getMakeFloat($data, $decimals, "auto", (float)$default, true);
@@ -1354,14 +1354,14 @@ trait VariableMethod
                         $return[$key] = static::getPregReplace($item, $pattern, $replacement, $recursive, $limit);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = preg_replace($pattern, $replacement, $item, $limit);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = preg_replace($pattern, $replacement, $data, $limit);
         }
 
@@ -1413,13 +1413,13 @@ trait VariableMethod
                         $return[$key] = static::getHtmlEntityDecode($item, $flags, $encoding, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = html_entity_decode($item, $flags, $encoding);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = html_entity_decode($data, $flags, $encoding);
         }
 
@@ -1478,13 +1478,13 @@ trait VariableMethod
                         $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = htmlspecialchars($item, $flags, $encoding, $doubleEncode);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = htmlspecialchars($data, $flags, $encoding, $doubleEncode);
         }
 
@@ -1545,13 +1545,13 @@ trait VariableMethod
                         $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = htmlentities($item, $flags, $encoding, $doubleEncode);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = htmlentities($data, $flags, $encoding, $doubleEncode);
         }
 
@@ -1593,13 +1593,13 @@ trait VariableMethod
                     $return[$key] = static::getTrim($item, $removeChar, $recursive);
 
                 } else {
-                    $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                    $item = is_string($item) ? $item : VarStr::getMake($item);
                     $return[$key] = VarStr::trim($item, $removeChar);
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = VarStr::trim($data, $removeChar);
         }
 
@@ -1633,7 +1633,7 @@ trait VariableMethod
         array|string $removeChar = ["\n", "\r", "\t"],
         bool $recursive = false
     ): array|string {
-        $removeChar = is_array($removeChar) ? $removeChar : [VarStr::getMakeString($removeChar)];
+        $removeChar = is_array($removeChar) ? $removeChar : [VarStr::getMake($removeChar)];
 
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {
@@ -1644,14 +1644,14 @@ trait VariableMethod
                         $return[$key] = static::getRemoveSymbol($item, $removeChar, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = VarStr::getRemoveSymbol($item, $removeChar);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = VarStr::getRemoveSymbol($data, $removeChar);
         }
 
@@ -1694,15 +1694,15 @@ trait VariableMethod
                         $return[$key] = static::getCrop($item, $length, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = VarStr::crop($item, $length);
                     }
                 }
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
-            $return = VarStr::crop(VarStr::getMakeString($data), $length);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
+            $return = VarStr::crop(VarStr::getMake($data), $length);
         }
 
         return $return;
@@ -1758,13 +1758,13 @@ trait VariableMethod
                         $return[$key] = static::getReduce($item, $length, $end, $transform, $smart, $recursive);
 
                     } else {
-                        $item = is_string($item) ? $item : VarStr::getMakeString($item);
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
                         $return[$key] = VarStr::reduce($item, $length, $end, $transform, $smart);
                     }
                 }
             }
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $return = VarStr::reduce($data, $length, $end, $transform, $smart);
         }
 
@@ -1816,7 +1816,7 @@ trait VariableMethod
                         $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive);
 
                     } else {
-                        $items = trim(is_string($item) ? $item : VarStr::getMakeString($item));
+                        $items = trim(is_string($item) ? $item : VarStr::getMake($item));
 
                         // логика разбития строки массива по разделителю
                         if (! empty($delimiter)) {
@@ -1957,7 +1957,7 @@ trait VariableMethod
             }
 
         } else {
-            $data = is_string($data) ? $data : VarStr::getMakeString($data);
+            $data = is_string($data) ? $data : VarStr::getMake($data);
             $data = VarStr::explode(",", $data, ['']);
 
             foreach ($data as $key => $str) {

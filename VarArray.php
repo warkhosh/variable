@@ -11,8 +11,8 @@ use Closure;
  * Class Arr
  * Методы для работы с массивами
  *
- * @note    : некоторые методы взяты из https://github.com/rappasoft/laravel-helpers/blob/master/src/helpers.php
- * @note    : некоторые методы взяты из https://github.com/illuminate/support/blob/master/helpers.php
+ * @note: некоторые методы взяты из https://github.com/rappasoft/laravel-helpers/blob/master/src/helpers.php
+ * @note: некоторые методы взяты из https://github.com/illuminate/support/blob/master/helpers.php
  */
 class VarArray
 {
@@ -23,10 +23,14 @@ class VarArray
      * @param string|null $delimiter
      * @return array
      */
-    public static function getMakeArray(mixed $data = [], ?string $delimiter = null): array
+    public static function getMake(mixed $data = [], ?string $delimiter = null): array
     {
         if (gettype($data) === 'array') {
             return $data;
+        }
+
+        if (is_bool($data) || is_numeric($data) || is_float($data) || is_object($data)) {
+            return [];
         }
 
         if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
@@ -43,11 +47,24 @@ class VarArray
      *
      * @param mixed $data
      * @param string|null $delimiter
+     * @return array
+     * @deprecated заменить метод на VarArray::getMake
+     */
+    public static function getMakeArray(mixed $data = [], ?string $delimiter = null): array
+    {
+        return static::getMake($data, $delimiter);
+    }
+
+    /**
+     * Преобразование переданного значения в массив
+     *
+     * @param mixed $data
+     * @param string|null $delimiter
      * @return void
      */
     public static function makeArray(mixed &$data = [], ?string $delimiter = null): void
     {
-        $data = static::getMakeArray($data, $delimiter);
+        $data = static::getMake($data, $delimiter);
     }
 
     /**
@@ -659,6 +676,7 @@ class VarArray
     public static function explode(string $delimiter, string $string, ?array $delete = ['', 0, null]): array
     {
         $list = explode($delimiter, $string);
+
         return VarArray::getRemove(VarArray::trim($list), VarHelper::getArrayWrap($delete, false));
     }
 
@@ -1261,7 +1279,7 @@ class VarArray
                     $return[$key] = static::stripslashes($item, $recursive);
 
                 } else {
-                    $return[$key] = stripslashes(! is_string($item) ? VarStr::getMakeString($item) : $item);
+                    $return[$key] = stripslashes(! is_string($item) ? VarStr::getMake($item) : $item);
                 }
             }
         }
@@ -1344,7 +1362,7 @@ class VarArray
      */
     public static function getMinInt(array $data, int $default = 0, bool $recursive = false): array
     {
-        $default = VarInt::getMakeInteger($default);
+        $default = VarInt::getMake($default);
 
         if (count($data) > 0 && is_array($return = [])) {
             reset($data);
@@ -1354,7 +1372,7 @@ class VarArray
                     $return[$key] = static::getMinInt($item, $default, $recursive);
 
                 } else {
-                    $item = VarInt::getMakeInteger($item, $default);
+                    $item = VarInt::getMake($item, $default);
                     $return[$key] = $item >= $default ? $item : $default;
                 }
             }
@@ -1399,7 +1417,7 @@ class VarArray
         int $default = 0,
         bool $recursive = false
     ): array {
-        $default = VarInt::getMakeInteger($default);
+        $default = VarInt::getMake($default);
 
         if (count($data) > 0 && is_array($return = [])) {
             reset($data);
@@ -1409,7 +1427,7 @@ class VarArray
                     $return[$key] = static::getMaxInt($item, $max, $toDefault, $default, $recursive);
 
                 } else {
-                    $item = VarInt::getMakeInteger($item, $default);
+                    $item = VarInt::getMake($item, $default);
                     $return[$key] = $item;
 
                     if ($item > $max) {
