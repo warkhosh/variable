@@ -10,13 +10,13 @@ class VarBool
      * @param mixed $bool
      * @param bool $default
      * @param bool $strict флаг для преобразования дополнительных строковых значений типа "1|0/on|off/yes|no" в логическое значение
-     * @return int
+     * @return bool
      */
     public static function getMake(
         mixed $bool = null,
         bool $default = false,
         bool $strict = true
-    ): int {
+    ): bool {
         if (is_null($bool) || is_object($bool)) {
             return $default;
         } elseif (is_bool($bool) || is_numeric($bool) || is_float($bool)) {
