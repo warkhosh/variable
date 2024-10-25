@@ -39,7 +39,9 @@ echo Warkhosh\Variable\VarFloat::getMakePositive("15.1", 2, "upward", $default =
 if (! function_exists('get')) {
     /**
      * @param string $varName
-     * @return \Warkhosh\Variable\Variable
+     * @return Variable
+     * @package Warkhosh\Variable
+     * @version 1.1
      */
     function get(string $varName)
     {
@@ -53,9 +55,14 @@ if (! function_exists('get')) {
 
         // Если передан третий параметр, то значит это тип переменной по умолчанию
         if (count(func_get_args()) >= 3) {
-            $method = func_get_arg(2);
-            $arguments = count(func_get_args()) >= 4 ? func_get_arg(3) : null;
-            $appVariable->{$method}($arguments);
+            $method = func_get_arg(2); // читаем третий аргумент
+
+            // Если передали более трех, передаем их
+            if (count(func_get_args()) >= 4) {
+                $appVariable->{$method}(func_get_arg(3));
+            } else {
+                $appVariable->{$method}();
+            }
         } else {
             if (is_array($var)) {
                 trigger_error("Для чтения переменной `{$varName}`, указан не верный тип");
@@ -72,7 +79,9 @@ if (! function_exists('get')) {
 if (! function_exists('post')) {
     /**
      * @param string $varName
-     * @return \Warkhosh\Variable\Variable
+     * @return Variable
+     * @package Warkhosh\Variable
+     * @version 1.1
      */
     function post(string $varName)
     {
@@ -85,10 +94,15 @@ if (! function_exists('post')) {
         }
 
         // Если передан третий параметр, то значит это тип переменной по умолчанию
-        if (count(func_get_args()) === 3) {
-            $method = func_get_arg(2);
-            $arguments = count(func_get_args()) >= 4 ? func_get_arg(3) : null;
-            $appVariable->{$method}($arguments);
+        if (count(func_get_args()) >= 3) {
+            $method = func_get_arg(2); // читаем третий аргумент
+
+            // Если передали более трех, передаем их
+            if (count(func_get_args()) >= 4) {
+                $appVariable->{$method}(func_get_arg(3));
+            } else {
+                $appVariable->{$method}();
+            }
         } else {
             if (is_array($value)) {
                 trigger_error("Для чтения переменной `{$varName}`, указан не верный тип");
@@ -104,7 +118,9 @@ if (! function_exists('post')) {
 if (! function_exists('put')) {
     /**
      * @param string $varName
-     * @return \Warkhosh\Variable\Variable
+     * @return Variable
+     * @package Warkhosh\Variable
+     * @version 1.1
      */
     function put(string $varName)
     {
@@ -117,10 +133,15 @@ if (! function_exists('put')) {
         }
 
         // Если передан третий параметр, то значит это тип переменной по умолчанию
-        if (count(func_get_args()) === 3) {
-            $method = func_get_arg(2);
-            $arguments = count(func_get_args()) >= 4 ? func_get_arg(3) : null;
-            $appVariable->{$method}($arguments);
+        if (count(func_get_args()) >= 3) {
+            $method = func_get_arg(2); // читаем третий аргумент
+
+            // Если передали более трех, передаем их
+            if (count(func_get_args()) >= 4) {
+                $appVariable->{$method}(func_get_arg(3));
+            } else {
+                $appVariable->{$method}();
+            }
         } else {
             if (is_array($value)) {
                 trigger_error("Для чтения переменной `{$varName}`, указан не верный тип");
@@ -136,7 +157,9 @@ if (! function_exists('put')) {
 if (! function_exists('delete')) {
     /**
      * @param string $varName
-     * @return \Warkhosh\Variable\Variable
+     * @return Variable
+     * @package Warkhosh\Variable
+     * @version 1.1
      */
     function delete(string $varName)
     {
@@ -149,10 +172,15 @@ if (! function_exists('delete')) {
         }
 
         // Если передан третий параметр, то значит это тип переменной по умолчанию
-        if (count(func_get_args()) === 3) {
-            $method = func_get_arg(2);
-            $arguments = count(func_get_args()) >= 4 ? func_get_arg(3) : null;
-            $appVariable->{$method}($arguments);
+        if (count(func_get_args()) >= 3) {
+            $method = func_get_arg(2); // читаем третий аргумент
+
+            // Если передали более трех, передаем их
+            if (count(func_get_args()) >= 4) {
+                $appVariable->{$method}(func_get_arg(3));
+            } else {
+                $appVariable->{$method}();
+            }
         } else {
             if (is_array($value)) {
                 trigger_error("Для чтения переменной `{$varName}`, указан не верный тип");
@@ -169,7 +197,9 @@ if (! function_exists('delete')) {
 if (! function_exists('request')) {
     /**
      * @param string $varName
-     * @return \Warkhosh\Variable\Variable
+     * @return Variable
+     * @package Warkhosh\Variable
+     * @version 1.1
      */
     function request(string $varName)
     {
@@ -181,11 +211,16 @@ if (! function_exists('request')) {
             $appVariable->byDefault(func_get_arg(1));
         }
 
-        // Если передан третий параметр, то значит это тип переменной по умолчанию
-        if (count(func_get_args()) === 3) {
-            $method = func_get_arg(2);
-            $arguments = count(func_get_args()) >= 4 ? func_get_arg(3) : null;
-            $appVariable->{$method}($arguments);
+        /// Если передан третий параметр, то значит это тип переменной по умолчанию
+        if (count(func_get_args()) >= 3) {
+            $method = func_get_arg(2); // читаем третий аргумент
+
+            // Если передали более трех, передаем их
+            if (count(func_get_args()) >= 4) {
+                $appVariable->{$method}(func_get_arg(3));
+            } else {
+                $appVariable->{$method}();
+            }
         } else {
             if (is_array($value)) {
                 trigger_error("Для чтения переменной `{$varName}`, указан не верный тип");
