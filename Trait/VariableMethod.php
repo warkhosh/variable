@@ -689,7 +689,7 @@ trait VariableMethod
      * @throws Exception
      * @version 1.1
      */
-    public function getArray(string $option, ?string $delimiter = null): array
+    public function getList(string $option, ?string $delimiter = null, bool $recursive = false): array
     {
         return $this->array($option)->get();
     }
@@ -700,11 +700,12 @@ trait VariableMethod
      *
      * @param string $option
      * @param string|null $delimiter
+     * @param bool $recursive
      * @return $this
      * @throws Exception
      * @version 1.1
      */
-    public function array(string $option, ?string $delimiter = null): static
+    public function list(string $option, ?string $delimiter = null, bool $recursive = false): static
     {
         $this->__option = $option;
         $this->makeArray();
