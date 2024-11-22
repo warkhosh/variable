@@ -144,6 +144,7 @@ trait VariableExtendedMethod
      * @param string|null $default
      * @param bool $recursive
      * @return array|string
+     * @throws Exception
      */
     public static function getStringWithGreaterZero(
         array|float|int|string|null $data,
@@ -165,7 +166,7 @@ trait VariableExtendedMethod
                         $number = VarFloat::isStringOnFloat($number)
                             ? VarFloat::getMakePositive($number, $decimals, $round)
                             : intval($number);
-                        $return[$key] = strval($number >= 0 ? VarFloat::makeString($number) : $default);
+                        $return[$key] = strval($number >= 0 ? VarFloat::getString($number, 2) : $default);
                     }
                 }
             }
@@ -175,7 +176,7 @@ trait VariableExtendedMethod
             $number = VarFloat::isStringOnFloat($number)
                 ? VarFloat::getMakePositive($number, $decimals, $round)
                 : intval($number);
-            $return = strval($number >= 0 ? VarFloat::makeString($number) : $default);
+            $return = strval($number >= 0 ? VarFloat::getString($number, 2) : $default);
         }
 
         return $return;

@@ -76,6 +76,7 @@ trait VariableMethod
                 // Что-бы преобразование из текста сработало и первым элементом массива стал полученный текст,
                 // нужен не пустой разделитель. Делаем разделитель запятая по умолчанию
                 $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
+                $this->makeArray($delimiter);
                 $this->toArray($delimiter);
             }
         }
@@ -126,7 +127,7 @@ trait VariableMethod
     }
 
     /**
-     * Преобразование значения переменной в массив!
+     * Преобразование значения `$this->data` в массив!
      * Для последующих операций над переменной именно по сценарию массивов что-бы вернуть массив.
      *
      * @note: Если передать второй аргумент то он будет значением по умолчанию
@@ -134,6 +135,7 @@ trait VariableMethod
      * @param string|null $delimiter
      * @return $this
      * @throws Exception
+     * @deprecated в 90% эта функция заменяется makeArray()
      */
     public function toArray(?string $delimiter = null): static
     {
@@ -157,7 +159,7 @@ trait VariableMethod
     }
 
     /**
-     * Преобразование значения переменной в тип массив!
+     * Преобразует и возвращает переданные значения в тип массив!
      * Для последующих операций над переменной именно по сценарию массивов что-бы вернуть массив.
      *
      * @param array|float|int|string|null $data
@@ -190,7 +192,7 @@ trait VariableMethod
     }
 
     /**
-     * Преобразование значения переменной в тип строка!
+     * Преобразование значения $this->data` в строку!
      * Для последующих операций над переменной именно по сценарию строчного что-бы вернуть одно значение переменной.
      *
      * @note: Если передать второй аргумент то он будет значением по умолчанию
@@ -250,72 +252,17 @@ trait VariableMethod
     }
 
     /**
-     * Преобразование значения в строку
-     *
-     * @param bool $recursive
-     * @return $this
-     * @throws Exception
-     */
-    private function makeString(bool $recursive = false): static
-    {
-        $default = $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_string($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an string");
-            }
-        }
-
-        $this->data = static::getMakeString($this->data, (string)$default, $recursive);
-
-        return $this;
-    }
-
-    /**
-     * Преобразование значения(й) в строку
-     *
-     * @param mixed $data
-     * @param string $default
-     * @param bool $recursive
-     * @return array|string
-     */
-    private static function getMakeString(
-        array|float|int|string|null $data,
-        string $default = '',
-        bool $recursive = false
-    ): array|string {
-        if (is_array($data) && is_array($return = [])) {
-
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMakeString($item, $default, $recursive);
-
-                    } else {
-                        $return[$key] = is_null($item) ? $default : VarStr::getMake($item);
-                    }
-                }
-            }
-
-        } else {
-            $return = is_null($data) ? $default : VarStr::getMake($data);
-        }
-
-        return $return;
-    }
-
-    /**
      * Возвращает преобразованное значение(я) в строку в зависимости от указанного алгоритма
+     *
+     * @note с версии 1.1 добавлены методы getArray() и array(),
+     * в этом методе скоро будет возвращаться строго один тип `string`, а для array используйте новые методы!
      *
      * @param string $option
      * @param bool $recursive флаг для обхода потомков
      * @param array $remove символы для удаления из текста
      * @return array|string
      * @throws Exception
+     * @version 1.1
      */
     public function getInput(
         string $option = 'small',
@@ -333,6 +280,7 @@ trait VariableMethod
      * @param array $remove символы для удаления из текста
      * @return $this
      * @throws Exception
+     * @version 1.1
      */
     public function input(string $option = 'small', bool $recursive = false, array $remove = ["\t", "\n", "\r"]): static
     {
@@ -520,107 +468,10 @@ trait VariableMethod
     }
 
     /**
-     * Устанавливает во что преобразовывать пустую строку(и) если они получились при конвертации
-     *
-     * @param string $var
-     * @return $this
-     */
-    public function convertEmptyString(string $var): static
-    {
-        $this->convertAnEmptyString = $var;
-
-        return $this;
-    }
-
-    /**
-     * Преобразование значения в число с плавающей точкой
-     *
-     * @note: возможны отрицательные значения!
-     *
-     * @param int $decimals точность (символы после точки)
-     * @param string $round тип округления десятичного значения (auto, upward, downward)
-     * @param bool $positive флаг положительного числа, >= 0
-     * @param bool $recursive флаг для обхода потомков
-     * @return $this
-     * @throws Exception
-     */
-    private function makeFloat(
-        int $decimals = 2,
-        string $round = "auto",
-        bool $positive = true,
-        bool $recursive = false
-    ): static {
-        $default = $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
-                throw new Exception("Default values are not an float");
-            }
-        }
-
-        $default = VarFloat::getMake($default);
-        $this->data = static::getMakeFloat($this->data, $decimals, $round, $default, $positive, $recursive);
-
-        return $this;
-    }
-
-    /**
-     * Преобразование значения(й) в число с плавающей точкой
-     *
-     * @note: возможны отрицательные значения!
-     *
-     * @param array|float|int|string|null $data
-     * @param int $decimals точность (символы после точки)
-     * @param string $round тип округления десятичного значения (auto, upward, downward)
-     * @param float $default
-     * @param bool $positive флаг положительного числа, >= 0
-     * @param bool $recursive флаг для обхода потомков
-     * @return array|float
-     */
-    private static function getMakeFloat(
-        array|float|int|string|null $data,
-        int $decimals = 2,
-        string $round = "auto",
-        float $default = 0.0,
-        bool $positive = true,
-        bool $recursive = false
-    ): array|float {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMakeFloat($item, $decimals, $round, $default, $positive, $recursive);
-
-                    } else {
-
-                        if ($positive) {
-                            $return[$key] = VarFloat::getMakePositive($item, $decimals, $round, $default);
-                        } else {
-                            $return[$key] = VarFloat::getMake($item, $decimals, $round, $default);
-                        }
-                    }
-                }
-            }
-
-        } else {
-            if ($positive) {
-                $return = VarFloat::getMakePositive($data, $decimals, $round, $default);
-
-            } else {
-                $return = VarFloat::getMake($data, $decimals, $round, $default);
-            }
-        }
-
-        return $return;
-    }
-
-    /**
      * Возвращает преобразованное значение(я) в число с плавающей точкой в зависимости от указанного алгоритма
+     *
+     * @note с версии 1.1 добавлены методы getArray() и array(),
+     * в этом методе скоро будет возвращаться строго один тип `string`, а для array используйте новые методы!
      *
      * @param int|string $option если указали число считаем его определением точности (decimals)
      * @param string $round тип округления (auto, upward, downward)
@@ -628,6 +479,7 @@ trait VariableMethod
      * @param bool $recursive флаг для обхода потомков
      * @return array|float
      * @throws Exception
+     * @version 1.1
      */
     public function getFloat(
         int|string $option,
@@ -647,6 +499,7 @@ trait VariableMethod
      * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
+     * @version 1.1
      */
     public function float(
         int|string $option = 12,
@@ -683,94 +536,17 @@ trait VariableMethod
     }
 
     /**
-     * Преобразование значения в целое число
-     *
-     * @note: возможны отрицательные значения!
-     *
-     * @param bool $positive флаг положительного числа, >= 0
-     * @param bool $recursive флаг для обхода потомков
-     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
-     * @return $this
-     * @throws Exception
-     */
-    private function makeInteger(bool $positive = true, bool $recursive = false, bool $strict = true): static
-    {
-        $default = $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number");
-            }
-        }
-
-        $this->data = static::getMakeInteger($this->data, (int)$default, $positive, $recursive, $strict);
-
-        return $this;
-    }
-
-    /**
-     * Преобразование значения(й) в целое число
-     *
-     * @note: возможны отрицательные значения!
-     *
-     * @param array|float|int|string|null $data
-     * @param int $default
-     * @param bool $positive флаг положительного числа, >= 0
-     * @param bool $recursive флаг для обхода потомков
-     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
-     * @return array|int
-     * @throws Exception
-     */
-    private static function getMakeInteger(
-        array|float|int|string|null $data,
-        int $default = 0,
-        bool $positive = true,
-        bool $recursive = false,
-        bool $strict = true
-    ): array|int {
-        if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
-
-                foreach ($data as $key => $item) {
-
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMakeInteger($item, $default, $positive, $recursive);
-
-                    } else {
-                        if ($positive) {
-                            $return[$key] = VarInt::getMakePositiveInteger($item, $default, $strict);
-                        } else {
-                            $return[$key] = VarInt::getMake($item, $default, $strict);
-                        }
-                    }
-                }
-            }
-
-        } else {
-            // Сбрасываем пустые данные до NULL, при конвертации это позволит более корректно установить $default
-            $data = $data === "" ? null : $data;
-
-            if ($positive) {
-                $return = VarInt::getMakePositiveInteger($data, $default, $strict);
-            } else {
-                $return = VarInt::getMake($data, $default, $strict);
-            }
-        }
-
-        return $return;
-    }
-
-    /**
      * Возвращает преобразованное значение(я) в целые числа в зависимости от указанного алгоритма
+     *
+     * @note с версии 1.1 добавлены методы getArray() и array(),
+     * в этом методе скоро будет возвращаться строго один тип `string`, а для array используйте новые методы!
      *
      * @param string $option
      * @param bool $positive
      * @param bool $recursive флаг для обхода потомков
      * @return array|int
      * @throws Exception
+     * @version 1.1
      */
     public function getInteger(string $option, bool $positive = false, bool $recursive = false): array|int
     {
@@ -786,6 +562,7 @@ trait VariableMethod
      * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
+     * @version 1.1
      */
     public function integer(string $option, bool $positive = false, bool $recursive = false): static
     {
@@ -901,6 +678,367 @@ trait VariableMethod
         }
 
         return $this;
+    }
+
+    /**
+     * Возвращает преобразованное значение(я) в массив в зависимости от указанного алгоритма
+     *
+     * @param string $option
+     * @param string|null $delimiter
+     * @return array
+     * @throws Exception
+     * @version 1.1
+     */
+    public function getArray(string $option, ?string $delimiter = null): array
+    {
+        return $this->array($option)->get();
+    }
+
+    /**
+     * Преобразование значений в массив в зависимости от указанного алгоритма
+     * Сокращённый метод работы с цифрами
+     *
+     * @param string $option
+     * @param string|null $delimiter
+     * @return $this
+     * @throws Exception
+     * @version 1.1
+     */
+    public function array(string $option, ?string $delimiter = null): static
+    {
+        $this->__option = $option;
+        $this->makeArray();
+
+        switch ($option) {
+            /**
+             * Для переключателей нужно всего 2 значения 0) off и 1) on
+             * Не устанавливаем принудительное значение по умолчанию что-бы иметь возможность гибко настроить поведение!
+             */
+            case 'tags':
+                $this->byDefault(0)
+                    ->minInteger(0, true, $recursive)
+                    ->maxInteger(1, false, $recursive);
+                break;
+
+                /**
+                 * Проверка значений массива или текущего числа на наличие идентификатора(ов).
+                 * Идентификаторы проходят проверки на целое положительно число (больше нуля).
+                 *
+                 * @note Если проверяемая переменная содержала строку,
+                 * она будет преобразована в число по правилам строгой типизации и только после будет произведена проверка на ID!
+                 * @note Для работы со списками из строк, работайте с методом input('ids');
+                 *
+                 * 1,2,3,4,5 ...
+                 */
+            case 'ids':
+                $this->ids(null, 'single', $recursive)
+                    ->removeItems()
+                    ->makeInteger(true, $recursive);
+                break;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Устанавливает во что преобразовывать пустую строку(и) если они получились при конвертации
+     *
+     * @param string $var
+     * @return $this
+     */
+    public function convertEmptyString(string $var): static
+    {
+        $this->convertAnEmptyString = $var;
+
+        return $this;
+    }
+
+    /**
+     * Преобразование значения(й) `$this->data` в строку
+     *
+     * @param bool $recursive
+     * @return $this
+     * @throws Exception
+     */
+    private function makeString(bool $recursive = false): static
+    {
+        $default = $this->getDefault();
+
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_string($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an string");
+            }
+        }
+
+        $this->data = static::getMakeString($this->data, (string)$default, $recursive);
+
+        return $this;
+    }
+
+    /**
+     * Преобразование переданного значения(й) в строку
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param string $default
+     * @param bool $recursive
+     * @return array|string
+     */
+    private static function getMakeString(
+        array|bool|float|int|string|null $data,
+        string $default = '',
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getMakeString($item, $default, $recursive);
+
+                    } else {
+                        $return[$key] = is_null($item) ? $default : VarStr::getMake($item);
+                    }
+                }
+            }
+
+        } else {
+            // VarStr::getMake() преобразовывает bool значение в слова true/false и поэтому мыв этот тип данных раньше конвертируем
+            $data = is_bool($data) ? $default : $data;
+            $return = is_null($data) ? $default : VarStr::getMake($data);
+        }
+
+        return $return;
+    }
+
+    /**
+     * Преобразование значения(й) `$this->data` в число с плавающей точкой
+     *
+     * @note: возможны отрицательные значения!
+     *
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     * @throws Exception
+     */
+    private function makeFloat(
+        int $decimals = 2,
+        string $round = "auto",
+        bool $positive = true,
+        bool $recursive = false
+    ): static {
+        $default = $this->getDefault();
+
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default) || VarFloat::isStringOnFloat($default))) {
+                throw new Exception("Default values are not an float");
+            }
+        }
+
+        $default = VarFloat::getMake($default);
+        $this->data = static::getMakeFloat($this->data, $decimals, $round, $default, $positive, $recursive);
+
+        return $this;
+    }
+
+    /**
+     * Преобразование переданного значения(й) в число с плавающей точкой
+     *
+     * @note: возможны отрицательные значения!
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param int $decimals точность (символы после точки)
+     * @param string $round тип округления десятичного значения (auto, upward, downward)
+     * @param float $default
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|float
+     * @throws Exception
+     */
+    private static function getMakeFloat(
+        array|bool|float|int|string|null $data,
+        int $decimals = 2,
+        string $round = "auto",
+        float $default = 0.0,
+        bool $positive = true,
+        bool $recursive = false
+    ): array|float {
+        if ($positive && $default < 0) {
+            throw new Exception("Default values are not positive");
+        }
+
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getMakeFloat($item, $decimals, $round, $default, $positive, $recursive);
+
+                    } else {
+
+                        if ($positive) {
+                            $return[$key] = VarFloat::getMakePositive($item, $decimals, $round, $default);
+                        } else {
+                            $return[$key] = VarFloat::getMake($item, $decimals, $round, $default);
+                        }
+                    }
+                }
+            }
+
+        } else {
+            if ($positive) {
+                $return = VarFloat::getMakePositive($data, $decimals, $round, $default);
+
+            } else {
+                $return = VarFloat::getMake($data, $decimals, $round, $default);
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Преобразование значения `$this->data` в целое число
+     *
+     * @note: возможны отрицательные значения!
+     *
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @return $this
+     * @throws Exception
+     */
+    private function makeInteger(bool $positive = true, bool $recursive = false, bool $strict = true): static
+    {
+        $default = $this->getDefault();
+
+        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if ($this->dataType !== 'array') {
+            if (! (is_null($default) || is_numeric($default))) {
+                throw new Exception("Default values are not an number");
+            }
+        }
+
+        $this->data = static::getMakeInteger($this->data, (int)$default, $positive, $recursive, $strict);
+
+        return $this;
+    }
+
+    /**
+     * Преобразование переданного значения(й) в целое число
+     *
+     * @note: возможны отрицательные значения!
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param int $default
+     * @param bool $positive флаг положительного числа, >= 0
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
+     * @return array|int
+     * @throws Exception
+     */
+    private static function getMakeInteger(
+        array|bool|float|int|string|null $data,
+        int $default = 0,
+        bool $positive = true,
+        bool $recursive = false,
+        bool $strict = true
+    ): array|int {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getMakeInteger($item, $default, $positive, $recursive);
+
+                    } else {
+                        if ($positive) {
+                            $return[$key] = VarInt::getMakePositiveInteger($item, $default, $strict);
+                        } else {
+                            $return[$key] = VarInt::getMake($item, $default, $strict);
+                        }
+                    }
+                }
+            }
+
+        } else {
+            // Сбрасываем пустые данные до NULL, при конвертации это позволит более корректно установить $default
+            $data = $data === '' ? null : $data;
+
+            if ($positive) {
+                $return = VarInt::getMakePositiveInteger($data, $default, $strict);
+            } else {
+                $return = VarInt::getMake($data, $default, $strict);
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Преобразование значения(й) `$this->data` в массив
+     *
+     * @param string|null $delimiter
+     * @return $this
+     * @throws Exception
+     */
+    private function makeArray(?string $delimiter = null): static
+    {
+        $default = $this->getDefault();
+
+        // Проверка когда тип данных указан как массив, а default значение integer
+        // К примеру get('status_id', -1, 'array')->getInteger('filter');
+        if (! is_array($default)) {
+            throw new Exception("Default values are not an array");
+        }
+
+        $this->data = static::getMakeArray($this->data, $delimiter, (array)$default);
+
+        return $this;
+    }
+
+    /**
+     * Преобразование переданного значения(й) в строку
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param string|null $delimiter
+     * @param array $default
+     * @return array|string
+     */
+    private static function getMakeArray(
+        array|bool|float|int|string|null $data,
+        ?string $delimiter = null,
+        array $default = []
+    ): array|string {
+        if (is_bool($data) || is_null($data)) {
+            return $default;
+        }
+
+        if (is_array($data)) {
+            return $data;
+        }
+
+        if (is_numeric($data) || is_float($data)) {
+            return [$data];
+        }
+
+        if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
+            return explode($delimiter, $data);
+        }
+
+        return $default;
     }
 
     /**
@@ -1062,7 +1200,7 @@ trait VariableMethod
         //                $item = VarFloat::getMakePositive($item, $decimals, $round, $default);
         //
         //                // Преобразуем float в string для getNumberFormat
-        //                $item = VarFloat::makeString($item);
+        //                $item = VarFloat::getString($item, 2);
         //
         //                // Преобразуем значение в денежную единицу
         //                $return[$key] = VarStr::getNumberFormat($item, $decimals, $separator, '', $default);

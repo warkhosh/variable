@@ -17,13 +17,13 @@ class VarDateTime
     /**
      * Проверка даты под указанный формат
      *
-     * @param string|null $str
+     * @param float|int|string|null $str
      * @param string $format
      * @return bool
      */
-    public static function validateDateTime(?string $str = null, string $format = 'Y-m-d H:i:s'): bool
+    public static function validateDateTime(float|int|string|null $str = null, string $format = 'Y-m-d H:i:s'): bool
     {
-        if (is_null($str) || $str === "") {
+        if (! is_string($str)) {
             return false;
         }
 
@@ -45,11 +45,15 @@ class VarDateTime
      * @throws Exception
      */
     public static function getConvertDateTime(
-        int|string|null $str,
+        float|int|string|null $str,
         string $format = 'Y-m-d',
         ?string $default = null
     ): string|null {
-        if (is_null($str) || $str === "" || (is_numeric($str) && $str <= 0)) {
+        if (is_null($str)
+            || (is_string($str) && trim($str) === '')
+            || is_float($str)
+            || (is_numeric($str) && $str <= 0)
+        ) {
             return $default;
         }
 
@@ -81,14 +85,14 @@ class VarDateTime
      */
     public static function makeDateTime(?string &$str, string $format = 'Y-m-d', ?string $default = null): void
     {
-        if (is_null($str) || $str === "") {
+        if (is_null($str) || trim($str) === '') {
             $str = $default;
 
             return;
         }
 
         $date = VarStr::trim($str);
-        $date = VarStr::crop($date, 50);
+        $date = mb_substr($date, 0, 50, VarStr::ENCODING);
 
         $dt = DateTime::createFromFormat($format, $date);
 

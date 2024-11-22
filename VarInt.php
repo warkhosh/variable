@@ -51,14 +51,14 @@ class VarInt
      *
      * @note: результат может быть отрицательным!
      *
-     * @param array|bool|float|int|string|null $num
+     * @param mixed $num
      * @param int $default
      * @param bool $strict флаг для преобразования дополнительных значений типа "on|off|no|yes" в число
      * @return int
      * @deprecated заменить метод на VarInt::getMake
      */
     public static function getMakeInteger(
-        array|bool|float|int|string|null $num = null,
+        mixed $num = null,
         int $default = 0,
         bool $strict = true
     ): int {
@@ -86,7 +86,7 @@ class VarInt
 
         if (is_null($num)) {
             $num = $default;
-        } elseif (is_bool($num) || is_numeric($num) || is_float($num)) {
+        } elseif (is_bool($num) || is_numeric($num)) {
             $num = intval($num);
         }
 
@@ -128,23 +128,17 @@ class VarInt
      * Метод проверяет, а попадает ли число в диапазон и возвращает его или значение указанное по умолчанию
      *
      * @param bool|float|int|string|null $num
-     * @param int $default
      * @param int $min
      * @param int $max
-     * @return int
+     * @return bool
      */
-    public static function getOfRange(
+    public static function isRange(
         bool|float|int|string|null $num,
-        int $default = 0,
         int $min = 0,
         int $max = 1
-    ): int {
-        $num = static::getMake($num, $default);
+    ): bool {
+        $num = static::getMake($num);
 
-        if ($num >= $min && $num <= $max) {
-            return $num;
-        }
-
-        return $default;
+        return ($num >= $min && $num <= $max);
     }
 }

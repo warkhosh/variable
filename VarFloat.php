@@ -10,40 +10,9 @@ use Exception;
 class VarFloat
 {
     /**
-     * Преобразование значения в строку
-     *
-     * @param float|int|string|null $var значение числа
-     * @param string|null $separator разделитель точности
-     * @return string
+     * Символ разделителя значения десятичных чисел в проекте
      */
-    public static function makeString(float|int|string|null $var = 0, ?string $separator = null): string
-    {
-        if (is_null($var) || is_bool($var) || $var === "") {
-            return "";
-        }
-
-        $var = strval($var);
-
-        if (is_null($separator)) {
-            $systemSeparator = localeconv()['decimal_point'];
-
-            // Русская локаль рисует разделитель десятичных как знак запятой,
-            // это ломает преобразования или запись в базу, поэтому заменяем разделитель на символ точка
-            if ($systemSeparator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = VarStr::replaceOnce($systemSeparator, '.', $var); // заменяем запятую на точку
-
-            } elseif ($systemSeparator === '.' && mb_strpos($var, ',', 0, 'UTF-8') !== false) {
-                $var = VarStr::replaceOnce(',', '.', $var); // заменяем запятую на точку
-            }
-
-            return $var;
-        }
-
-        // Если в качестве разделителя десятичных указали точку, делаем замену в значении запятой на точку
-        $badSeparator = $separator === '.' ? ',' : '.';
-
-        return str_replace($badSeparator, $separator, $var);
-    }
+    public const SEPARATOR = '.';
 
     /**
      * Преобразование значения в число с плавающей точкой
@@ -56,49 +25,66 @@ class VarFloat
      * @param string $round тип округления (auto, upward, downward)
      * @param float $default
      * @return float
+     * @throws Exception
      */
     public static function getMake(
         mixed $var = 0,
-        int $decimals = 12,
+        int $decimals = 1,
         string $round = "auto",
         float $default = 0.0
     ): float {
-        if (is_null($var) || is_bool($var)) {
-            return floatval($var);
+        if (is_null($var) || (is_string($var) && trim($var) === '')) {
+            return floatval("0.".str_repeat("0", $decimals));
         }
 
-        if (is_object($var)) {
-            return $default;
+        if (is_bool($var)) {
+            return floatval(VarStr::getNumberFormat((int)$var, $decimals, static::SEPARATOR));
         }
 
-        if (is_string($var) || is_numeric($var)) {
-            $separator = localeconv()['decimal_point'];
-            $var = VarStr::trim((string)$var);
+        // Строка, которая не прошла проверку is_numeric()
+        if (! is_numeric($var) && is_string($var)) {
+            $var = trim($var);
 
-            // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
-            if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = VarStr::replaceOnce($separator, '.', $var);
+            // Строка проходит проверку десятичное число
+            if (is_numeric($var) && is_float($var + 0)) {
+                // Округляем число согласно указанным значениям
+                $var = static::rounding((float)$var, $decimals, $round);
+
+                // Дополняем точность числа и возвращаем
+                return (float)number_format($var, $decimals, static::SEPARATOR);
             }
 
-            $var = VarStr::getRemoveSymbol($var, [' ']);
-            $var = floatval($var);
+            // Если в проекте символ разделителя десятичных чисел точка,
+            // далее идёт проверка и перевод строки как десятичного числа из русской локали в международную (с точкой)
+            if (static::SEPARATOR === ".") {
+                $string = preg_replace('/[^\d,]/ium', '', $var);
 
-            if ($round === 'upward') {
-                $int = "1".str_repeat("0", $decimals);
-                $var = ceil($var * $int) / $int;
-
-            } elseif ($round === 'downward') {
-                $int = "1".str_repeat("0", $decimals);
-                $var = floor($var * $int) / $int;
-
-            } else {
-                $var = round($var, $decimals);
+                // В строке не найдены лишние символы, но присутствует символ запятой
+                if ($string === $var && mb_strpos($var, ',', 0, 'UTF-8') > 0) {
+                    $var = VarStr::replaceOnce(',', static::SEPARATOR, $var);
+                }
             }
 
-            return $var;
+            // Если строка после вышестоящих логик все равно не проходит проверку на число с плавающей точкой
+            if (! (is_numeric($var) && is_float($var + 0))) {
+                $var = $default;
+            }
         }
 
-        return $default;
+        // Если указанное значение проходит проверку на число (int/float) или вышестоящий алгоритм преобразовал строку в числовую
+        if (is_numeric($var)) {
+            // Округляем число согласно указанным значениям
+            $var = static::rounding((float)$var, $decimals, $round);
+
+            // Дополняем точность числа и возвращаем
+            return (float)number_format($var, $decimals, static::SEPARATOR);
+        }
+
+        // Округляем default число согласно указанным значениям
+        $var = static::rounding($default, $decimals, $round);
+
+        // Дополняем точность числа и возвращаем
+        return (float)number_format($var, $decimals, static::SEPARATOR);
     }
 
     /**
@@ -112,92 +98,120 @@ class VarFloat
      * @param string $round тип округления (auto, upward, downward)
      * @param float $default
      * @return float
+     * @throws Exception
      */
     public static function getMakePositive(
         bool|float|int|string|null $var = 0,
-        int $decimals = 12,
+        int $decimals = 1,
         string $round = "auto",
         float $default = 0.0
     ): float {
         $var = self::getMake($var, $decimals, $round, $default);
 
-        return $var >= 0 ? $var : $default;
+        return $var >= 0 ? $var : floatval(VarStr::getNumberFormat($default, $decimals, static::SEPARATOR));
     }
 
     /**
-     * Округляет число типа float
+     * Универсальный метод округления числа типа float
      *
      * @param bool|float|int|string|null $var
      * @param int $decimals точность (символы после точки)
      * @param string $round
      * @param float $default
      * @return float
+     * @throws Exception
+     * @deprecated поменять на VarFloat::getRound(...)
      */
     public static function round(
         bool|float|int|string|null $var = 0.0,
-        int $decimals = 12,
+        int $decimals = 1,
         string $round = "auto",
         float $default = 0.0
     ): float {
-        if (is_null($var) || is_bool($var)) {
-            return floatval($var);
-        }
-
-        // для строки делаем предварительную замену альтернативного разделителя если ошиблись при вводе
-        if (is_string($var) || is_numeric($var)) {
-            $separator = localeconv()['decimal_point'];
-            $var = VarStr::trim((string)$var);
-
-            // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
-            if ($separator === ',' && mb_strpos($var, '.', 0, 'UTF-8') === false) {
-                $var = VarStr::replaceOnce($separator, '.', $var);
-            }
-
-            $var = VarStr::getRemoveSymbol($var, [' ']);
-            $var = floatval($var);
-
-            if ($round === 'upward') {
-                $int = "1".str_repeat("0", $decimals);
-                $var = ceil($var * $int) / $int;
-
-            } elseif ($round === 'downward') {
-                $int = "1".str_repeat("0", $decimals);
-                $var = floor($var * $int) / $int;
-
-            } else {
-                $var = round($var, $decimals);
-            }
-
-            return $var;
-        }
-
-        return $default;
+        throw new Exception("Используйте метод VarFloat::getMake()");
     }
 
     /**
-     * Возвращает результат мягкой проверки значения на float для последующей конвертации без ошибок
+     * Универсальный метод округления числа типа float
      *
-     * @note в основном это проверка для строк, и не стоит перед этим методом пренебрегать проверками типа: is_null, is_array...
+     * @param bool|float|int|string|null $var
+     * @param int $decimals точность (символы после точки)
+     * @param string $round
+     * @param float $default
+     * @return float
+     * @throws Exception
+     */
+    public static function getRound(
+        bool|float|int|string|null $var = 0.0,
+        int $decimals = 1,
+        string $round = "auto",
+        float $default = 0.0
+    ): float {
+        return self::getMake($var, $decimals, $round, $default);
+    }
+
+    /**
+     * Универсальный метод преобразования float значения в строку
      *
-     * @param mixed $data
+     * @param float|int|string|null $var значение числа
+     * @param int $decimals точность (символы после точки)
+     * @param string $round
+     * @return string
+     * @throws Exception
+     * @deprecated поменять на VarFloat::getString(...)
+     */
+    public static function makeString(float|int|string|null $var = 0, int $decimals = 1, string $round = "auto"): string
+    {
+        throw new Exception("Используйте метод VarFloat::getMake()");
+    }
+
+    /**
+     * Универсальный метод преобразования float значения в строку
+     *
+     * @param float|int|string|null $var значение числа
+     * @param int $decimals точность (символы после точки)
+     * @param string $round
+     * @return string
+     * @throws Exception
+     */
+    public static function getString(float|int|string|null $var = 0, int $decimals = 1, string $round = "auto"): string
+    {
+        return (string)static::getMake($var, $decimals, $round);
+    }
+
+    /**
+     * Возвращает результат мягкой проверки значения на float, но исключительно в контексте типа string/float
+     *
+     * @note В основном это проверка для строк, и не стоит перед этим методом пренебрегать проверками типа: is_null, is_array...
+     *       Тип принимаемых значений mixed указан для того что-бы не вызывать исключение неверного типа если передадут число или null.
+     *
+     * @param mixed $str
      * @return bool
      * @example echo VarFloat::isStringOnFloat($price) ? VarFloat::getMake($price) : 0.0
      */
-    public static function isStringOnFloat(mixed $data): bool
+    public static function isStringOnFloat(mixed $str): bool
     {
-        if (is_float($data)) {
+        if (is_float($str)) {
             return true;
         }
 
-        if (is_string($data)) {
-            $separator = localeconv()['decimal_point'];
+        if (is_string($str) && ! empty($str)) {
+            $str = trim($str);
 
-            // Русская локаль рисует разделитель десятичных как знак запятой, но это ломает преобразование
-            if ($separator === ',' && mb_strpos($data, '.', 0, 'UTF-8') === false) {
-                $data = VarStr::replaceOnce($separator, '.', $data);
+            // Строка проходит проверку десятичное число
+            if (is_numeric($str) && is_float($str + 0)) {
+                return true;
             }
 
-            if (is_numeric($data) && is_float($data + 0)) {
+            // Далее идёт проверка строки как десятичного числа в русской локале
+            $string = preg_replace('/[^\d,]/ium', '', $str);
+
+            // В строке не найдены лишние символы, но присутствует символ запятой
+            if ($string === $str && mb_strpos($str, ',', 0, 'UTF-8') > 0) {
+                $str = VarStr::replaceOnce(',', static::SEPARATOR, $str);
+            }
+
+            if (is_numeric($str) && is_float($str + 0)) {
                 return true;
             }
         }
@@ -216,5 +230,30 @@ class VarFloat
     public static function getConvert(mixed $var): mixed
     {
         throw new Exception("Используйте метод VarFloat::getMake()");
+    }
+
+    /**
+     * Округляет десятичное число
+     *
+     * @param float $var
+     * @param int $decimals
+     * @param string $round
+     * @return float
+     */
+    protected static function rounding(float $var, int $decimals = 12, string $round = "auto"): float
+    {
+        if ($round === 'upward') {
+            $int = "1".str_repeat("0", $decimals);
+            $var = ceil($var * $int) / $int;
+
+        } elseif ($round === 'downward') {
+            $int = "1".str_repeat("0", $decimals);
+            $var = floor($var * $int) / $int;
+
+        } else {
+            $var = round($var, $decimals);
+        }
+
+        return $var;
     }
 }
