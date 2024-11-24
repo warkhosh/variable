@@ -2,13 +2,18 @@
 
 namespace Warkhosh\Variable;
 
+use Throwable;
 use Warkhosh\Variable\Traits\VariableMethod;
 use Traversable;
 
 /**
  * Class Variable
  *
+ * Класс для работы со значениями из переменной.
+ * С версии 1.1 теперь в конструктор передается кроме значения переменной ещё и default значения.
+ *
  * @package Ekv\Framework\Components\Support
+ * @verison 1.1
  */
 class Variable
 {
@@ -47,24 +52,9 @@ class Variable
      * Variable constructor
      *
      * @param float|int|iterable|string|null $data
+     * @param mixed $default
      */
-    public function __construct(float|int|string|null|iterable $data = null)
-    {
-        $this->set($data);
-
-        if (count(func_get_args()) >= 2) {
-            $this->byDefault(func_get_arg(1));
-        }
-    }
-
-
-    /**
-     * Установка значения для переменной
-     *
-     * @param float|int|iterable|string|null $data
-     * @return $this
-     */
-    public function set(float|int|string|null|iterable $data): static
+    public function __construct(float|int|iterable|string|null $data, mixed $default)
     {
         if (is_array($data) || is_string($data) || is_numeric($data) || is_float($data)) {
             $this->data = $data;
@@ -73,7 +63,31 @@ class Variable
             $this->data = iterator_to_array($data);
         }
 
-        return $this;
+        $this->default = $default;
+
+        try {
+            if (gettype($this->default) === 'array') {
+                $this->data = VarArray::getMake($this->data);
+            }
+
+            if (gettype($this->default) === 'string') {
+                $this->data = VarStr::getMake($this->data);
+            }
+
+            if (gettype($this->default) === 'integer') {
+                $this->data = VarInt::getMake($this->data);
+            }
+
+            if (gettype($this->default) === 'double') {
+                $this->data = VarFloat::getMake($this->data);
+            }
+
+            if (gettype($this->default) === 'boolean') {
+                $this->data = VarBool::getMake($this->data);
+            }
+        } catch (Throwable $e) {
+            trigger_error($e->getMessage(), E_USER_ERROR);
+        }
     }
 
 

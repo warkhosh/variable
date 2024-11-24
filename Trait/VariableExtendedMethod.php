@@ -25,8 +25,7 @@ trait VariableExtendedMethod
      */
     public function removeItems(array $remove = ['', 0, '0', null, 'null'], bool $recursive = false): static
     {
-        $default = $this->getDefault();
-        $this->data = static::getRemoveItems($this->data, $remove, $default, $recursive);
+        $this->data = static::getRemoveItems($this->data, $remove, $this->getDefault(), $recursive);
 
         return $this;
     }
@@ -80,33 +79,28 @@ trait VariableExtendedMethod
      * @note возможны отрицательные значения!
      *
      * @param bool $recursive флаг для обхода потомков
+     * @param int $default
      * @return array|int
      * @throws Exception
      */
-    public function getIntegerNotLess(bool $recursive = false): array|int
+    public function getIntegerNotLess(bool $recursive = false, int $default = 0): array|int
     {
-        return $this->integerNotLess($recursive)->get();
+        return $this->integerNotLess($recursive, $default)->get();
     }
 
     /**
      * Преобразование значения(й) в целое число с проверкой, что они выше или равны нулю
      *
-     * @note этот метод проверяет на минимальное значение из указанного числа по умолчанию!
+     * @note этот метод проверяет на минимальное значение из указанного и если оно не проходит проверку, устанавливает default, но не удаляет значения!
      * @note возможны отрицательные значения!
      *
      * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
      */
-    public function integerNotLess(bool $recursive = false): static
+    public function integerNotLess(bool $recursive = false, int $default = 0): static
     {
-        $default = $this->getDefault();
-
-        if (! (is_null($default) || is_numeric($default))) {
-            throw new Exception("Default values are not an number");
-        }
-
-        $this->data = static::getMinInteger($this->data, 0, (int)$default, $recursive);
+        $this->data = static::getMinInteger($this->data, 0, true, $default, $recursive);
 
         return $this;
     }

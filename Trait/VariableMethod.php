@@ -17,8 +17,10 @@ use Exception;
  * последующие методы будет автоматически выполнять под этот тип алгоритмы!
  * Так мы сразу определяем тип значения переменной (массив или все остальное)
  *
- * @method static $this array(string $delimiter = null)
- * @method static $this string(string $delimiter = null)
+ * @method static $this list()
+ * @method static $this string()
+ * @method static $this number()
+ * @method static $this double()
  *
  * @package Ekv\Framework\Components\Support\Traits
  */
@@ -28,7 +30,9 @@ trait VariableMethod
     use VariableExtendedMethod;
 
     /**
-     * Записываем параметр для использования их как Default
+     * Перезаписывает default значения.
+     *
+     * @note значения по умолчанию устанавливаются в конструкторе, но порой алгоритмы по мере работы могут потребовать изменить значения
      *
      * @param array|float|int|string|null $default
      * @return $this
@@ -66,40 +70,41 @@ trait VariableMethod
      * @param array $arguments
      * @return void
      * @throws Exception
+     * @deprecated теперь работа с типами больше не требует этих методов
      */
-    public function setType(string $type = 'data', array $arguments = []): void
-    {
-        if ($type === 'array') {
-            $this->dataType = 'array'; // для определения как отдавать значения
-
-            if (! is_array($this->data)) {
-                // Что-бы преобразование из текста сработало и первым элементом массива стал полученный текст,
-                // нужен не пустой разделитель. Делаем разделитель запятая по умолчанию
-                $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
-                $this->makeArray($delimiter);
-                $this->toArray($delimiter);
-            }
-        }
-
-        if ($type === 'string' || $type === 'integer') {
-            $this->dataType = 'value'; // для определения как отдавать значения
-
-            if (is_array($this->data)) {
-                $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
-                $this->toString($this->data, $delimiter);
-            }
-        }
-
-        if ($type === 'float' || $type === 'double') {
-            $this->dataType = 'value'; // для определения как отдавать значения
-
-            if (is_array($this->data)) {
-                $this->data = VarArray::getFirst($this->data);
-            }
-
-            $this->data = floatval($this->data);
-        }
-    }
+    //public function setType(string $type = 'data', array $arguments = []): void
+    //{
+    //    if ($type === 'list') {
+    //        $this->dataType = 'array'; // для определения как отдавать значения
+    //
+    //        if (! is_array($this->data)) {
+    //            // Что-бы преобразование из текста сработало и первым элементом массива стал полученный текст,
+    //            // нужен не пустой разделитель. Делаем разделитель запятая по умолчанию
+    //            $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
+    //            $this->makeArray($delimiter);
+    //            $this->toArray($delimiter);
+    //        }
+    //    }
+    //
+    //    if ($type === 'string' || $type === 'number') {
+    //        $this->dataType = 'value'; // для определения как отдавать значения
+    //
+    //        if (is_array($this->data)) {
+    //            $delimiter = key_exists(0, $arguments) ? (string)$arguments[0] : ',';
+    //            $this->toString($this->data, $delimiter);
+    //        }
+    //    }
+    //
+    //    if ($type === 'double') {
+    //        $this->dataType = 'value'; // для определения как отдавать значения
+    //
+    //        if (is_array($this->data)) {
+    //            $this->data = VarArray::getFirst($this->data);
+    //        }
+    //
+    //        $this->data = floatval($this->data);
+    //    }
+    //}
 
     /**
      * Магический метод для реализации вызова зарезервированных методов как функций
@@ -108,23 +113,24 @@ trait VariableMethod
      * @param array $arguments
      * @return $this
      * @throws Exception
+     * @deprecated теперь работа с типами больше не требует этих методов
      */
-    public function __call(string $name, array $arguments): static
-    {
-        switch ($name) {
-            case "array":
-            case "string":
-            case "integer":
-            case "float":
-            case "double":
-                $this->setType($name, $arguments);
-
-                return $this;
-        }
-
-        //Log::error('Call of unknown method name: ' . $name . " in class: " . get_called_class());
-        return $this;
-    }
+    //public function __call(string $name, array $arguments): static
+    //{
+    //    switch ($name) {
+    //        case "list":
+    //        case "string":
+    //        case "integer":
+    //            //case "float":
+    //        case "double":
+    //            $this->setType($name, $arguments);
+    //
+    //            return $this;
+    //    }
+    //
+    //    //Log::error('Call of unknown method name: ' . $name . " in class: " . get_called_class());
+    //    return $this;
+    //}
 
     /**
      * Преобразование значения `$this->data` в массив!
@@ -137,59 +143,59 @@ trait VariableMethod
      * @throws Exception
      * @deprecated в 90% эта функция заменяется makeArray()
      */
-    public function toArray(?string $delimiter = null): static
-    {
-        $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_array($default))) {
-                throw new Exception("Default values are not an array");
-            }
-        }
-
-        if (gettype($this->data) == 'string') {
-            $this->data = static::getToArray($this->data, $delimiter, (array)$default);
-        } else {
-            $this->data = (array)$this->data;
-        }
-
-        return $this;
-    }
+    //public function toArray(?string $delimiter = null): static
+    //{
+    //    $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
+    //
+    //    // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+    //    // К примеру get('status_id', -1, 'array')->getInteger('filter');
+    //    if ($this->dataType !== 'array') {
+    //        if (! (is_null($default) || is_array($default))) {
+    //            throw new Exception("Default values are not an array..");
+    //        }
+    //    }
+    //
+    //    if (gettype($this->data) == 'string') {
+    //        $this->data = static::getToArray($this->data, $delimiter, (array)$default);
+    //    } else {
+    //        $this->data = (array)$this->data;
+    //    }
+    //
+    //    return $this;
+    //}
 
     /**
      * Преобразует и возвращает переданные значения в тип массив!
      * Для последующих операций над переменной именно по сценарию массивов что-бы вернуть массив.
      *
-     * @param array|float|int|string|null $data
      * @param string|null $delimiter
+     * @param array|float|int|string|null $data
      * @param array $default
      * @return array
      */
-    public static function getToArray(
-        array|float|int|string|null $data,
-        ?string $delimiter = null,
-        array $default = []
-    ): array {
-        if (is_array($data)) {
-            return $data;
-        }
-
-        if (is_numeric($data)) {
-            return [$data];
-        }
-
-        if (is_string($data)) {
-            if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
-                return explode($delimiter, $data);
-            }
-
-            return empty($data) ? $default : [$data];
-        }
-
-        return $default;
-    }
+    //public static function getToArray(
+    //    array|float|int|string|null $data,
+    //    ?string $delimiter = null,
+    //    array $default = []
+    //): array {
+    //    if (is_array($data)) {
+    //        return $data;
+    //    }
+    //
+    //    if (is_numeric($data)) {
+    //        return [$data];
+    //    }
+    //
+    //    if (is_string($data)) {
+    //        if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
+    //            return explode($delimiter, $data);
+    //        }
+    //
+    //        return empty($data) ? $default : [$data];
+    //    }
+    //
+    //    return $default;
+    //}
 
     /**
      * Преобразование значения $this->data` в строку!
@@ -201,22 +207,22 @@ trait VariableMethod
      * @return $this
      * @throws Exception
      */
-    public function toString(?string $delimiter = null): static
-    {
-        $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_string($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an string");
-            }
-        }
-
-        $this->data = static::getToString($this->data, $delimiter, $default);
-
-        return $this;
-    }
+    //public function toString(?string $delimiter = null): static
+    //{
+    //    $default = count(func_get_args()) === 2 ? func_get_arg(1) : $this->getDefault();
+    //
+    //    // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
+    //    // К примеру get('status_id', -1, 'array')->getInteger('filter');
+    //    if ($this->dataType !== 'array') {
+    //        if (! (is_null($default) || is_string($default) || is_numeric($default))) {
+    //            throw new Exception("Default values are not an string");
+    //        }
+    //    }
+    //
+    //    $this->data = static::getToString($this->data, $delimiter, $default);
+    //
+    //    return $this;
+    //}
 
     /**
      * Преобразование значения переменной в тип = строчный!
@@ -227,29 +233,29 @@ trait VariableMethod
      * @param string $default
      * @return string
      */
-    public static function getToString(
-        array|float|int|string|null $data,
-        ?string $delimiter = null,
-        string $default = ''
-    ): string {
-        if (is_string($data)) {
-            return $data;
-        }
-
-        if (is_numeric($data)) {
-            return (string)$data;
-        }
-
-        if (is_array($data)) {
-            if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
-                return join($delimiter, $data);
-            }
-
-            return count($data) === 0 ? $default : join("", $data);
-        }
-
-        return $default;
-    }
+    //public static function getToString(
+    //    array|float|int|string|null $data,
+    //    ?string $delimiter = null,
+    //    string $default = ''
+    //): string {
+    //    if (is_string($data)) {
+    //        return $data;
+    //    }
+    //
+    //    if (is_numeric($data)) {
+    //        return (string)$data;
+    //    }
+    //
+    //    if (is_array($data)) {
+    //        if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
+    //            return join($delimiter, $data);
+    //        }
+    //
+    //        return count($data) === 0 ? $default : join("", $data);
+    //    }
+    //
+    //    return $default;
+    //}
 
     /**
      * Возвращает преобразованное значение(я) в строку в зависимости от указанного алгоритма
@@ -284,8 +290,7 @@ trait VariableMethod
      */
     public function input(string $option = 'small', bool $recursive = false, array $remove = ["\t", "\n", "\r"]): static
     {
-        $this->__option = $option;
-        $this->makeString($recursive);
+        //$this->makeString($recursive);
 
         if ($option === 'unchanged' || $option === 'raw') {
             return $this;
@@ -507,10 +512,6 @@ trait VariableMethod
         bool $positive = false,
         bool $recursive = false
     ): static {
-        if (is_string($option)) {
-            $this->__option = $option;
-        }
-
         // Преобразование значений в денежную единицу без копеек
         if ($option === 'price') {
             return $this->makeFloat(0, "auto", true, $recursive);
@@ -566,8 +567,6 @@ trait VariableMethod
      */
     public function integer(string $option, bool $positive = false, bool $recursive = false): static
     {
-        $this->__option = $option;
-
         // для работы логики filter принудительно указываем флаг положительного числа в FALSE
         if ($option === 'filter') {
             $positive = false;
@@ -578,10 +577,10 @@ trait VariableMethod
 
         // Отдельный алгоритм для исходных данных если идёт обработка сценария работы с ценой
         if (in_array($option, ['price', 'price-upward', 'price-downward'])) {
-            $round = $option === "price" ? "auto" : ($option === "price-upward" ? "upward" : "downward");
-            $this->makeFloat(0, $round);
+            //$round = $option === "price" ? "auto" : ($option === "price-upward" ? "upward" : "downward");
+            //$this->makeFloat(0, $round);
         } else {
-            $this->makeInteger($positive, $recursive, $strict);
+            //$this->makeInteger($positive, $recursive, $strict);
         }
 
         /**
@@ -590,8 +589,8 @@ trait VariableMethod
          * @note -1 не определено, 0 не выбрано, 1,2,3,4,5 ...
          */
         if ($option === 'filter') {
-            $this->byDefault(-1)
-                ->minInteger($this->getDefault(), true, $recursive);
+            //$this->byDefault(-1)->minInteger($this->getDefault(), true, $recursive);
+            $this->minInteger($this->getDefault(), true, $recursive);
         }
 
         switch ($option) {
@@ -655,8 +654,7 @@ trait VariableMethod
                  * Не устанавливаем принудительное значение по умолчанию что-бы иметь возможность гибко настроить поведение!
                  */
             case 'toggle':
-                $this->byDefault(0)
-                    ->minInteger(0, true, $recursive)
+                $this->minInteger(0, true, $recursive)
                     ->maxInteger(1, false, $recursive);
                 break;
 
@@ -685,13 +683,14 @@ trait VariableMethod
      *
      * @param string $option
      * @param string|null $delimiter
+     * @param bool $recursive
      * @return array
      * @throws Exception
      * @version 1.1
      */
-    public function getList(string $option, ?string $delimiter = null, bool $recursive = false): array
+    public function getArray(string $option, ?string $delimiter = null, bool $recursive = false): array
     {
-        return $this->array($option)->get();
+        return $this->array($option, $delimiter, $recursive)->get();
     }
 
     /**
@@ -705,36 +704,24 @@ trait VariableMethod
      * @throws Exception
      * @version 1.1
      */
-    public function list(string $option, ?string $delimiter = null, bool $recursive = false): static
+    public function array(string $option, ?string $delimiter = null, bool $recursive = false): static
     {
-        $this->__option = $option;
-        $this->makeArray();
-
         switch ($option) {
             /**
-             * Для переключателей нужно всего 2 значения 0) off и 1) on
-             * Не устанавливаем принудительное значение по умолчанию что-бы иметь возможность гибко настроить поведение!
+             * Проверка значений массива или текущего числа на наличие идентификатора(ов).
+             * Идентификаторы проходят проверки на целое положительно число (больше нуля).
+             *
+             * @note Если проверяемая переменная содержала строку,
+             * она будет преобразована в число по правилам строгой типизации и только после будет произведена проверка на ID!
+             * @note Для работы со списками из строк, работайте с методом input('ids');
+             *
+             * 1,2,3,4,5 ...
              */
-            case 'tags':
-                $this->byDefault(0)
-                    ->minInteger(0, true, $recursive)
-                    ->maxInteger(1, false, $recursive);
-                break;
-
-                /**
-                 * Проверка значений массива или текущего числа на наличие идентификатора(ов).
-                 * Идентификаторы проходят проверки на целое положительно число (больше нуля).
-                 *
-                 * @note Если проверяемая переменная содержала строку,
-                 * она будет преобразована в число по правилам строгой типизации и только после будет произведена проверка на ID!
-                 * @note Для работы со списками из строк, работайте с методом input('ids');
-                 *
-                 * 1,2,3,4,5 ...
-                 */
             case 'ids':
+            case 'id':
                 $this->ids(null, 'single', $recursive)
-                    ->removeItems()
-                    ->makeInteger(true, $recursive);
+                    ->integerNotLess(false, 0)
+                    ->removeItems([0], false);
                 break;
         }
 
@@ -926,7 +913,7 @@ trait VariableMethod
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
         if ($this->dataType !== 'array') {
             if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number");
+                throw new Exception("Default values are not an number2");
             }
         }
 
@@ -1002,7 +989,7 @@ trait VariableMethod
         // Проверка когда тип данных указан как массив, а default значение integer
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
         if (! is_array($default)) {
-            throw new Exception("Default values are not an array");
+            throw new Exception("Default values are not an array.");
         }
 
         $this->data = static::getMakeArray($this->data, $delimiter, (array)$default);
@@ -1064,7 +1051,7 @@ trait VariableMethod
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
         //if ($this->dataType !== 'array') {
         //    if (! (is_null($default) || is_numeric($default))) {
-        //        throw new Exception("Default values are not an number");
+        //        throw new Exception("Default values are not an number3");
         //    }
         //}
 
@@ -1240,7 +1227,7 @@ trait VariableMethod
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
         if ($this->dataType !== 'array') {
             if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number");
+                throw new Exception("Default values are not an number4");
             }
         }
 
@@ -1269,17 +1256,15 @@ trait VariableMethod
         bool $recursive = false
     ): array|int {
         if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
+            reset($data);
 
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMinInteger($item, $min, $recursive);
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $return[$key] = static::getMinInteger($item, $min, $recursive);
 
-                    } else {
-                        $int = VarInt::getMake($item, $default);
-                        $return[$key] = $int >= $min ? $int : ($toDefault ? $default : $int);
-                    }
+                } else {
+                    $int = VarInt::getMake($item, $default);
+                    $return[$key] = $int >= $min ? $int : ($toDefault ? $default : $int);
                 }
             }
 
@@ -1311,7 +1296,7 @@ trait VariableMethod
         // К примеру get('status_id', -1, 'array')->getInteger('filter');
         if ($this->dataType !== 'array') {
             if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number");
+                throw new Exception("Default values are not an number5");
             }
         }
 
@@ -1943,7 +1928,7 @@ trait VariableMethod
         array|bool|float|int|string|null $data,
         mixed $default = null,
         string|null $delimiter = ',',
-        string $unique = 'row',
+        string $unique = 'single',
         bool $recursive = false,
     ): array|string {
         if (is_array($data) && is_array($return = [])) {
@@ -1964,7 +1949,7 @@ trait VariableMethod
 
                             if (count($items) > 0) {
                                 // Проверка на уникальность в текущем списке
-                                $items = $unique === 'row' ? array_unique($items) : $items;
+                                $items = $unique === 'single' ? array_unique($items) : $items;
                                 $return[$key] = join($delimiter, $items);
                             } else {
                                 $return[$key] = (intval($default) > 0 ? (string)$default : '');
@@ -1972,6 +1957,10 @@ trait VariableMethod
 
                         } else {
                             $id = VarInt::getMakePositiveInteger($item, (int)$default, true);
+
+                            if ($unique === 'single' && in_array($id, $return)) {
+                                continue;
+                            }
 
                             if ($id > 0) {
                                 $return[$key] = (string)$id;

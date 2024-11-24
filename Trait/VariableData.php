@@ -29,11 +29,4 @@ trait VariableData
      * @var string
      */
     protected string $convertAnEmptyString = '';
-
-    /**
-     * Значение сценария по которому происходит преобразование значения
-     *
-     * @var string
-     */
-    protected string $__option = "";
 }
