@@ -29,7 +29,7 @@ class Variable
      *
      * @var string $data
      */
-    protected $dataType = 'value';
+    protected string $dataType = 'value';
 
     /**
      * Default значение
@@ -66,23 +66,25 @@ class Variable
         $this->default = $default;
 
         try {
-            if (gettype($this->default) === 'array') {
+            $this->dataType = gettype($this->default);
+
+            if ($this->dataType === 'array') {
                 $this->data = VarArray::getMake($this->data);
             }
 
-            if (gettype($this->default) === 'string') {
+            if ($this->dataType === 'string') {
                 $this->data = VarStr::getMake($this->data);
             }
 
-            if (gettype($this->default) === 'integer') {
+            if ($this->dataType === 'integer') {
                 $this->data = VarInt::getMake($this->data);
             }
 
-            if (gettype($this->default) === 'double') {
+            if ($this->dataType === 'double') {
                 $this->data = VarFloat::getMake($this->data);
             }
 
-            if (gettype($this->default) === 'boolean') {
+            if ($this->dataType === 'boolean') {
                 $this->data = VarBool::getMake($this->data);
             }
         } catch (Throwable $e) {
@@ -96,10 +98,10 @@ class Variable
      *
      * @note если не указать название или ключ переменной, то будут возвращены все значения
      *
-     * @param array|string|null $keys
+     * @param array|int|string|null $keys
      * @return array|float|int|string|null
      */
-    public function get(array|string $keys = null): array|float|int|string|null
+    public function get(array|int|string $keys = null): array|float|int|string|null
     {
         $this->data = $this->getEmptyStringConversion($this->data);
 

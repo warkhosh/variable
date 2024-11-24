@@ -64,9 +64,7 @@ class VarStr
     {
         if (is_string($str)) {
             return $str;
-        } elseif (is_null($str)) {
-            return $default;
-        } elseif (is_object($str)) {
+        } elseif (is_null($str) || is_object($str) || is_array($str)) {
             return $default;
         } elseif (is_bool($str)) {
             return $str ? "true" : "false";
@@ -1485,8 +1483,11 @@ class VarStr
      * @return string
      * @todo это решение на php4, но пока решил оставить на всякий случай
      */
-    public static function getDecodeEntities(float|int|string|null $str, int $flags = ENT_COMPAT, string $charset = 'UTF-8'): string
-    {
+    public static function getDecodeEntities(
+        float|int|string|null $str,
+        int $flags = ENT_COMPAT,
+        string $charset = 'UTF-8'
+    ): string {
         $str = preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', 'convert_entity', (string)$str);
 
         return html_entity_decode((string)$str, $flags, $charset);
@@ -1501,8 +1502,11 @@ class VarStr
      * @return string
      * @throws Exception
      */
-    public static function getTranscription(float|int|string|null $str, bool $lower = true, array $ignoreChars = []): string
-    {
+    public static function getTranscription(
+        float|int|string|null $str,
+        bool $lower = true,
+        array $ignoreChars = []
+    ): string {
         if (is_null($str) || (is_string($str) && trim($str) === '')) {
             return '';
         }
