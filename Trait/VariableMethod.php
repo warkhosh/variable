@@ -646,7 +646,13 @@ trait VariableMethod
             case 'pagination':
                 $this->byDefault(1)
                     ->makeInteger(true, $recursive)
-                    ->minInteger($this->getDefault(), true, $recursive);
+                    ->minInteger(1, true, $recursive);
+
+                // Бросаем исключение если были не корректные параметры
+                if ($this->getDefault() <= 0) {
+                    throw new Exception('The default value for the page must be a number greater than zero');
+                }
+
                 break;
 
                 /**
