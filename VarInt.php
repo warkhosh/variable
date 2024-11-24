@@ -21,7 +21,7 @@ class VarInt
         int $default = 0,
         bool $strict = true
     ): int {
-        if (is_null($num) || is_object($num)) {
+        if (is_null($num) || is_object($num) || is_array($num)) {
             return $default;
         } elseif (is_bool($num) || is_numeric($num) || is_float($num)) {
             return intval($num);

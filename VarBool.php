@@ -17,7 +17,7 @@ class VarBool
         bool $default = false,
         bool $strict = true
     ): bool {
-        if (is_null($bool) || is_object($bool)) {
+        if (is_null($bool) || is_object($bool) || is_array($bool)) {
             return $default;
         } elseif (is_bool($bool) || is_numeric($bool) || is_float($bool)) {
             return boolval($bool);

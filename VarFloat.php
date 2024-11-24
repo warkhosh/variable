@@ -33,7 +33,7 @@ class VarFloat
         string $round = "auto",
         float $default = 0.0
     ): float {
-        if (is_null($var) || (is_string($var) && trim($var) === '')) {
+        if (is_null($var) || (is_string($var) && trim($var) === '') || is_array($var)) {
             return floatval("0.".str_repeat("0", $decimals));
         }
 
