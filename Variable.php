@@ -77,7 +77,7 @@ class Variable
             }
 
             if ($this->dataType === 'integer') {
-                $this->data = VarInt::getMake($this->data);
+                $this->data = is_null($this->data) ? $this->default : VarInt::getMake($this->data);
             }
 
             if ($this->dataType === 'double') {

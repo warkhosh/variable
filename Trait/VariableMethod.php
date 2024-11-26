@@ -450,18 +450,28 @@ trait VariableMethod
                 }
                 break;
 
+            case 'options':
                 /**
-                 * Проверка в строке или массиве наличие в ней идентификаторов.
+                 * Проверяет и оставляет в строке или массиве наличие только чисел.
+                 * Для строк будет дополнительная операция по разделению её на части через $delimiter в виде запятой.
+                 * Все числа проходят проверки на целое положительно число!
+                 * 0,1,2,3,4,5 ...
+                 *
+                 * @note если вам надо сохранить порядок в текстовом списке значений, используйте input("text") и далее сами преобразовывайте сами
+                 */
+                $this->options(',', 0)->removeItems(['', null]);
+                break;
+
+                /**
+                 * Проверяет и оставляет в строке или массиве наличие только чисел.
                  * Для строк будет дополнительная операция по разделению её на части через $delimiter в виде запятой.
                  * Все значения проходят проверки на целое положительно число больше нуля!
                  * 1,2,3,4,5 ...
                  *
-                 * @note если вам надо сохранить порядок в списке значений через запятую, то input("text") и далее сами преобразовывайте
+                 * @note если вам надо сохранить порядок в текстовом списке значений, используйте input("text") и далее сами преобразовывайте сами
                  */
             case 'ids':
-                if ($option === 'ids') {
-                    $this->ids(',')->removeItems();
-                }
+                $this->ids(',')->removeItems();
                 break;
         }
 
@@ -589,8 +599,7 @@ trait VariableMethod
          * @note -1 не определено, 0 не выбрано, 1,2,3,4,5 ...
          */
         if ($option === 'filter') {
-            //$this->byDefault(-1)->minInteger($this->getDefault(), true, $recursive);
-            $this->minInteger($this->getDefault(), true, $recursive);
+            $this->minInteger(-1, true, $recursive);
         }
 
         switch ($option) {
@@ -673,7 +682,7 @@ trait VariableMethod
                  * 1,2,3,4,5 ...
                  */
             case 'ids':
-                $this->ids(null, 'single', $recursive)
+                $this->ids('', 'single', $recursive)
                     ->removeItems()
                     ->makeInteger(true, $recursive);
                 break;
@@ -723,7 +732,7 @@ trait VariableMethod
              */
             case 'ids':
             case 'id':
-                $this->ids(null, 'single', $recursive)
+                $this->ids('', 'single', $recursive)
                     ->integerNotLess(false, 0)
                     ->removeItems([0], false);
                 break;
@@ -1900,16 +1909,104 @@ trait VariableMethod
     }
 
     /**
-     * Проверка строки или массива строк в которых содержатся списки идентификаторов
+     * Проверка строки или массива строк в которых содержатся списки цифр
      *
-     * @param string|null $delimiter разделитель строки
+     * @param string $delimiter разделитель для строк
+     * @param int $default значение по умолчанию
      * @param string $unique флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
      * @param bool $recursive флаг для обхода потомков
      * @return $this
+     * @throws Exception
      */
-    public function ids(?string $delimiter = ',', string $unique = 'single', bool $recursive = false): static
-    {
-        $this->data = static::getIds($this->data, $this->getDefault(), $delimiter, $unique, $recursive);
+    public function options(
+        string $delimiter = ',',
+        int $default = 0,
+        string $unique = 'single',
+        bool $recursive = false
+    ): static {
+        $this->data = static::getOptions($this->data, $default, $delimiter, $unique, $recursive);
+
+        return $this;
+    }
+
+    /**
+     * Проверка строки или массива строк в которых содержатся списки цифр
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param int $default значение по умолчанию
+     * @param string $delimiter разделитель для строк
+     * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     * @throws Exception
+     */
+    public static function getOptions(
+        array|bool|float|int|string|null $data,
+        int $default = 0,
+        string $delimiter = ',',
+        string $unique = 'single',
+        bool $recursive = false,
+    ): array|string {
+        if (VarInt::getMakePositiveInteger($default, 0) !== $default) {
+            // В рамках концепции Options допускаются только положительные цифры
+            throw new Exception("The default value must be a positive number");
+        }
+
+        if (is_array($data) && is_array($return = [])) {
+            reset($data);
+
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $return[$key] = static::getOptions($item, $default, $delimiter, $unique, $recursive);
+
+                } else {
+                    $items = trim(is_string($item) ? $item : VarStr::getMake($item));
+                    $items = VarStr::explode($delimiter, $items, []);
+                    $items = VarArray::getRemove(static::getMinInteger($items, 0), ['', null]);
+
+                    if (count($items) > 0) {
+                        // Проверка на уникальность в текущем списке
+                        $items = $unique === 'single' ? array_unique($items) : $items;
+                        $return[$key] = join($delimiter, $items);
+                    } else {
+                        $return[$key] = (string)$default;
+                    }
+                }
+            }
+
+        } else {
+            if (is_numeric($data)) {
+                $return = (string)VarInt::getMakePositiveInteger($data, $default);
+
+            } elseif (gettype($data) === 'string') {
+                $return = static::getOptions([$data], $default, $delimiter, $unique, false);
+                $return = VarArray::getFirst($return);
+
+            } else {
+                $return = (string)$default;
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Проверка строки или массива строк в которых содержатся списки идентификаторов
+     *
+     * @param string $delimiter разделитель строки
+     * @param int $default значение по умолчанию
+     * @param string $unique флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     * @throws Exception
+     */
+    public function ids(
+        string $delimiter = ',',
+        int $default = 0,
+        string $unique = 'single',
+        bool $recursive = false
+    ): static {
+        $this->data = static::getIds($this->data, $default, $delimiter, $unique, $recursive);
 
         return $this;
     }
@@ -1921,8 +2018,8 @@ trait VariableMethod
      * @note Осознано сохраняем порядок массива
      *
      * @param array|bool|float|int|string|null $data
-     * @param mixed $default значение по умолчанию
-     * @param string|null $delimiter разделитель строки
+     * @param int $default значение по умолчанию
+     * @param string $delimiter разделитель строки
      * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
      * @param bool $recursive флаг для обхода потомков
      * @return array|string
@@ -1930,75 +2027,50 @@ trait VariableMethod
      */
     public static function getIds(
         array|bool|float|int|string|null $data,
-        mixed $default = null,
-        string|null $delimiter = ',',
+        int $default,
+        string $delimiter = ',',
         string $unique = 'single',
         bool $recursive = false,
     ): array|string {
+        if (VarInt::getMakePositiveInteger($default, 0) !== $default) {
+            // В рамках концепции Options допускаются только положительные цифры
+            throw new Exception("The default value must be a positive number");
+        }
+
         if (is_array($data) && is_array($return = [])) {
-            if (count($data) > 0) {
-                reset($data);
+            reset($data);
 
-                foreach ($data as $key => $item) {
-                    if ($recursive && is_array($item)) {
-                        $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive);
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive);
 
+                } else {
+                    $items = trim(is_string($item) ? $item : VarStr::getMake($item));
+                    $items = VarStr::explode($delimiter, $items, []);
+                    $items = VarArray::getRemove(static::getMinInteger($items, 0));
+
+                    if (count($items) > 0) {
+                        // Проверка на уникальность в текущем списке
+                        $items = $unique === 'single' ? array_unique($items) : $items;
+                        $return[$key] = join($delimiter, $items);
                     } else {
-                        $items = trim(is_string($item) ? $item : VarStr::getMake($item));
-
-                        // логика разбития строки массива по разделителю
-                        if (! empty($delimiter)) {
-                            $items = VarStr::explode($delimiter, $items, []);
-                            $items = VarArray::getRemove(static::getMinInteger($items, 0));
-
-                            if (count($items) > 0) {
-                                // Проверка на уникальность в текущем списке
-                                $items = $unique === 'single' ? array_unique($items) : $items;
-                                $return[$key] = join($delimiter, $items);
-                            } else {
-                                $return[$key] = (intval($default) > 0 ? (string)$default : '');
-                            }
-
-                        } else {
-                            $id = VarInt::getMakePositiveInteger($item, (int)$default, true);
-
-                            if ($unique === 'single' && in_array($id, $return)) {
-                                continue;
-                            }
-
-                            if ($id > 0) {
-                                $return[$key] = (string)$id;
-                            } else {
-                                $return[$key] = (intval($default) > 0 ? (string)$default : '');
-                            }
-                        }
+                        $return[$key] = (string)$default;
                     }
+
+
                 }
             }
 
         } else {
-            if (gettype($data) === 'integer') {
-                $return = $data > 0 ? (string)$data : (intval($default) > 0 ? (string)$default : '');
+            if (is_numeric($data)) {
+                $return = (string)VarInt::getMakePositiveInteger($data, $default);
 
             } elseif (gettype($data) === 'string') {
-                // логика разбития строки массива по разделителю
-                if (is_string($delimiter)) {
-                    $items = VarStr::explode($delimiter, $data);
-                    $items = VarArray::getRemove(static::getMinInteger($items, 0));
-
-                    // Проверка на уникальность в текущем списке
-                    $items = $unique === 'row' ? array_unique($items) : $items;
-                    $return = count($items) > 0
-                        ? join($delimiter, $items)
-                        : (intval($default) > 0 ? (string)$default : '');
-
-                } else { // без разделителя строку конвертируем в число
-                    $id = VarInt::getMakePositiveInteger($data, (int)$default, true);
-                    $return = $id > 0 ? $id : (intval($default) > 0 ? (string)$default : '');
-                }
+                $return = static::getIds([$data], $default, $delimiter, $unique, false);
+                $return = VarArray::getFirst($return);
 
             } else {
-                $return = intval($default) > 0 ? (string)$default : '';
+                $return = (string)$default;
             }
         }
 
