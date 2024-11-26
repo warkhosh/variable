@@ -599,7 +599,7 @@ trait VariableMethod
          * @note -1 не определено, 0 не выбрано, 1,2,3,4,5 ...
          */
         if ($option === 'filter') {
-            $this->minInteger(-1, true, $recursive);
+            $this->minInteger(-1, -1, $recursive);
         }
 
         switch ($option) {
@@ -608,19 +608,19 @@ trait VariableMethod
              */
             case 'option':
             case 'price':
-                $this->minInteger(0, true, $recursive)
+                $this->minInteger(0, 0, $recursive)
                     ->makeFloat(0, "auto", true, $recursive)
                     ->makeInteger(true, $recursive, false);
                 break;
 
             case 'price-upward':
-                $this->minInteger(0, true, $recursive)
+                $this->minInteger(0, 0, $recursive)
                     ->makeFloat(0, "upward", true, $recursive)
                     ->makeInteger(true, $recursive, false);
                 break;
 
             case 'price-downward':
-                $this->minInteger(0, true, $recursive)
+                $this->minInteger(0, 0, $recursive)
                     ->makeFloat(0, "downward", true, $recursive)
                     ->makeInteger(true, $recursive, false);
                 break;
@@ -629,7 +629,7 @@ trait VariableMethod
                  * Преобразование значений в денежную единицу с учетом копеек не укладывается в тип integer
                  */
                 //case 'cost':
-                //    return $this->minInteger(0, true, $recursive)
+                //    return $this->minInteger(0, 0, $recursive)
                 //        ->makeFloat(2, "auto", true, $recursive)
                 //        ->makeInteger(true, $recursive, false);
 
@@ -637,7 +637,7 @@ trait VariableMethod
                  * Для проверки значения на ID, в массивах 0 будет удалён, а вот для единственного значения 0 будет заменён на default
                  */
             case 'id':
-                $this->minInteger(0, true, $recursive)
+                $this->minInteger(0, 0, $recursive)
                     ->removeItems()
                     ->makeInteger(true, $recursive, false);
                 break;
@@ -645,7 +645,7 @@ trait VariableMethod
             case 'year':
                 $this->byDefault(1970)
                     ->makeInteger(true, $recursive)
-                    ->minInteger($this->getDefault(), true, $recursive);
+                    ->minInteger($this->getDefault(), 1970, $recursive);
                 break;
 
                 /**
@@ -653,7 +653,7 @@ trait VariableMethod
                  */
             case 'page':
             case 'pagination':
-                $this->makeInteger(true, $recursive)->minInteger(1, true, $recursive);
+                $this->makeInteger(true, $recursive)->minInteger(1, 1, $recursive);
 
                 // Бросаем исключение если были не корректные параметры
                 if ($this->getDefault() <= 0) {
@@ -667,8 +667,8 @@ trait VariableMethod
                  * Не устанавливаем принудительное значение по умолчанию что-бы иметь возможность гибко настроить поведение!
                  */
             case 'toggle':
-                $this->minInteger(0, true, $recursive)
-                    ->maxInteger(1, false, $recursive);
+                $this->minInteger(0, 0, $recursive)
+                    ->maxInteger(1, 1, $recursive);
                 break;
 
                 /**
@@ -1227,24 +1227,14 @@ trait VariableMethod
      * @note возможны отрицательные значения!
      *
      * @param int $min число для проверки
-     * @param bool $toDefault флаг для установки default значения числам ниже проверяемого, в противном случае их значение будет только преобразовано в тип integer
+     * @param int $default
      * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
      */
-    public function minInteger(int $min = 0, bool $toDefault = true, bool $recursive = false): static
+    public function minInteger(int $min = 0, int $default = 0, bool $recursive = false): static
     {
-        $default = $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number4");
-            }
-        }
-
-        $this->data = static::getMinInteger($this->data, $min, $toDefault, (int)$default, $recursive);
+        $this->data = static::getMinInteger($this->data, $min, $default, $recursive);
 
         return $this;
     }
@@ -1256,7 +1246,6 @@ trait VariableMethod
      *
      * @param array|float|int|string|null $data
      * @param int $min число для проверки
-     * @param bool $toDefault флаг для установки default значения числам ниже проверяемого, в противном случае их значение будет только преобразовано в тип integer
      * @param int $default
      * @param bool $recursive флаг для обхода потомков
      * @return array|int
@@ -1264,7 +1253,6 @@ trait VariableMethod
     public static function getMinInteger(
         array|float|int|string|null $data,
         int $min = 0,
-        bool $toDefault = true,
         int $default = 0,
         bool $recursive = false
     ): array|int {
@@ -1273,17 +1261,17 @@ trait VariableMethod
 
             foreach ($data as $key => $item) {
                 if ($recursive && is_array($item)) {
-                    $return[$key] = static::getMinInteger($item, $min, $recursive);
+                    $return[$key] = static::getMinInteger($item, $min, $default, $recursive);
 
                 } else {
                     $int = VarInt::getMake($item, $default);
-                    $return[$key] = $int >= $min ? $int : ($toDefault ? $default : $int);
+                    $return[$key] = $int >= $min ? $int : $default;
                 }
             }
 
         } else {
             $int = VarInt::getMake($data, $default);
-            $return = $int >= $min ? $int : ($toDefault ? $default : $int);
+            $return = $int >= $min ? $int : $default;
         }
 
         return $return;
@@ -1293,27 +1281,16 @@ trait VariableMethod
      *  Преобразование значения(й) в целое число с проверкой, что оно не выше указанного минимального значения
      *
      * @note: возможны отрицательные значения!
-     * @note $default тут нужен для логики когда проверка на max должна вернуть иные значения (помеченные)
      *
      * @param int $max
-     * @param bool $toDefault флаг для установки default значения числам выше проверяемого, в противном случае их значение будет только преобразовано в тип integer
+     * @param int $default
      * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
      */
-    public function maxInteger(int $max = 0, bool $toDefault = true, bool $recursive = false): static
+    public function maxInteger(int $max = 0, int $default = 1, bool $recursive = false): static
     {
-        $default = $this->getDefault();
-
-        // Проверка типа только для строк, чисел, float, поскольку у нас допускается когда тип данных указан как массив, а default значение integer
-        // К примеру get('status_id', -1, 'array')->getInteger('filter');
-        if ($this->dataType !== 'array') {
-            if (! (is_null($default) || is_numeric($default))) {
-                throw new Exception("Default values are not an number5");
-            }
-        }
-
-        $this->data = static::getMaxInteger($this->data, $max, $toDefault, $default, $recursive);
+        $this->data = static::getMaxInteger($this->data, $max, $default, $recursive);
 
         return $this;
     }
@@ -1325,7 +1302,6 @@ trait VariableMethod
      *
      * @param array|float|int|string|null $data
      * @param int $max
-     * @param bool $toDefault флаг для установки default значения числам выше проверяемого, в противном случае их значение будет только преобразовано в тип integer
      * @param int $default значение по умолчанию
      * @param bool $recursive флаг для обхода потомков
      * @return array|int
@@ -1333,8 +1309,7 @@ trait VariableMethod
     public static function getMaxInteger(
         array|float|int|string|null $data,
         int $max = 0,
-        bool $toDefault = true,
-        int $default = 0,
+        int $default = 1,
         bool $recursive = false
     ): array|int {
         if (is_array($data) && is_array($return = [])) {
@@ -1343,17 +1318,17 @@ trait VariableMethod
 
                 foreach ($data as $key => $item) {
                     if ($recursive && is_array($item)) {
-                        $return[$key] = static::getMaxInteger($item, $max, $toDefault, $default, $recursive);
+                        $return[$key] = static::getMaxInteger($item, $max, $default, $recursive);
 
                     } else {
                         $int = VarInt::getMake($item, $default);
-                        $return[$key] = $int <= $max ? $int : ($toDefault ? $default : $int);
+                        $return[$key] = $int <= $max ? $int : $default;
                     }
                 }
             }
         } else {
             $int = VarInt::getMake($data, $default);
-            $return = $int <= $max ? $int : ($toDefault ? $default : $int);
+            $return = $int <= $max ? $int : $default;
         }
 
         return $return;
