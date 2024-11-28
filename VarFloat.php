@@ -73,18 +73,22 @@ class VarFloat
 
         // Если указанное значение проходит проверку на число (int/float) или вышестоящий алгоритм преобразовал строку в числовую
         if (is_numeric($var)) {
+            if (is_integer($var)) {
+                return floatval("{$var}.".str_repeat("0", $decimals));
+            }
+
             // Округляем число согласно указанным значениям
             $var = static::rounding((float)$var, $decimals, $round);
 
             // Дополняем точность числа и возвращаем
-            return (float)number_format($var, $decimals, static::SEPARATOR);
+            return (float)number_format($var, $decimals, static::SEPARATOR, '');
         }
 
         // Округляем default число согласно указанным значениям
         $var = static::rounding($default, $decimals, $round);
 
         // Дополняем точность числа и возвращаем
-        return (float)number_format($var, $decimals, static::SEPARATOR);
+        return (float)number_format($var, $decimals, static::SEPARATOR, '');
     }
 
     /**

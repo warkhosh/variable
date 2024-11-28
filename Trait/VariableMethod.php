@@ -607,7 +607,7 @@ trait VariableMethod
              * Для проверки списков, где допускаются значения от 0 (не выбрано), 1, 2, 3, 4, 5 ...
              */
             case 'option':
-            case 'price':
+            case 'price': // цена без копеек
                 $this->minInteger(0, 0, $recursive)
                     ->makeFloat(0, "auto", true, $recursive)
                     ->makeInteger(true, $recursive, false);
