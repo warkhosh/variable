@@ -51,7 +51,7 @@ class Variable
     /**
      * Variable constructor
      *
-     * @param float|int|iterable|string|null $data
+     * @param float|int|iterable|string|null $data значение переменной из Request::class
      * @param mixed $default
      */
     public function __construct(float|int|iterable|string|null $data, mixed $default)
@@ -77,7 +77,11 @@ class Variable
             }
 
             if ($this->dataType === 'integer') {
-                $this->data = is_null($this->data) ? $this->default : VarInt::getMake($this->data);
+                // Если переменной нет (NULL) или переменная есть, но к примеру она GET и значение не указано,
+                // тогда устанавливаем ей default значение в противном случае пустота всегда будет превращаться в "Ноль"!
+                $this->data = is_null($this->data) || (is_string($this->data) && empty($this->data))
+                    ? $this->default
+                    : VarInt::getMake($this->data);
             }
 
             if ($this->dataType === 'double') {
