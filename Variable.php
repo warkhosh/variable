@@ -79,7 +79,7 @@ class Variable
             if ($this->dataType === 'integer') {
                 // Если переменной нет (NULL) или переменная есть, но к примеру она GET и значение не указано,
                 // тогда устанавливаем ей default значение в противном случае пустота всегда будет превращаться в "Ноль"!
-                $this->data = is_null($this->data) || (is_string($this->data) && empty($this->data))
+                $this->data = is_null($this->data) || $this->data === ""
                     ? $this->default
                     : VarInt::getMake($this->data);
             }
