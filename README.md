@@ -1,44 +1,143 @@
 # Variable
-Работа с переменными
 
-### VarArray
-Класс для работы с переменными типа Array.  
-Со списком методов можно ознакомиться в Warkhosh\Variable\VarArray.php
+Класс для автоматизации при работе с переменными по типам.
 
-### VarFloat
-Класс для работы с переменными типа Float или Double.  
-Со списком методов можно ознакомиться в Warkhosh\Variable\VarFloat.php
+Классы с методами преобразование данных под конкретные типы:
 
-### VarStr
-Класс для работы с переменными типа String.  
-Со списком методов можно ознакомиться в Warkhosh\Variable\VarStr.php
+- [VarArray](#VarArray)
+- [VarFloat](#VarFloat)
+- [VarStr](#VarStr)
+- [VarInt](#VarInt)
+- [VarBool](#VarBool)
 
-### VarInt
-Класс для работы с переменными типа Integer.  
-Со списком методов можно ознакомиться в Warkhosh\Variable\VarInt.php
+Базовый пример:
 
-### VarBool
-Класс для работы с переменными типа Boolean.  
-Со списком методов можно ознакомиться в Warkhosh\Variable\VarBool.php
-
-### Examples:
-
-Преобразование значения в число с плавающей точкой
 ```php
-echo Warkhosh\Variable\VarFloat::getMake("159.127");
+$value = [1, 2, 3, 4, 5];
+$variable = new Warkhosh\Variable($value, null);
+
+# Получить все значения
+var_dump($variable->get());
+
+# Получить значение по ключу
+echo $variable->get(1);
 ```
 
-Преобразование значения в число с плавающей точкой с округлением десятичных в меньшую сторону до двух знаков.
 ```php
-echo Warkhosh\Variable\VarFloat::getMake("159.127", 2, "downward", $default = 0.0);
+$variable = new Warkhosh\Variable("Konstantin");
+
+# Получить значение Konstantin
+echo $variable->get();
 ```
 
-Преобразование значения в число с плавающей точкой в положительном диапазоне значений.
+Примеры преобразования значения по алгоритмам:
+
 ```php
-echo Warkhosh\Variable\VarFloat::getMakePositive("15.1", 2, "upward", $default = 0.0);
+# Получить значение переменной в формате строки по алгоритму xs: trim + crop 50 символов
+echo $variable->getInput("xs");
+
+# Получить значение переменной в формате строки по алгоритму ids: в строке будут только числа через запятую больше нуля
+echo $variable->getInput("ids");
+
+# Получить значение переменной в формате строки по алгоритму tags: слова через запятую
+echo $variable->getInput("tags");
+
+# Получить значение переменной в формате строки по алгоритму small: trim + crop 255 символов
+echo $variable->getInput("small");
+
+# Получить значение переменной в формате строки без каких либо алгоритмов
+echo $variable->getInput("unchanged");
+
+# Получить значение переменной в формате float c двумя числами после запятой
+echo $variable->getFloat("cost");
+
+# Получить значение переменной в формате int в которой ноль или единица
+echo $variable->getInteger("toggle");
+
+# Получить значение переменной в формате int в котором допускаются значения -1, 0, 1, 2, 3, 4...
+echo $variable->getInteger("filter");
+
+# Получить значение переменной в формате int в котором допускаются только положительное число
+echo $variable->getInteger("option");
+
+# Получить значение переменной в формате array в котором допускаются только значения положительных чисел больше нуля
+echo $variable->getArray("ids");
 ```
+
+> Для более гибкой настройки преобразования значений в классе есть методы input(), float(), integer(), array(), которые
+применяют алгоритмы преобразования, но возвращают сам объект и таким образом можно запускать цепочку алгоритмов к
+нужному для вас результату.
+
+Пример преобразование значения в строку с лимитом в длину 255 символов и перевод в верхний регистр:
+
+```php
+echo $variable->input("small")->upper()->get();
+```
+
+## VarArray
+
+Класс для работы с переменными типа Array.
+
+Примеры:
+```php
+echo Warkhosh\Variable\VarArray::getMake('159, 555, age', ',');
+echo Warkhosh\Variable\VarArray::has("request.result", ['request' => ['result' => true]]);
+echo Warkhosh\Variable\VarArray::get("request.message", ['request' => ['message' => 'ok']]);
+```
+
+Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarArray.php
+
+## VarFloat
+
+Класс для работы с переменными типа Float или Double.
+
+Примеры:
+```php
+# Преобразование значения в число с плавающей точкой
+echo Warkhosh\Variable\VarFloat::getMake("159.127", 2, "upward");
+```
+
+Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarFloat.php
+
+## VarStr
+
+Класс для работы с переменными типа String.
+
+Примеры:
+```php
+echo Warkhosh\Variable\VarStr::getMake(159);
+echo Warkhosh\Variable\VarStr::find("age", "My age is 18");
+echo Warkhosh\Variable\VarStr::start("/", "news/123.php");
+echo Warkhosh\Variable\VarStr::reduce("Какой хороший день, какой хороший пень", 15, "...");
+```
+
+Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarStr.php
+
+## VarInt
+
+Класс для работы с переменными типа Integer.
+
+Примеры:
+```php
+echo Warkhosh\Variable\VarInt::getMake("159");
+echo Warkhosh\Variable\VarInt::isRange(3, 1, 5);
+```
+
+Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarInt.php
+
+## VarBool
+
+Класс для работы с переменными типа Boolean.
+
+Примеры:
+```php
+echo Warkhosh\Variable\VarBool::getMake("0");
+```
+
+Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarBool.php
 
 ## Дополнительные функции
+
 ```php
 if (! function_exists('get')) {
     /**
@@ -46,7 +145,7 @@ if (! function_exists('get')) {
      * @param mixed $default
      * @return Variable
      * @package Warkhosh\Variable
-     * @version 1.1
+     * @version 1.2
      */
     function get(string $varName, mixed $default)
     {
@@ -64,7 +163,7 @@ if (! function_exists('post')) {
      * @param mixed $default
      * @return Variable
      * @package Warkhosh\Variable
-     * @version 1.1
+     * @version 1.2
      */
     function post(string $varName, mixed $default)
     {
@@ -81,7 +180,7 @@ if (! function_exists('put')) {
      * @param mixed $default
      * @return Variable
      * @package Warkhosh\Variable
-     * @version 1.1
+     * @version 1.2
      */
     function put(string $varName, mixed $default)
     {
@@ -98,7 +197,7 @@ if (! function_exists('delete')) {
      * @param mixed $default
      * @return Variable
      * @package Warkhosh\Variable
-     * @version 1.1
+     * @version 1.2
      */
     function delete(string $varName, mixed $default)
     {
@@ -116,7 +215,7 @@ if (! function_exists('request')) {
      * @param mixed $default
      * @return Variable
      * @package Warkhosh\Variable
-     * @version 1.1
+     * @version 1.2
      */
     function request(string $varName, mixed $default)
     {
