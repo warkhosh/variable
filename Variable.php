@@ -27,6 +27,8 @@ class Variable
     /**
      * Тип переменной: массив значений или одно значение
      *
+     * @note устанавливается в конструкторе!
+     *
      * @var string $data
      */
     protected string $dataType = 'value';
@@ -170,7 +172,7 @@ class Variable
 
 
     /**
-     * Переобход данных для проверки их строк на пустое значение и преобразование в иное
+     * Обход данных для проверки их строк на пустое значение и преобразование в иное
      *
      * @param array|float|int|string|null $data
      * @return array|float|int|string|null
