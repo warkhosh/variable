@@ -29,14 +29,18 @@ class VarArray
             return $data;
         }
 
-        if (is_bool($data) || is_numeric($data) || is_float($data) || is_object($data)) {
+        if (is_null($data) || is_object($data)) {
             return [];
+        }
+
+        if (is_bool($data) || is_numeric($data) || is_float($data)) {
+            return [$data];
         }
 
         if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
             $data = in_array(gettype($data), ['string', 'integer', 'double']) ? $data : '';
 
-            return explode($delimiter, $data);
+            return static::trim(explode($delimiter, $data));
         }
 
         return (array)$data;
@@ -677,7 +681,7 @@ class VarArray
     {
         $list = explode($delimiter, $string);
 
-        return VarArray::getRemove(VarArray::trim($list), VarHelper::getArrayWrap($delete, false));
+        return VarArray::getRemove(static::trim($list), VarHelper::getArrayWrap($delete, false));
     }
 
     /**
