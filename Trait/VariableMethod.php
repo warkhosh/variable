@@ -2028,9 +2028,9 @@ trait VariableMethod
                     if (count($items) > 0) {
                         // Проверка на уникальность в текущем списке
                         $items = $unique === 'single' ? array_unique($items) : $items;
-                        $return[$key] = is_array($data) ? $return : join($delimiter, $items);
+                        $return[$key] = join($delimiter, $items);
                     } else {
-                        $return[$key] = is_array($data) ? $return : (string)$default;
+                        $return[$key] = (string)$default;
                     }
                 }
             }
