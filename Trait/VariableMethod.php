@@ -2041,7 +2041,7 @@ trait VariableMethod
 
             } elseif (gettype($data) === 'string') {
                 $return = static::getIds([$data], $default, $delimiter, $unique, false);
-                $return = VarArray::getFirst($return);
+                $return = (string)VarArray::getFirst($return);
 
             } else {
                 $return = (string)$default;
