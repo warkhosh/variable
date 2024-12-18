@@ -1993,7 +1993,7 @@ trait VariableMethod
      * @note Осознано сохраняем порядок массива
      *
      * @param array|bool|float|int|string|null $data
-     * @param int $default значение по умолчанию
+     * @param int|null $default значение по умолчанию (если указать NULL то не допустимые числа будут удалены)
      * @param string $delimiter разделитель строки
      * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
      * @param bool $recursive флаг для обхода потомков
@@ -2002,12 +2002,12 @@ trait VariableMethod
      */
     public static function getIds(
         array|bool|float|int|string|null $data,
-        int $default,
+        ?int $default = null,
         string $delimiter = ',',
         string $unique = 'single',
         bool $recursive = false,
     ): array|string {
-        if (VarInt::getMakePositiveInteger($default, 0) !== $default) {
+        if (! is_null($default) && VarInt::getMakePositiveInteger($default, 0) !== $default) {
             // В рамках концепции Options допускаются только положительные цифры
             throw new Exception("The default value must be a positive number");
         }
@@ -2022,7 +2022,8 @@ trait VariableMethod
                 } else {
                     $items = trim(is_string($item) ? $item : VarStr::getMake($item));
                     $items = VarStr::explode($delimiter, $items, []);
-                    $items = VarArray::getRemove(static::getMinInteger($items, 0));
+                    $items = static::getMinInteger($items, 0);
+                    $items = VarArray::getRemove($items, (is_null($default) ? [0] : []));
 
                     if (count($items) > 0) {
                         // Проверка на уникальность в текущем списке
@@ -2031,8 +2032,6 @@ trait VariableMethod
                     } else {
                         $return[$key] = (string)$default;
                     }
-
-
                 }
             }
 
