@@ -1989,12 +1989,12 @@ trait VariableMethod
     /**
      * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
-     * @note Если данные являются массивом и надо только проверить их значения, следует указать значение разделителя как NULL
-     * @note Осознано сохраняем порядок массива
+     * @note метод рассчитан исключительно на строку или массивы строк в которых идентификаторы через символ разделителя!
+     * @note Если передали массив мы осознано сохраняем его порядок и корректируем только значения!
      *
      * @param array|bool|float|int|string|null $data
      * @param int|null $default значение по умолчанию (если указать NULL то не допустимые числа будут удалены)
-     * @param string $delimiter разделитель строки
+     * @param string $delimiter разделитель строк(и) следует указывать если он отличается от запятой
      * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
      * @param bool $recursive флаг для обхода потомков
      * @return array|string
@@ -2043,7 +2043,6 @@ trait VariableMethod
                 $return = static::getIds([$data], $default, $delimiter, $unique, false);
                 $return = VarArray::getFirst($return);
                 $return = is_null($return) ? "" : $return;
-
             } else {
                 $return = (string)$default;
             }
