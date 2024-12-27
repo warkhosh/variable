@@ -8,7 +8,7 @@
     "class",
     "Helpers"
   ],
-  "minimum-stability": "stable",
+  "minimum-stability": "dev",
   "license": "MIT",
   "support": {
     "email": "ekv.programmer@gmail.com"
