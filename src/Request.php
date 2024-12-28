@@ -11,14 +11,14 @@ use Warkhosh\Singleton\Trait\Singleton;
  *
  * @package Warkhosh\Variable
  */
-class Request extends Http
+class Request
 {
     use Singleton;
 
     /**
      * @var string $method
      */
-    protected string $method;
+    protected static string $method;
 
 
     /**
@@ -26,10 +26,8 @@ class Request extends Http
      */
     public function __construct()
     {
-        $this->method = empty($_SERVER['REQUEST_METHOD']) ? "get" : strtolower($_SERVER['REQUEST_METHOD']);
-        $this->method = in_array($this->method, ['get', 'post', 'put', 'delete']) ? $this->method : 'get';
-
-        parent::__construct();
+        static::$method = empty($_SERVER['REQUEST_METHOD']) ? "get" : strtolower($_SERVER['REQUEST_METHOD']);
+        static::$method = in_array(static::$method, ['get', 'post', 'put', 'delete']) ? static::$method : 'get';
     }
 
 
@@ -41,9 +39,7 @@ class Request extends Http
      */
     public static function isMethod(?string $method = null): bool
     {
-        $requestMethod = empty($_SERVER['REQUEST_METHOD']) ? "get" : strtolower($_SERVER['REQUEST_METHOD']);
-
-        if ($requestMethod === strtolower((string)$method)) {
+        if (static::$method === strtolower((string)$method)) {
             return true;
         }
 
@@ -212,5 +208,43 @@ class Request extends Http
         }
 
         return static::getVariable($_ALL, $varName, $initDefault, $default);
+    }
+
+    /**
+     * @param array $storage хранилище с данными
+     * @param array|string $varKey название переменной
+     * @param bool $initDefault флаг для установки значения для неустановленной переменной значения по умолчанию
+     * @param mixed|null $default значение по умолчанию
+     * @return mixed
+     */
+    protected static function getVariable(
+        array $storage,
+        array|string $varKey,
+        bool $initDefault = false,
+        mixed $default = null
+    ): mixed {
+        if (is_string($varKey)) {
+            if (isset($storage[$varKey]) && key_exists($varKey, $storage)) {
+                return $storage[$varKey];
+
+            } elseif ($initDefault) {
+                return $default;
+            }
+
+        } elseif (is_array($varKey) && is_array($return = [])) {
+
+            foreach ($varKey as $key) {
+                if (isset($storage[$key]) && key_exists($key, $storage)) {
+                    $return[$key] = $storage[$key];
+
+                } elseif ($initDefault) {
+                    $return[$key] = $default;
+                }
+            }
+
+            return $return;
+        }
+
+        return null;
     }
 }
