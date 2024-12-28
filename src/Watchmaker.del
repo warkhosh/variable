@@ -119,7 +119,7 @@ class Watchmaker extends DateTime
      * @return static
      * @throws Exception
      */
-    public function initTimestamp(?int $time = null, DateTimeZone|null $tz = null): static
+    public static function initTimestamp(?int $time = null, DateTimeZone|null $tz = null): static
     {
         return (new Watchmaker('now', $tz))->setTimestamp($time);
     }
@@ -165,7 +165,7 @@ class Watchmaker extends DateTime
 
         $str = str_replace(['00-00-0000', '0000-00-00', '__-__-____', '____-__-__'], '', $str);
         $str = VarStr::crop(VarStr::getRemoveSymbol(VarStr::trim($str)));
-        $str = empty($str) || isEmpty($str) ? null : $str;
+        $str = isEmptyString($str) ? null : $str;
 
         if (is_null($str)) {
             return null;

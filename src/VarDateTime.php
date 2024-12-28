@@ -38,7 +38,7 @@ class VarDateTime
      *
      * @note метод в первую очередь для работы со строками, а числа всегда можно преобразовать в любой формат!
      *
-     * @param int|string|null $str значение даты может быть как строка или timestamp
+     * @param float|int|string|null $str значение даты может быть как строка или timestamp
      * @param string $format
      * @param string|null $default
      * @return string|null
@@ -75,7 +75,7 @@ class VarDateTime
     /**
      * Преобразует строку в дату по указанному формату
      *
-     * @note учитывайте что преобразование дат нужно для строк, поэтому тут не указан тип int в $str поскольку этот метод не чего не возвращает!
+     * @note учитывайте что преобразование дат нужно для строк, поэтому тут не указан тип int в $str, поскольку этот метод не возвращает значения!
      *
      * @param string|null $str
      * @param string $format
@@ -114,6 +114,6 @@ class VarDateTime
      */
     public static function getTimestamp(int|string|null $str): int
     {
-        return Watchmaker::init(empty($str) ? 'now' : $str)->getTimestamp();
+        return (new DateTime(empty($str) ? 'now' : $str))->getTimestamp();
     }
 }

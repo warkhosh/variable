@@ -4,7 +4,7 @@ namespace Warkhosh\Variable\Traits;
 
 use Warkhosh\Variable\VarArray;
 use Warkhosh\Variable\VarFloat;
-use Warkhosh\Variable\VariableOptions;
+use Warkhosh\Variable\Option\VarOptions;
 use Warkhosh\Variable\VarInt;
 use Warkhosh\Variable\VarStr;
 use Exception;
@@ -359,7 +359,7 @@ trait VariableMethod
             case 'ids':
             case 'tags':
             case 'tags-html-encode':
-                $this->trim(VariableOptions::TRIM_REMOVE_CHAR, $recursive);
+                $this->trim(VarOptions::TRIM_REMOVE_CHAR, $recursive);
 
                 if (is_array($remove) && count($remove) > 0) {
                     $this->removeSymbol($remove, $recursive);

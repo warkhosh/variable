@@ -74,7 +74,7 @@ class VarArray
     /**
      * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
      *
-     * @note если ключ не задан или NULL, весь массив будет заменен.
+     * @note если ключ не задан (NULL), весь массив будет заменен!
      *
      * @param string|null $key
      * @param mixed $value
@@ -921,7 +921,7 @@ class VarArray
     /**
      * Группирует элементы массива по заданному ключу
      *
-     * @param string $key ключах допускается точка для вложенного действия
+     * @param string $key в ключах допускается точка для вложенного действия
      * @param array $arr список, который будет группироваться по указанному ключу
      * @param bool $multiple флаг группировки с подмножеством значений. Не работает при вложенных группировка с точкой!
      * @return array
@@ -1377,7 +1377,7 @@ class VarArray
 
                 } else {
                     $item = VarInt::getMake($item, $default);
-                    $return[$key] = $item >= $default ? $item : $default;
+                    $return[$key] = max($item, $default);
                 }
             }
 

@@ -1,39 +1,41 @@
 {
   "name": "warkhosh/variable",
   "type": "library",
-  "description": "Набор универсальных хелперов,классов,библиотек и т.д.",
-  "keywords": [
-    "php",
-    "basic",
-    "class",
-    "Helpers"
-  ],
-  "minimum-stability": "dev",
+  "description": "Набор классов для работы с конкретным типами переменных",
   "license": "MIT",
-  "support": {
-    "email": "ekv.programmer@gmail.com"
-  },
+  "minimum-stability": "stable",
   "authors": [
     {
       "name": "Konstantin Egorov",
       "email": "ekv.programmer@gmail.com"
     }
   ],
+  "support": {
+    "email": "ekv.programmer@gmail.com"
+  },
   "repositories": [
     {
       "type": "git",
-      "url": "https://github.com/warkhosh/component.git"
+      "url": "https://gitverse.ru/warkhosh/singleton.git"
+    },
+    {
+      "type": "git",
+      "url": "https://gitverse.ru/warkhosh/assist.git"
     }
   ],
   "require": {
     "php": ">=8.0.30",
     "ext-mbstring": "*",
     "ext-iconv": "*",
-    "warkhosh/component": "dev-master"
+    "warkhosh/singleton": "dev-master",
+    "warkhosh/assist": "dev-master"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.13"
   },
   "autoload": {
     "psr-4": {
-      "warkhosh\\Variable\\": ""
+      "Warkhosh\\Variable\\": "src"
     },
     "files": []
   }

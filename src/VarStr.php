@@ -62,17 +62,7 @@ class VarStr
      */
     public static function getMake(mixed $str = '', string $default = ''): string
     {
-        if (is_string($str)) {
-            return $str;
-        } elseif (is_null($str) || is_object($str) || is_array($str)) {
-            return $default;
-        } elseif (is_bool($str)) {
-            return $str ? "true" : "false";
-        } elseif (is_numeric($str)) {
-            return strval($str);
-        }
-
-        return strval($str);
+        return getMakeString($str, $default);
     }
 
     /**
@@ -84,7 +74,7 @@ class VarStr
      */
     public static function getMakeString(mixed $str = ''): string
     {
-        return static::getMake($str);
+        return getMakeString($str);
     }
 
     /**
@@ -98,7 +88,7 @@ class VarStr
      */
     public static function makeString(mixed &$str = '', string $default = ''): void
     {
-        $str = static::getMake($str, $default);
+        $str = getMakeString($str, $default);
     }
 
     /**
@@ -1071,7 +1061,7 @@ class VarStr
             return '';
         }
 
-        $str = (string)$str;
+        $str = getMakeString($str);
         $char = mb_substr($str, 0, 1, 'UTF-8');
 
         return static::getUpper($char).mb_substr($str, 1);
@@ -1106,7 +1096,7 @@ class VarStr
      */
     public static function getClean(?string $str): string
     {
-        if (is_null($str) || trim($str) === '') {
+        if (is_null($str) || (trim($str) === '')) {
             return '';
         }
 
@@ -1126,67 +1116,19 @@ class VarStr
      */
     public static function isEmpty(float|int|string|null $str, bool $strict = true): bool
     {
-        if (is_null($str)) {
-            return true;
-        }
-
-        if (mb_strlen($str = (string)$str) > 0) {
-            $str = str_replace(static::CONTROL_CHAR, '', $str);
-            $str = str_replace(static::SPECIAL_CHAR, '', $str);
-            $str = str_replace(static::SPACE_CODE, ' ', $str);
-            $str = str_replace(static::SPACE_CHAR, ' ', $str);
-            $str = static::trim($str);
-
-            if ($strict) {
-                return preg_match("/(\S+)/i", $str) === 0;
-            }
-
-            return $str === '';
-        }
-
-        return true;
+        return isEmptyString($str, $strict);
     }
 
     /**
      * Удаляет пробелы из начала и конца строки (или другие символы при передачах их вторым параметром)
      *
-     * @note \x0B вертикальная табуляция
-     *
      * @param float|int|string|null $str
      * @param string $remove список символов для удаления
-     * @param bool $addSingleSpaceChar флаг добавляющий к списку символов односимвольные пробелы
      * @return string
      */
-    public static function trim(
-        float|int|string|null $str,
-        string $remove = " \t\n\r\v\0\x0B",
-        bool $addSingleSpaceChar = true
-    ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
-            return '';
-        }
-
-        // Безопасное удаление всех пробелов (возвращающие код символа 32)
-        $str = (string)preg_replace("/^\s+/iu", "", (string)$str);
-        $str = (string)preg_replace("/\s+$/iu", "", $str);
-
-        // Дописываем к переданному списку символов односимвольные пробелы !
-        //if ($addSingleSpaceChar === true) {
-        //    // Следить и не допускать сюда обычные символы!
-        //    $remove .=
-        //        // No-break space
-        //        chr(0xC2) . chr(0xA0) .
-        //        // 'En space
-        //        chr(0xE2) . chr(0x80) . chr(0x82) .
-        //        // Em space
-        //        chr(0xE2) . chr(0x80) . chr(0x83) .
-        //        // Thin space
-        //        chr(0xE2) . chr(0x80) . chr(0x89) .
-        //        // удаляем управляющие ASCII-символы с начала и конца $binary (от 0 до 31 включительно)
-        //        "\x00..\x1F";
-        //}
-
-        return trim($str, $remove);
+    public static function trim(float|int|string|null $str, string $remove = " \t\n\r\v\0\x0B"): string
+    {
+        return getTrimString($str, $remove);
     }
 
     /**
