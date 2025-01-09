@@ -1261,7 +1261,7 @@ class VarStr
      */
     public static function getTransformToEncoding(float|int|string|null $str = '', string $encoding = 'UTF-8'): string
     {
-        return getEncodingString($str, $encoding);
+        return getTransformToEncoding($str, $encoding);
     }
 
     /**
