@@ -1241,9 +1241,10 @@ class VarStr
     /**
      * Безопасное преобразование строки в utf-8
      *
+     * @note в случае ошибок эта функция не бросает исключения, для этого используйте метод getTransformToEncoding()
+     *
      * @param float|int|string|null $str
      * @return string
-     * @throws Exception
      */
     public static function toUTF8(float|int|string|null $str = ''): string
     {
@@ -1253,34 +1254,32 @@ class VarStr
 
         $str = (string)$str;
 
-        // Если кодировки строки отличается от указанной
+        // Если кодировка строки отличается от указанной
         if (! mb_check_encoding($str, "UTF-8")) {
             $encoding = mb_detect_encoding($str, mb_detect_order(), false);
 
-            $str = match ($encoding) {
-                'ASCII' => mb_convert_encoding($str, 'UTF-8', 'ASCII'),
-                'Windows-1251' => mb_convert_encoding($str, 'UTF-8', 'Windows-1251'),
-                default => mb_convert_encoding($str, 'UTF-8', 'UTF-8'),
-            };
+            // Кодировку текущей строки не возможно определить
+            if (is_bool($encoding)) {
+                return @iconv("UTF-8", "UTF-8//IGNORE", $str);
+            }
+
+            if ($encoding === "UTF-8") {
+                return $str;
+            }
+
+            $convertedStr = mb_convert_encoding($str, 'UTF-8', $encoding);
 
             // Проверка некорректной работы mb_convert_encoding()
-            if ($str === false) {
-                throw new Exception("Error when trying to convert a string via mb_convert_encoding()");
-            }
-
-            // Если было не удачное определение кодировки
-            if (is_bool($encoding) && $encoding === false) {
-                return @iconv("UTF-8", "UTF-8//IGNORE", (string)$str);
-            }
-
-            return @iconv($encoding, "UTF-8//IGNORE", $str);
+            return $convertedStr === false
+                ? (string)@iconv($encoding, "UTF-8//IGNORE", $str)
+                : $convertedStr;
         }
 
         return $str;
     }
 
     /**
-     * Безопасное преобразование строки в указанную кодировку если она таковой не является
+     * Преобразование строки в указанную кодировку если она таковой не является
      *
      * @param float|int|string|null $str строка, для которой требуется определить кодировку
      * @param string $encoding ожидаемая кодировка
@@ -1293,12 +1292,21 @@ class VarStr
             return '';
         }
 
+        if ($encoding === 'UTF-8') {
+            return static::toUTF8($str);
+        }
+
         $str = (string)$str;
 
         // Если кодировки строки отличается от указанной
         if (! mb_check_encoding($str, $encoding)) {
             // Определение кодировки у указанной строки
             $currentEncoding = mb_detect_encoding($str, mb_detect_order(), false);
+
+            // Кодировку текущей строки не возможно определить
+            if (is_bool($currentEncoding)) {
+                throw new Exception("Unable to determine character encoding for the specified string");
+            }
 
             // Преобразование строки из одной кодировки символов в другую
             $text = mb_convert_encoding($str, $encoding);
@@ -1308,12 +1316,7 @@ class VarStr
                 throw new Exception("Error when trying to convert a string via mb_convert_encoding()");
             }
 
-            // Если было не удачное определение кодировки у указанной строки
-            if (is_bool($currentEncoding) && $currentEncoding === false) {
-                return @iconv("UTF-8", "UTF-8//IGNORE", $text);
-            }
-
-            return (string)@iconv($currentEncoding, "{$encoding}//IGNORE", $text);
+            return (string)iconv($currentEncoding, "{$encoding}//IGNORE", $text);
         }
 
         return $str;
@@ -1442,7 +1445,6 @@ class VarStr
      * @param bool $lower
      * @param array $ignoreChars
      * @return string
-     * @throws Exception
      */
     public static function getTranscription(
         float|int|string|null $str,
