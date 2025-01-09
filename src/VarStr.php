@@ -1248,34 +1248,7 @@ class VarStr
      */
     public static function toUTF8(float|int|string|null $str = ''): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
-            return '';
-        }
-
-        $str = (string)$str;
-
-        // Если кодировка строки отличается от указанной
-        if (! mb_check_encoding($str, "UTF-8")) {
-            $encoding = mb_detect_encoding($str, mb_detect_order(), false);
-
-            // Кодировку текущей строки не возможно определить
-            if (is_bool($encoding)) {
-                return @iconv("UTF-8", "UTF-8//IGNORE", $str);
-            }
-
-            if ($encoding === "UTF-8") {
-                return $str;
-            }
-
-            $convertedStr = mb_convert_encoding($str, 'UTF-8', $encoding);
-
-            // Проверка некорректной работы mb_convert_encoding()
-            return $convertedStr === false
-                ? (string)@iconv($encoding, "UTF-8//IGNORE", $str)
-                : $convertedStr;
-        }
-
-        return $str;
+        return toUTF8($str);
     }
 
     /**
@@ -1288,38 +1261,7 @@ class VarStr
      */
     public static function getTransformToEncoding(float|int|string|null $str = '', string $encoding = 'UTF-8'): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
-            return '';
-        }
-
-        if ($encoding === 'UTF-8') {
-            return static::toUTF8($str);
-        }
-
-        $str = (string)$str;
-
-        // Если кодировки строки отличается от указанной
-        if (! mb_check_encoding($str, $encoding)) {
-            // Определение кодировки у указанной строки
-            $currentEncoding = mb_detect_encoding($str, mb_detect_order(), false);
-
-            // Кодировку текущей строки не возможно определить
-            if (is_bool($currentEncoding)) {
-                throw new Exception("Unable to determine character encoding for the specified string");
-            }
-
-            // Преобразование строки из одной кодировки символов в другую
-            $text = mb_convert_encoding($str, $encoding);
-
-            // Проверка некорректной работы mb_convert_encoding()
-            if ($text === false) {
-                throw new Exception("Error when trying to convert a string via mb_convert_encoding()");
-            }
-
-            return (string)iconv($currentEncoding, "{$encoding}//IGNORE", $text);
-        }
-
-        return $str;
+        return getEncodingString($str, $encoding);
     }
 
     /**
