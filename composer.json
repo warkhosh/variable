@@ -16,11 +16,11 @@
   "repositories": [
     {
       "type": "git",
-      "url": "https://gitverse.ru/warkhosh/singleton.git"
+      "url": "https://gitverse.ru/warkhosh/assist.git"
     },
     {
       "type": "git",
-      "url": "https://gitverse.ru/warkhosh/assist.git"
+      "url": "https://gitverse.ru/warkhosh/singleton.git"
     }
   ],
   "require": {
