@@ -418,7 +418,6 @@ class VarStr
      *
      * @param float|int|string|null $words
      * @return string
-     * @throws Exception
      */
     public static function getLower(float|int|string|null $words): string
     {
@@ -473,7 +472,7 @@ class VarStr
         $words = urldecode($words);
         $words = str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $words);
 
-        $words = VarStr::toUTF8($words);
+        $words = toUTF8($words);
         $words = mb_strtolower($words); // другие символы в нижний регистр
         $words = preg_split('//u', $words, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -491,7 +490,6 @@ class VarStr
      *
      * @param float|int|string|null $words
      * @return string
-     * @throws Exception
      */
     public static function getUpper(float|int|string|null $words): string
     {
@@ -546,7 +544,7 @@ class VarStr
         $words = urldecode($words);
         $words = str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $words);
 
-        $words = VarStr::toUTF8($words);
+        $words = toUTF8($words);
         $words = mb_strtoupper($words, 'UTF-8'); // другие символы в верхний регистр
         $words = preg_split('//u', $words, -1, PREG_SPLIT_NO_EMPTY);
 
