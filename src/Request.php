@@ -39,7 +39,7 @@ class Request
      */
     public static function isMethod(?string $method = null): bool
     {
-        if (static::$method === strtolower((string)$method)) {
+        if (static::$method === mb_strtolower((string)$method)) {
             return true;
         }
 

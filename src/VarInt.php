@@ -16,34 +16,9 @@ class VarInt
      * @param bool $strict флаг для преобразования дополнительных строковых значений типа "on|off/no|yes/false|true" в число
      * @return int
      */
-    public static function getMake(
-        mixed $num = null,
-        int $default = 0,
-        bool $strict = true
-    ): int {
-        if (is_null($num) || is_object($num) || is_array($num)) {
-            return $default;
-        } elseif (is_bool($num) || is_numeric($num) || is_float($num)) {
-            return intval($num);
-        }
-
-        if (is_string($num)) {
-            $num = strtolower(trim(strip_tags($num)));
-
-            if (! $strict) {
-                return match ($num) {
-                    'false', 'off', 'no' => 0,
-                    'true', 'on', 'yes' => 1,
-                    default => intval($num),
-                };
-            }
-
-            $val = intval($num);
-
-            return $num === strval($val) ? $val : $default;
-        }
-
-        return $default;
+    public static function getMake(mixed $num = null, int $default = 0, bool $strict = true): int
+    {
+        return getMakeInteger($num, $default, $strict);
     }
 
     /**
@@ -57,11 +32,8 @@ class VarInt
      * @return int
      * @deprecated заменить метод на VarInt::getMake
      */
-    public static function getMakeInteger(
-        mixed $num = null,
-        int $default = 0,
-        bool $strict = true
-    ): int {
+    public static function getMakeInteger(mixed $num = null, int $default = 0, bool $strict = true): int
+    {
         return static::getMake($num, $default, $strict);
     }
 
@@ -84,28 +56,7 @@ class VarInt
             throw new Exception("The default value must be a positive integer");
         }
 
-        if (is_null($num)) {
-            $num = $default;
-        } elseif (is_bool($num) || is_numeric($num)) {
-            $num = intval($num);
-        }
-
-        if (is_string($num)) {
-            if (! $strict) {
-                return match (strtolower(trim($num))) {
-                    '0', 'false', 'off', 'no' => 0,
-                    '1', 'true', 'on', 'yes' => 1,
-                    default => intval($num),
-                };
-            }
-
-            $num = trim(strip_tags($num));
-            $int = intval($num);
-
-            $num = mb_strlen($int) === mb_strlen($num) ? $int : $default;
-        }
-
-        return $num >= 0 ? $num : $default;
+        return getNum($num, $default, $strict);
     }
 
 
@@ -132,11 +83,8 @@ class VarInt
      * @param int $max
      * @return bool
      */
-    public static function isRange(
-        bool|float|int|string|null $num,
-        int $min = 0,
-        int $max = 1
-    ): bool {
+    public static function isRange(bool|float|int|string|null $num, int $min = 0, int $max = 1): bool
+    {
         $num = static::getMake($num);
 
         return ($num >= $min && $num <= $max);

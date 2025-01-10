@@ -24,7 +24,7 @@ class VarBool
         }
 
         if (is_string($bool)) {
-            $bool = strtolower(trim(strip_tags($bool)));
+            $bool = mb_strtolower(trim(strip_tags($bool)));
 
             if (! $strict) {
                 return match ($bool) {

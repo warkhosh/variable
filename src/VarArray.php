@@ -319,25 +319,7 @@ class VarArray
             return $default;
         }
 
-        if (is_string($key) && VarStr::find(".", $key) === false) {
-            if (is_array($array) && array_key_exists($key, $array)) {
-                return $array[$key];
-            }
-
-            return $default;
-        }
-
-        $keys = is_array($key) ? $key : explode('.', (string)$key);
-
-        foreach ($keys as $segment) {
-            if (! is_array($array) || ! array_key_exists($segment, $array)) {
-                return $default;
-            }
-
-            $array = $array[$segment];
-        }
-
-        return $array;
+        return getFromArray($key, $array, $default);
     }
 
     /**

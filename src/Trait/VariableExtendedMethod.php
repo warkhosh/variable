@@ -1,12 +1,12 @@
 <?php
 
-namespace Warkhosh\Variable\Traits;
+namespace Warkhosh\Variable\Trait;
 
-use Throwable;
 use Warkhosh\Variable\VarDateTime;
 use Warkhosh\Variable\VarFloat;
 use Warkhosh\Variable\VarStr;
 use Exception;
+use Throwable;
 
 /**
  * Trait VariableExtendedMethod
@@ -100,7 +100,7 @@ trait VariableExtendedMethod
      */
     public function integerNotLess(bool $recursive = false, int $default = 0): static
     {
-        $this->data = static::getMinInteger($this->data, 0, true, $default, $recursive);
+        $this->data = static::getMinInteger($this->data, 0, $default, $recursive);
 
         return $this;
     }
@@ -633,13 +633,12 @@ trait VariableExtendedMethod
      *
      * @param array $needle
      * @param bool $strict
-     * @param bool $recursive флаг для обхода потомков
      * @return $this
      * @throws Exception
      */
-    public function inArray(array $needle = [], bool $strict = false, bool $recursive = false): static
+    public function inArray(array $needle = [], bool $strict = false): static
     {
-        $this->data = static::getInArray($this->data, $this->getDefault(), $needle, $strict, $recursive);
+        $this->data = static::getInArray($this->data, $this->getDefault(), $needle, $strict);
 
         return $this;
     }
@@ -651,7 +650,6 @@ trait VariableExtendedMethod
      * @param string $default
      * @param array $needle
      * @param bool $strict
-     * @param bool $recursive флаг для обхода потомков
      * @return array|string
      * @throws Exception
      */
@@ -659,8 +657,7 @@ trait VariableExtendedMethod
         array|bool|float|int|string|null $data,
         string $default,
         array $needle = [],
-        bool $strict = false,
-        bool $recursive = false
+        bool $strict = false
     ): array|string {
         if (is_array($data)) {
             throw new Exception("Для массива поведение не предусмотрено!");

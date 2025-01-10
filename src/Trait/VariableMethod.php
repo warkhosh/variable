@@ -1,6 +1,6 @@
 <?php
 
-namespace Warkhosh\Variable\Traits;
+namespace Warkhosh\Variable\Trait;
 
 use Warkhosh\Variable\VarArray;
 use Warkhosh\Variable\VarFloat;
