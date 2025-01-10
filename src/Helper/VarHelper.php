@@ -14,6 +14,7 @@ class VarHelper
      * @param mixed $items
      * @param bool $strict - флаг соответствия типа
      * @return array
+     * @deprecated заменить на getMakeArray() из warkhosh/assist
      */
     public static function getArrayWrap(mixed $items, bool $strict = true): array
     {
@@ -25,6 +26,7 @@ class VarHelper
      *
      * @param mixed $value
      * @return mixed
+     * @deprecated заменить на getValueData() из warkhosh/assist
      */
     public static function value(mixed $value): mixed
     {

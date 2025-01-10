@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Warkhosh\Variable;
 
-use Throwable;
-use Warkhosh\Variable\Traits\VariableMethod;
+use Warkhosh\Variable\Trait\VariableMethod;
 use Traversable;
+use Throwable;
 
 /**
  * Class Variable
@@ -20,11 +22,6 @@ class Variable
     use VariableMethod;
 
     /**
-     * @var array|float|int|string|null
-     */
-    protected array|float|int|string|null $data = null;
-
-    /**
      * Тип переменной: массив значений или одно значение
      *
      * @note устанавливается в конструкторе!
@@ -32,15 +29,6 @@ class Variable
      * @var string $data
      */
     protected string $dataType = 'value';
-
-    /**
-     * Default значение
-     *
-     * @note надо следить что-бы в значение по умолчанию не передавали массив или объект (если этого не требует логика)
-     *
-     * @var array|float|int|string|null $default
-     */
-    protected array|float|int|string|null $default = null;
 
     /**
      * Для замены пустых строк при отдаче значений

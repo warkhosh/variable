@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Warkhosh\Variable;
 
 use DateTime;
@@ -85,7 +87,7 @@ class VarDateTime
      */
     public static function makeDateTime(?string &$str, string $format = 'Y-m-d', ?string $default = null): void
     {
-        if (is_null($str) || trim($str) === '') {
+        if (is_null($str) || isEmptyString($str)) {
             $str = $default;
 
             return;

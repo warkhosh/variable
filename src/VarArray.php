@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Warkhosh\Variable;
 
 use ArrayAccess;
 use Exception;
-use Warkhosh\Variable\Helper\VarHelper;
 use Closure;
 
 /**
@@ -25,38 +26,7 @@ class VarArray
      */
     public static function getMake(mixed $data = [], ?string $delimiter = null): array
     {
-        if (gettype($data) === 'array') {
-            return $data;
-        }
-
-        if (is_null($data) || is_object($data)) {
-            return [];
-        }
-
-        if (is_bool($data) || is_numeric($data) || is_float($data)) {
-            return [$data];
-        }
-
-        if (is_string($delimiter) && mb_strlen($delimiter) > 0) {
-            $data = in_array(gettype($data), ['string', 'integer', 'double']) ? $data : '';
-
-            return static::trim(explode($delimiter, $data));
-        }
-
-        return (array)$data;
-    }
-
-    /**
-     * Преобразование переданного значения в массив
-     *
-     * @param mixed $data
-     * @param string|null $delimiter
-     * @return array
-     * @deprecated заменить метод на VarArray::getMake
-     */
-    public static function getMakeArray(mixed $data = [], ?string $delimiter = null): array
-    {
-        return static::getMake($data, $delimiter);
+        return getMakeArray($data, $delimiter);
     }
 
     /**
@@ -266,24 +236,24 @@ class VarArray
         foreach ($key as $segment) {
             if (is_array($target)) {
                 if (! array_key_exists($segment, $target)) {
-                    return VarHelper::value($default);
+                    return getValueData($default);
                 }
 
                 $target = $target[$segment];
             } elseif ($target instanceof ArrayAccess) {
                 if (! isset($target[$segment])) {
-                    return VarHelper::value($default);
+                    return getValueData($default);
                 }
 
                 $target = $target[$segment];
             } elseif (is_object($target)) {
                 if (! isset($target->{$segment})) {
-                    return VarHelper::value($default);
+                    return getValueData($default);
                 }
 
                 $target = $target->{$segment};
             } else {
-                return VarHelper::value($default);
+                return getValueData($default);
             }
         }
 
@@ -658,12 +628,11 @@ class VarArray
      * @param string $string
      * @param array|null $delete
      * @return array
+     * @deprecated заменить на VarStr::explode()
      */
     public static function explode(string $delimiter, string $string, ?array $delete = ['', 0, null]): array
     {
-        $list = explode($delimiter, $string);
-
-        return VarArray::getRemove(static::trim($list), VarHelper::getArrayWrap($delete, false));
+        return getExplodeString($delimiter, $string, $delete);
     }
 
     /**
@@ -801,23 +770,7 @@ class VarArray
      */
     public static function getFirst(array $array = [], callable $callback = null, mixed $default = null): mixed
     {
-        if (is_null($callback)) {
-            if (empty($array)) {
-                return VarHelper::value($default);
-            }
-
-            foreach ($array as $item) {
-                return $item;
-            }
-        }
-
-        foreach ($array as $key => $value) {
-            if (call_user_func($callback, $value, $key)) {
-                return $value;
-            }
-        }
-
-        return VarHelper::value($default);
+        return getFirstValueInArray($array, $callback, $default);
     }
 
     /**
@@ -831,21 +784,7 @@ class VarArray
      */
     public static function getSecond(array $array = [], callable $callback = null, mixed $default = null): mixed
     {
-        if (is_null($callback)) {
-            if (empty($array)) {
-                return VarHelper::value($default);
-            }
-
-            return empty($result = array_slice($array, 1, 1)) ? VarHelper::value($default) : current($result);
-        }
-
-        foreach ($array as $key => $value) {
-            if (call_user_func($callback, $value, $key)) {
-                return $value;
-            }
-        }
-
-        return VarHelper::value($default);
+        return getSecondValueInArray($array, $callback, $default);
     }
 
     /**
@@ -860,11 +799,7 @@ class VarArray
      */
     public static function getLast(array $array = [], callable $callback = null, mixed $default = null): mixed
     {
-        if (is_null($callback)) {
-            return empty($array) ? VarHelper::value($default) : end($array);
-        }
-
-        return static::getFirst(array_reverse($array), $callback, $default);
+        return getLastValueInArray($array, $callback, $default);
     }
 
     /**
@@ -1091,7 +1026,7 @@ class VarArray
      */
     public static function getRemove(array $arr, ?array $delete = ['', 0, null]): array
     {
-        return array_diff($arr, VarHelper::getArrayWrap($delete, false));
+        return getRemoveValueInArray($arr, $delete);
     }
 
     /**
@@ -1103,7 +1038,7 @@ class VarArray
      */
     public static function remove(array &$arr, ?array $delete = ['', 0, null]): void
     {
-        $arr = array_diff($arr, VarHelper::getArrayWrap($delete, false));
+        $arr = static::getRemove($arr, $delete);
     }
 
     /**
@@ -1283,22 +1218,7 @@ class VarArray
      */
     public static function trim(array $arr = [], string $removeChar = " \t\n\r\0\x0B", bool $recursive = false): array
     {
-        $return = [];
-
-        if (is_array($arr) && count($arr) > 0) {
-            reset($arr);
-
-            foreach ($arr as $key => $item) {
-                if ($recursive && is_array($item)) {
-                    $return[$key] = static::trim($item, $removeChar, $recursive);
-
-                } else {
-                    $return[$key] = VarStr::trim($item, $removeChar);
-                }
-            }
-        }
-
-        return $return;
+        return getTrimArray($arr, $removeChar, $recursive);
     }
 
     /**
@@ -1558,7 +1478,7 @@ class VarArray
                     $return[$key] = static::getUpper($item, $recursive);
 
                 } else {
-                    $return[$key] = VarStr::getUpper($item);
+                    $return[$key] = getUpperString($item);
                 }
             }
         }
@@ -1586,7 +1506,7 @@ class VarArray
                     $return[$key] = static::getLower($item, $recursive);
 
                 } else {
-                    $return[$key] = VarStr::getLower($item);
+                    $return[$key] = getLowerString($item);
                 }
             }
         }

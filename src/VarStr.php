@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Warkhosh\Variable;
 
 use Exception;
@@ -198,7 +200,7 @@ class VarStr
      */
     public static function replaceOnce(?string $search, string $replace, float|int|string|null $str = null): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -253,7 +255,7 @@ class VarStr
      */
     public static function start(string $prefix, float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -275,7 +277,7 @@ class VarStr
      */
     public static function ending(string $postfix, float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -297,7 +299,7 @@ class VarStr
      */
     public static function getRemoveStart(string $prefix, float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -319,7 +321,7 @@ class VarStr
      */
     public static function getRemoveEnding(string $postfix, float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -342,7 +344,7 @@ class VarStr
      */
     public static function getReplaceStart(string $search, string $replace, float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -365,7 +367,7 @@ class VarStr
      */
     public static function getReplaceEnding(string $search, string $replace, float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -386,7 +388,7 @@ class VarStr
      */
     public static function getBase64UrlEncode(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -401,7 +403,7 @@ class VarStr
      */
     public static function getBase64UrlDecode(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -421,66 +423,7 @@ class VarStr
      */
     public static function getLower(float|int|string|null $words): string
     {
-        if (is_null($words) || (is_string($words) && trim($words) === '')) {
-            return '';
-        }
-
-        if (is_numeric($words)) {
-            return (string)$words;
-        }
-
-        $replaceChar = [
-            "А" => "а",
-            "Б" => "б",
-            "В" => "в",
-            "Г" => "г",
-            "Д" => "д",
-            "Е" => "е",
-            "Ё" => "ё",
-            "Ж" => "ж",
-            "З" => "з",
-            "И" => "и",
-            "Й" => "й",
-            "К" => "к",
-            "Л" => "л",
-            "М" => "м",
-            "Н" => "н",
-            "О" => "о",
-            "П" => "п",
-            "Р" => "р",
-            "С" => "с",
-            "Т" => "т",
-            "У" => "у",
-            "Ф" => "ф",
-            "Х" => "х",
-            "Ц" => "ц",
-            "Ч" => "ч",
-            "Ш" => "ш",
-            "Щ" => "щ",
-            "Ъ" => "ъ",
-            "Ы" => "ы",
-            "Ь" => "ь",
-            "Э" => "э",
-            "Ю" => "ю",
-            "Я" => "я",
-        ];
-
-        $str = "";
-
-        // специально сохраняем символ плюса
-        $words = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', $words);
-        $words = urldecode($words);
-        $words = str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $words);
-
-        $words = toUTF8($words);
-        $words = mb_strtolower($words); // другие символы в нижний регистр
-        $words = preg_split('//u', $words, -1, PREG_SPLIT_NO_EMPTY);
-
-        foreach ($words as $row) {
-            $str .= $replaceChar[$row] ?? $row;
-        }
-
-        return $str;
+        return getLowerString($words);
     }
 
     /**
@@ -493,66 +436,7 @@ class VarStr
      */
     public static function getUpper(float|int|string|null $words): string
     {
-        if (is_null($words) || (is_string($words) && trim($words) === '')) {
-            return '';
-        }
-
-        if (is_numeric($words)) {
-            return (string)$words;
-        }
-
-        $replaceChar = [
-            "а" => "А",
-            "б" => "Б",
-            "в" => "В",
-            "г" => "Г",
-            "д" => "Д",
-            "е" => "Е",
-            "ё" => "Ё",
-            "ж" => "Ж",
-            "з" => "З",
-            "и" => "И",
-            "й" => "Й",
-            "к" => "К",
-            "л" => "Л",
-            "м" => "М",
-            "н" => "Н",
-            "о" => "О",
-            "п" => "П",
-            "р" => "Р",
-            "с" => "С",
-            "т" => "Т",
-            "у" => "У",
-            "ф" => "Ф",
-            "х" => "Х",
-            "ц" => "Ц",
-            "ч" => "Ч",
-            "ш" => "Ш",
-            "щ" => "Щ",
-            "ъ" => "Ъ",
-            "ы" => "Ы",
-            "ь" => "Ь",
-            "э" => "Э",
-            "ю" => "Ю",
-            "я" => "Я",
-        ];
-
-        $str = "";
-
-        // специально сохраняем символ плюса
-        $words = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', $words);
-        $words = urldecode($words);
-        $words = str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $words);
-
-        $words = toUTF8($words);
-        $words = mb_strtoupper($words, 'UTF-8'); // другие символы в верхний регистр
-        $words = preg_split('//u', $words, -1, PREG_SPLIT_NO_EMPTY);
-
-        foreach ($words as $row) {
-            $str .= $replaceChar[$row] ?? $row;
-        }
-
-        return $str;
+        return getUpperString($words);
     }
 
     /**
@@ -567,7 +451,7 @@ class VarStr
      */
     public static function words(float|int|string|null $str, int $words = 100, string $end = '...'): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -598,7 +482,7 @@ class VarStr
      */
     public static function crop(float|int|string|null $str, int $length = 250): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -630,7 +514,7 @@ class VarStr
         bool $transform = true,
         bool $smart = true
     ): string {
-        if ($length <= 0 || is_null($str) || (is_string($str) && trim($str) === '')) {
+        if ($length <= 0 || is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -705,7 +589,7 @@ class VarStr
      */
     public static function getStudly(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -722,7 +606,7 @@ class VarStr
      */
     public static function getSnakeCase(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -738,7 +622,7 @@ class VarStr
      */
     public static function getCamelCase(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -760,7 +644,7 @@ class VarStr
         int $flags = ENT_COMPAT | ENT_HTML5,
         string $encoding = 'UTF-8'
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -785,7 +669,7 @@ class VarStr
         string $encoding = 'UTF-8',
         bool $doubleEncode = false
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -811,7 +695,7 @@ class VarStr
         string $encoding = 'UTF-8',
         bool $doubleEncode = false
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -832,7 +716,7 @@ class VarStr
         bool $raw = false,
         string $encoding = 'UTF-8'
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -866,7 +750,7 @@ class VarStr
         bool $raw = false,
         string $encoding = 'UTF-8'
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -904,7 +788,7 @@ class VarStr
     ): string {
         $decimals = $decimals >= 0 ? $decimals : 2;
 
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return number_format((float)$default, $decimals, $separator, $thousands_sep);
         }
 
@@ -933,7 +817,7 @@ class VarStr
             throw new Exception("Invalid number format");
         }
 
-        $str = VarFloat::getMake($str, $decimals, $default);
+        $str = VarFloat::getMake($str, $decimals, "auto", VarFloat::getMake($default));
 
         return number_format($str, $decimals, $separator, $thousands_sep);
     }
@@ -1032,7 +916,7 @@ class VarStr
      */
     public static function substr(float|int|string|null $str, int $start, ?int $length = null): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -1048,14 +932,7 @@ class VarStr
      */
     public static function ucfirst(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
-            return '';
-        }
-
-        $str = getMakeString($str);
-        $char = mb_substr($str, 0, 1, 'UTF-8');
-
-        return static::getUpper($char).mb_substr($str, 1);
+        return getUpperString($str, UC_CHAR_FIRST);
     }
 
     /**
@@ -1067,14 +944,7 @@ class VarStr
      */
     public static function ucLast(float|int|string|null $str): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
-            return '';
-        }
-
-        $str = (string)$str;
-        $char = mb_substr($str, -1, 1, 'UTF-8');
-
-        return mb_substr($str, 0, mb_strlen($str) - 1, 'UTF-8').static::getUpper($char);
+        return getLowerString($str, UC_CHAR_LAST);
     }
 
     /**
@@ -1087,7 +957,7 @@ class VarStr
      */
     public static function getClean(?string $str): string
     {
-        if (is_null($str) || (trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -1137,7 +1007,7 @@ class VarStr
         array|string $char = [' '],
         array|string $replace = [' ']
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -1165,7 +1035,7 @@ class VarStr
         float|int|string|null $str,
         array|string $removeChar = ["\n", "\r", "\t", "\v"]
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
@@ -1214,15 +1084,9 @@ class VarStr
      */
     public static function getEncoding(float|int|string|null $str): ?string
     {
-        $currentEncoding = mb_detect_encoding((string)$str, mb_detect_order(), false);
+        $currentEncoding = getEncodingString($str);
 
-        $encoding = match ($currentEncoding) {
-            'ASCII' => mb_convert_encoding((string)$str, 'ASCII'),
-            'Windows-1251' => mb_convert_encoding((string)$str, 'Windows-1251'),
-            default => mb_convert_encoding((string)$str, 'UTF-8'),
-        };
-
-        if ($encoding !== false) {
+        if ($currentEncoding !== false) {
             return $currentEncoding;
         }
 
@@ -1268,19 +1132,7 @@ class VarStr
         float|int|string|null $str,
         ?array $deleted = ['', 0, null]
     ): array {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
-            return [];
-        }
-
-        $str = static::trim((string)$str);
-
-        if (is_array($deleted) && count($deleted) > 0) {
-            $parts = explode($delimiter, $str);
-
-            return VarArray::getRemove($parts, $deleted);
-        }
-
-        return explode($delimiter, $str);
+        return getExplodeString($delimiter, $str, $deleted);
     }
 
     /**
@@ -1294,7 +1146,7 @@ class VarStr
      */
     public static function explodeToNumber(string $delimiter, float|int|string|null $str, string $action = "ids"): array
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return [];
         }
 
@@ -1384,11 +1236,11 @@ class VarStr
         bool $lower = true,
         array $ignoreChars = []
     ): string {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
-        $str = static::getTransformToEncoding($str);
+        $str = toUTF8(getMakeString($str));
         $str = strip_tags(static::trim($str));
         $str = static::getDecodeEntities($str);
         $str = urldecode($str); // Декодирование URL из кодированной строки
@@ -1533,12 +1385,11 @@ class VarStr
      */
     public static function getSlug(float|int|string|null $str, bool $lower = true, array $ignoreChars = []): string
     {
-        if (is_null($str) || (is_string($str) && trim($str) === '')) {
+        if (is_null($str) || isEmptyString($str)) {
             return '';
         }
 
-        $str = static::getTransformToEncoding($str);
-        $str = strip_tags(static::trim($str));
+        $str = strip_tags(getTrimString(toUTF8($str)));
         $str = static::getDecodeEntities($str);
         $str = urldecode($str); // Декодирование URL из кодированной строки
 
@@ -1638,8 +1489,8 @@ class VarStr
             $str = static::getLower($str);
         }
 
-        $result = '';
         $words = preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY);
+        $result = '';
 
         if (is_array($words) && count($words)) {
             foreach ($words as $value) {
