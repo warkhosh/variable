@@ -603,7 +603,7 @@ class VarStr
         }
 
         if ($length !== 0) {
-            $str = VarStr::trim((string)$str);
+            $str = getTrimString(getMakeString($str));
 
             return mb_substr($str, 0, $length, self::ENCODING);
         }
