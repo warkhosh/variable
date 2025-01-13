@@ -299,34 +299,18 @@ class VarArray
     }
 
     /**
-     * Проверить, присутствует ли элемент в массиве с помощью "точки"
+     * Проверка наличия ключа в массиве, используя для этого "точечную" нотацию
+     *
+     * @note метод настроен только на работу с учетом точечной нотацией!
+     * @note в аргументе $key тип NULL умышлено не указан!
      *
      * @param float|int|string $key
      * @param array $array
-     * @param bool $dot флаг разбития строки символом точки для поиска под значений
      * @return bool
      */
-    public static function has(string|int|float $key, array $array = [], bool $dot = true): bool
+    public static function has(float|int|string $key, array $array = []): bool
     {
-        if (empty($array)) {
-            return false;
-        }
-
-        if (array_key_exists($key, $array)) {
-            return true;
-        }
-
-        if ($dot) {
-            foreach (explode('.', $key) as $segment) {
-                if (! is_array($array) || ! array_key_exists($segment, $array)) {
-                    return false;
-                }
-
-                $array = $array[$segment];
-            }
-        }
-
-        return true;
+        return hasKeyInArray($key, $array);
     }
 
     /**
