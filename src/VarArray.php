@@ -681,7 +681,7 @@ class VarArray
 
         foreach ($keys as $key) {
             // если точный ключ существует на верхнем уровне, удалите его
-            if (static::exists($key, $array)) {
+            if (static::has($key, $array)) {
                 unset($array[$key]);
 
                 continue;
