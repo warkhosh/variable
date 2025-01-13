@@ -271,17 +271,13 @@ class VarArray
     /**
      * Получить элемент из массива с использованием нотации "точка"
      *
-     * @param array|int|string|null $key
+     * @param int|string|null $key
      * @param array $array
      * @param mixed $default
      * @return mixed
      */
-    public static function get(array|int|string|null $key, array $array = [], mixed $default = null): mixed
+    public static function get(int|string|null $key, array $array = [], mixed $default = null): mixed
     {
-        if (is_null($key)) {
-            return $default;
-        }
-
         return getFromArray($key, $array, $default);
     }
 
