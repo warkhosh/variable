@@ -44,48 +44,35 @@ class VarArray
     /**
      * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
      *
-     * @note если ключ не задан (NULL), весь массив будет заменен!
+     * @note метод настроен только на работу с учетом точечной нотацией!
      *
-     * @param string|null $key
+     * @note метод с точечной нотацией не рассчитан на добавление значения в конец или начала списка,
+     *       передача вложенности всегда происходит в виде строки и в ней невозможно однозначно передать эти признаки
+     *
+     * @param float|int|string $key
      * @param mixed $value
      * @param array $inArray
      * @return void
      */
-    public static function set(?string $key, mixed $value, array &$inArray): void
+    public static function set(float|int|string $key, mixed $value, array &$inArray): void
     {
-        if (is_null($key)) {
-            $inArray = $value;
-        }
-
-        $keys = explode('.', $key);
-
-        while (count($keys) > 1) {
-            $key = array_shift($keys);
-
-            // Если ключ не существует на этой глубине, мы просто создадим пустой массив для хранения следующего значения,
-            // что позволит нам создать массивы для хранения окончательных значений на правильной глубине.
-            // Так мы продолжим идти дальше по массиву.
-            if (! isset($inArray[$key]) || ! is_array($inArray[$key])) {
-                $inArray[$key] = [];
-            }
-
-            $inArray = &$inArray[$key];
-        }
-
-        $inArray[array_shift($keys)] = $value;
+        setInArray($key, $value, $inArray);
     }
 
     /**
-     * Добавляет элемент в массив
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
      *
-     * @note используя "точечную" нотацию
+     * @note метод настроен только на работу с учетом точечной нотацией!
      *
-     * @param string $key
+     * @note метод с точечной нотацией не рассчитан на добавление значения в конец или начала списка,
+     *       передача вложенности всегда происходит в виде строки и в ней невозможно однозначно передать эти признаки
+     *
+     * @param float|int|string $key
      * @param mixed $value
      * @param array $inArray
      * @return array
      */
-    public static function getAdded(string $key, mixed $value, array $inArray): array
+    public static function getAdded(float|int|string $key, mixed $value, array $inArray): array
     {
         static::set($key, $value, $inArray);
 
@@ -93,16 +80,20 @@ class VarArray
     }
 
     /**
-     * Добавляет элемент в массив
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
      *
-     * @note используя "точечную" нотацию
+     * @note метод настроен только на работу с учетом точечной нотацией!
      *
-     * @param string $key
+     * @note метод с точечной нотацией не рассчитан на добавление значения в конец или начала списка,
+     *       передача вложенности всегда происходит в виде строки и в ней невозможно однозначно передать эти признаки
+     *
+     * @param float|int|string $key
      * @param mixed $value
      * @param array $inArray
      * @return array
+     * @deprecated переписать на getAdded()
      */
-    public static function apply(string $key, mixed $value, array &$inArray): array
+    public static function apply(float|int|string $key, mixed $value, array &$inArray): array
     {
         static::set($key, $value, $inArray);
 
@@ -110,20 +101,22 @@ class VarArray
     }
 
     /**
-     * Добавляет значение в массив если он не существует
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
      *
-     * @note используя "точечную" нотацию
+     * @note метод настроен только на работу с учетом точечной нотацией!
      *
-     * @param string $key
+     * @note метод с точечной нотацией не рассчитан на добавление значения в конец или начала списка,
+     *       передача вложенности всегда происходит в виде строки и в ней невозможно однозначно передать эти признаки
+     *
+     * @param float|int|string $key
      * @param mixed $value
      * @param array $inArray
      * @return array
+     * @deprecated переписать на getAdded()
      */
-    public static function add(string $key, mixed $value, array $inArray): array
+    public static function add(float|int|string $key, mixed $value, array $inArray): array
     {
-        if (is_null(static::get($key, $inArray))) {
-            static::set($key, $value, $inArray);
-        }
+        static::set($key, $value, $inArray);
 
         return $inArray;
     }
