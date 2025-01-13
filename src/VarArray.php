@@ -359,28 +359,18 @@ class VarArray
     }
 
     /**
-     * Проверка наличие списка значений в плоском массиве
+     * Проверка наличие значения с учетом с учетом вложенности
      *
-     * @param array $values
-     * @param array $array
-     * @return bool
+     * @note этот рекурсивный метод следует использовать с осторожностью в больших массивах!
+     *
+     * @param bool|float|int|string|null $needle
+     * @param array $haystack
+     * @param bool $strict
+     * @return array
      */
-    public static function hasValues(array $values, array $array = []): bool
+    public static function hasValue(bool|float|int|string|null $needle, array $haystack, bool $strict = true): array
     {
-        if (count($values) === 0 && count($array) === 0) {
-            return true;
-
-        } elseif (count($values) > 0 && count($array) > 0) {
-            foreach ($values as $check) {
-                if (! in_array($check, $array)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
+        return getSearchArray($needle, $haystack, $strict);
     }
 
     /**
