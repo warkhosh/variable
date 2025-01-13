@@ -316,17 +316,17 @@ class VarArray
     /**
      * Проверка наличие списка ключей в массиве (возможна проверка вложенного массива с помощью "точки")
      *
-     * @param array $key
-     * @param array $array
+     * @param array $keyList список значений в которых находятся ключи
+     * @param array $array список в котором производиться поиск
      * @return bool
      */
-    public static function hasKeys(array $key, array $array = []): bool
+    public static function hasKeys(array $keyList, array $array = []): bool
     {
-        if (count($key) === 0 && count($array) === 0) {
-            return true;
+        if (count($keyList) === 0 || count($array) === 0) {
+            return false;
 
-        } elseif (count($key) > 0 && count($array) > 0) {
-            foreach ($key as $check) {
+        } elseif (count($keyList) > 0 && count($array) > 0) {
+            foreach ($keyList as $check) {
                 if (static::has($check, $array) !== true) {
                     return false;
                 }
