@@ -297,21 +297,6 @@ class VarArray
 
         return ($int > 0) ? $int : $default;
     }
-    /**
-     * Проверяет, существует ли данный ключ в предоставленном массиве
-     *
-     * @param int|string $key
-     * @param array|ArrayAccess $array
-     * @return bool
-     */
-    public static function exists(int|string $key, array|ArrayAccess $array): bool
-    {
-        if ($array instanceof ArrayAccess) {
-            return $array->offsetExists($key);
-        }
-
-        return array_key_exists($key, $array);
-    }
 
     /**
      * Проверить, присутствует ли элемент в массиве с помощью "точки"
