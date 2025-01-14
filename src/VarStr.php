@@ -134,57 +134,33 @@ class VarStr
     }
 
     /**
-     * Регистрозависимый поиск вхождения текста в строке с возвратом номера позиции или false
+     * Регистрозависимый поиск первого вхождения текста в строке с возвратом номера позиции или false
      *
      * @note первый символ стоит на позиции 0, позиция второго 1 и так далее!
      *
      * @param string|null $needle строка, поиск которой производится в строке $str
-     * @param float|int|string|null $str строка в которой ищем $needles
+     * @param string|null $str строка в которой ищем $needles
      * @param int $offset
      * @return false|int
      */
-    public static function findPos(
-        string|null $needle = null,
-        float|int|string|null $str = '',
-        int $offset = 0
-    ): bool|int {
-        if (is_null($needle)) {
-            return false;
-        }
-
-        $pos = mb_strpos((string)$str, $needle, $offset, 'UTF-8');
-
-        if ($pos !== false) {
-            return $pos;
-        }
-
-        return false;
+    public static function findPos(string|null $needle = null, string|null $str = '', int $offset = 0): bool|int
+    {
+        return getFindPosInString($str, $needle, $offset);
     }
 
     /**
-     * Регистрозависимый поиск текста с возвратом результата поиска
+     * Регистрозависимый поиск текста в строке
      *
      * @note первый символ стоит на позиции 0, позиция второго 1 и так далее!
      *
-     * @param array|string|null $needles строка, поиск которой производится в строке $str
-     * @param float|int|string|null $str строка в которой ищем $needles
+     * @param string|null $needles строка, поиск которой производится в строке $str
+     * @param string|null $str строка в которой ищем $needles
      * @param int $offset
      * @return bool
      */
-    public static function find(
-        array|string|null $needles = null,
-        float|int|string|null $str = '',
-        int $offset = 0
-    ): bool {
-        if (is_null($needles) || isEmptyString($str)) {
-            return false;
-        }
-
-        if (static::findPos($needles, $str, $offset) !== false) {
-            return true;
-        }
-
-        return false;
+    public static function find(string|null $needles = null, string|null $str = '', int $offset = 0): bool
+    {
+        return isFindInString($needles, $str, $offset);
     }
 
     /**
