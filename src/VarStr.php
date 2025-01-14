@@ -652,32 +652,6 @@ class VarStr
     }
 
     /**
-     * Преобразует специальные символы (ограниченный набор) в соответствующие мнемоники (HTML-сущности)
-     *
-     * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте VarStr::htmlEntityEncode()
-     *
-     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
-     *
-     * @param float|int|string|null $str
-     * @param int $flags битовая маска из флагов определяющая режим обработки
-     * @param string $encoding кодировка
-     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
-     * @return string
-     */
-    public static function getHtmlSpecialCharsEncode(
-        float|int|string|null $str,
-        int $flags = ENT_COMPAT | ENT_HTML5,
-        string $encoding = 'UTF-8',
-        bool $doubleEncode = false
-    ): string {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        return htmlspecialchars((string)$str, $flags, $encoding, $doubleEncode);
-    }
-
-    /**
      * Преобразует специальные символы в соответствующие мнемоники (HTML-сущности)
      * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
      *
@@ -688,7 +662,7 @@ class VarStr
      * @param float|int|string|null $str
      * @param int $flags битовая маска из флагов определяющая режим обработки
      * @param string $encoding кодировка
-     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &amp; > &amp;amp;
      * @return string
      */
     public static function getHtmlEntityEncode(
@@ -702,6 +676,32 @@ class VarStr
         }
 
         return htmlentities((string)$str, $flags, $encoding, $doubleEncode);
+    }
+
+    /**
+     * Преобразует специальные символы (ограниченный набор) в соответствующие мнемоники (HTML-сущности)
+     *
+     * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте VarStr::htmlEntityEncode()
+     *
+     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
+     *
+     * @param float|int|string|null $str
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &amp; > &amp;amp;
+     * @return string
+     */
+    public static function getHtmlSpecialCharsEncode(
+        float|int|string|null $str,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false
+    ): string {
+        if (is_null($str) || isEmptyString($str)) {
+            return '';
+        }
+
+        return htmlspecialchars((string)$str, $flags, $encoding, $doubleEncode);
     }
 
     /**
