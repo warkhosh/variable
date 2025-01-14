@@ -630,9 +630,9 @@ class VarStr
     }
 
     /**
-     * Преобразует HTML-сущности (Entity) в специальные символы
+     * Преобразует мнемоники (HTML-сущности) в специальные символы
      *
-     * @example: &amp;copy; > &copy; | &amp; > & | &quot; > " | &bull; > •
+     * @example: &amp; > & | &quot; > " | &bull; > •
      *
      * @param float|int|string|null $str
      * @param int $flags битовая маска из флагов определяющая режим обработки
@@ -645,16 +645,17 @@ class VarStr
         string $encoding = 'UTF-8'
     ): string {
         if (is_null($str) || isEmptyString($str)) {
-            return '';
+            return is_null($str) ? '' : $str; // Так мы не подменяем полученную пустую строку!
         }
 
         return html_entity_decode((string)$str, $flags, $encoding);
     }
 
     /**
-     * Кодирует только специальные символы в их HTML-сущности
+     * Преобразует специальные символы (ограниченный набор) в соответствующие мнемоники (HTML-сущности)
      *
-     * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
+     * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте VarStr::htmlEntityEncode()
+     *
      * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
      *
      * @param float|int|string|null $str
@@ -677,11 +678,12 @@ class VarStr
     }
 
     /**
-     * Кодирует (все допустимые) символы в соответствующие HTML-сущности (Entity)
+     * Преобразует специальные символы в соответствующие мнемоники (HTML-сущности)
      * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
      *
-     * @note для преобразования только символов &, ", ', <, > используйте self::getHtmlSpecialCharsEncode()
-     * @example & > &amp; | " > &quot;
+     * @note для преобразования только символов &, ", ', <, > используйте VarStr::getHtmlSpecialCharsEncode()
+     *
+     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
      *
      * @param float|int|string|null $str
      * @param int $flags битовая маска из флагов определяющая режим обработки
@@ -1211,7 +1213,8 @@ class VarStr
      * @param int $flags
      * @param string $charset = utf-8 (ISO-8859-1)
      * @return string
-     * @todo это решение на php4, но пока решил оставить на всякий случай
+     * @deprecated новая реализация в VarStr::getHtmlEntityDecode()
+     * @todo это решение на php4, но пока решил оставить но пометил как deprecated!
      */
     public static function getDecodeEntities(
         float|int|string|null $str,
@@ -1494,9 +1497,7 @@ class VarStr
             return $result;
         };
 
-        $str = preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', $fn, (string)$str);
-
-        return html_entity_decode((string)$str, $flags, $charset);
+        return preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', $fn, (string)$str);
     }
 
     /**
@@ -1518,7 +1519,7 @@ class VarStr
 
         $str = toUTF8(getMakeString($str));
         $str = strip_tags(static::trim($str));
-        $str = static::getDecodeEntities($str);
+        $str = static::getHtmlEntityDecode($str);
         $str = urldecode($str); // Декодирование URL из кодированной строки
 
         $char = [
@@ -1666,7 +1667,7 @@ class VarStr
         }
 
         $str = strip_tags(getTrimString(toUTF8($str)));
-        $str = static::getDecodeEntities($str);
+        $str = static::getHtmlEntityDecode($str);
         $str = urldecode($str); // Декодирование URL из кодированной строки
 
         $char = [
