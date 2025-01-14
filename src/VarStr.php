@@ -1494,7 +1494,7 @@ class VarStr
             return $result;
         };
 
-        $str = preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', 'convert_entity', (string)$str);
+        $str = preg_replace_callback('/&([a-zA-Z][a-zA-Z0-9]+);/', $fn, (string)$str);
 
         return html_entity_decode((string)$str, $flags, $charset);
     }
