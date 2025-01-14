@@ -162,9 +162,10 @@ class VarStr
     }
 
     /**
-     * Регистрозависимый поиск первого вхождения текста в строке с возвратом результата поиска
+     * Регистрозависимый поиск текста с возвратом результата поиска
      *
-     * @note Первый символ стоит на позиции 0, позиция второго 1 и так далее.
+     * @note первый символ стоит на позиции 0, позиция второго 1 и так далее!
+     *
      * @param array|string|null $needles строка, поиск которой производится в строке $str
      * @param float|int|string|null $str строка в которой ищем $needles
      * @param int $offset
@@ -175,11 +176,7 @@ class VarStr
         float|int|string|null $str = '',
         int $offset = 0
     ): bool {
-        if (is_null($needles)) {
-            return false;
-        }
-
-        if (empty($needles)) {
+        if (is_null($needles) || isEmptyString($str)) {
             return false;
         }
 
