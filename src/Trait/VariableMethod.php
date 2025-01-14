@@ -1480,201 +1480,214 @@ trait VariableMethod
         return $return;
     }
 
-    ///**
-    // * Кодирует HTML-сущности в специальные символы
-    // *
-    // * @param int $flags битовая маска из флагов определяющая режим обработки
-    // * @param string $encoding кодировка
-    // * @param bool $recursive флаг для обхода потомков
-    // * @return $this
-    // * @example &amp;copy; > &copy; или &amp; > &
-    // * @deprecated уже есть VarStr::getDecodeEntities(), это дубль
-    // */
-    //public function htmlEntityDecode(
-    //    int $flags = ENT_COMPAT | ENT_HTML5,
-    //    string $encoding = 'UTF-8',
-    //    bool $recursive = false
-    //): static {
-    //    $this->data = static::getHtmlEntityDecode($this->data, $flags, $encoding, $recursive);
-    //
-    //    return $this;
-    //}
+    /**
+     * Преобразует мнемоники (HTML-сущности) в специальные символы
+     *
+     * @note метод одноименный VarStr::getHtmlEntityDecode()
+     *
+     * @example: &amp; > & | &quot; > " | &bull; > •
+     *
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     */
+    public function htmlEntityDecode(
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $recursive = false
+    ): static {
+        $this->data = static::getHtmlEntityDecode($this->data, $flags, $encoding, $recursive);
 
-    ///**
-    // * Кодирует HTML-сущности в специальные символы
-    // *
-    // * @example: &amp;copy; > &copy; | &amp; > & | &quot; > " | &bull; > •
-    // *
-    // * @param int $flags битовая маска из флагов определяющая режим обработки
-    // * @param string $encoding кодировка
-    // * @param bool $recursive флаг для обхода потомков
-    // * @param array|bool|float|int|string|null $data
-    // * @return array|string
-    // * @deprecated уже есть VarStr::getDecodeEntities(), это дубль
-    // */
-    //public static function getHtmlEntityDecode(
-    //    array|bool|float|int|string|null $data,
-    //    int $flags = ENT_COMPAT | ENT_HTML5,
-    //    string $encoding = 'UTF-8',
-    //    bool $recursive = false
-    //): array|string {
-    //    if (is_array($data) && is_array($return = [])) {
-    //        if (count($data) > 0) {
-    //            reset($data);
-    //
-    //            foreach ($data as $key => $item) {
-    //                if ($recursive && is_array($item)) {
-    //                    $return[$key] = static::getHtmlEntityDecode($item, $flags, $encoding, $recursive);
-    //
-    //                } else {
-    //                    $item = is_string($item) ? $item : VarStr::getMake($item);
-    //                    $return[$key] = html_entity_decode($item, $flags, $encoding);
-    //                }
-    //            }
-    //        }
-    //    } else {
-    //        $data = is_string($data) ? $data : VarStr::getMake($data);
-    //        $return = html_entity_decode($data, $flags, $encoding);
-    //    }
-    //
-    //    return $return;
-    //}
+        return $this;
+    }
 
-    ///**
-    // * Кодирует только специальные символы в их HTML-сущности
-    // *
-    // * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте VarStr::htmlEntityEncode()
-    // * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
-    // *
-    // * @param int $flags битовая маска из флагов определяющая режим обработки
-    // * @param string $encoding кодировка
-    // * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
-    // * @param bool $recursive флаг для обхода потомков
-    // * @return $this
-    // * @deprecated уже есть VarStr::getHtmlEntityEncode(), это дубль
-    // */
-    //public function htmlSpecialCharsEncode(
-    //    int $flags = ENT_COMPAT | ENT_HTML5,
-    //    string $encoding = 'UTF-8',
-    //    bool $doubleEncode = true,
-    //    bool $recursive = false
-    //): static {
-    //    $this->data = static::getHtmlSpecialCharsEncode($this->data, $flags, $encoding, $doubleEncode, $recursive);
-    //
-    //    return $this;
-    //}
+    /**
+     * Преобразует мнемоники (HTML-сущности) в специальные символы
+     *
+     * @note метод одноименный VarStr::getHtmlEntityDecode()
+     *
+     * @example: &amp; > & | &quot; > " | &bull; > •
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     */
+    public static function getHtmlEntityDecode(
+        array|bool|float|int|string|null $data,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
 
-    ///**
-    // * Кодирует только специальные символы в их HTML-сущности
-    // *
-    // * @note Кодирует только символы &, ", ', <, >, для кодирования всех символов используйте self::htmlEntityEncode()
-    // * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
-    // *
-    // * @param array|bool|float|int|string|null $data
-    // * @param int $flags битовая маска из флагов определяющая режим обработки
-    // * @param string $encoding кодировка
-    // * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &apos; > &amp;&apos;
-    // * @param bool $recursive флаг для обхода потомков
-    // * @return array|string
-    // * @deprecated уже есть VarStr::getHtmlEntityEncode(), это дубль
-    // */
-    //public static function getHtmlSpecialCharsEncode(
-    //    array|bool|float|int|string|null $data,
-    //    int $flags = ENT_COMPAT | ENT_HTML5,
-    //    string $encoding = 'UTF-8',
-    //    bool $doubleEncode = false,
-    //    bool $recursive = false
-    //): array|string {
-    //    if (is_array($data) && is_array($return = [])) {
-    //        if (count($data) > 0) {
-    //            reset($data);
-    //
-    //            foreach ($data as $key => $item) {
-    //                if ($recursive && is_array($item)) {
-    //                    $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
-    //
-    //                } else {
-    //                    $item = is_string($item) ? $item : VarStr::getMake($item);
-    //                    $return[$key] = htmlspecialchars($item, $flags, $encoding, $doubleEncode);
-    //                }
-    //            }
-    //        }
-    //    } else {
-    //        $data = is_string($data) ? $data : VarStr::getMake($data);
-    //        $return = htmlspecialchars($data, $flags, $encoding, $doubleEncode);
-    //    }
-    //
-    //    return $return;
-    //}
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getHtmlEntityDecode($item, $flags, $encoding, $recursive);
 
-    ///**
-    // * Кодирует (все допустимые!) символы в соответствующие HTML-сущности
-    // * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
-    // *
-    // * @note для преобразования только символов &, ", ', <, > используйте VarStr::htmlSpecialCharsEncode() !
-    // * @example & > &amp; | " > &quot;
-    // *
-    // * @param int $flags битовая маска из флагов определяющая режим обработки
-    // * @param string $encoding кодировка
-    // * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
-    // * @param bool $recursive флаг для обхода потомков
-    // * @return $this
-    // * @deprecated уже есть VarStr::getHtmlEntityEncode(), это дубль
-    // */
-    //public function htmlEntityEncode(
-    //    int $flags = ENT_COMPAT | ENT_HTML5,
-    //    string $encoding = 'UTF-8',
-    //    bool $doubleEncode = false,
-    //    bool $recursive = false
-    //): static {
-    //    $this->data = static::getHtmlEntityEncode($this->data, $flags, $encoding, $doubleEncode, $recursive);
-    //
-    //    return $this;
-    //}
+                    } else {
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
+                        $return[$key] = VarStr::getHtmlEntityDecode($item, $flags, $encoding);
+                    }
+                }
+            }
+        } else {
+            $data = is_string($data) ? $data : VarStr::getMake($data);
+            $return = VarStr::getHtmlEntityDecode($data, $flags, $encoding);
+        }
 
-    ///**
-    // * Кодирует (все допустимые!) символы в соответствующие HTML-сущности
-    // * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
-    // *
-    // * @note для преобразования только символов &, ", ', <, > используйте self::htmlSpecialCharsEncode() !
-    // * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
-    // *
-    // * @param array|bool|float|int|string|null $data
-    // * @param int $flags битовая маска из флагов определяющая режим обработки
-    // * @param string $encoding кодировка
-    // * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
-    // * @param bool $recursive флаг для обхода потомков
-    // * @return array|string
-    // * @deprecated уже есть VarStr::getHtmlEntityEncode(), это дубль
-    // */
-    //public static function getHtmlEntityEncode(
-    //    array|bool|float|int|string|null $data,
-    //    int $flags = ENT_COMPAT | ENT_HTML5,
-    //    string $encoding = 'UTF-8',
-    //    bool $doubleEncode = false,
-    //    bool $recursive = false
-    //): array|string {
-    //    if (is_array($data) && is_array($return = [])) {
-    //        if (count($data) > 0) {
-    //            reset($data);
-    //
-    //            foreach ($data as $key => $item) {
-    //                if ($recursive && is_array($item)) {
-    //                    $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
-    //
-    //                } else {
-    //                    $item = is_string($item) ? $item : VarStr::getMake($item);
-    //                    $return[$key] = htmlentities($item, $flags, $encoding, $doubleEncode);
-    //                }
-    //            }
-    //        }
-    //    } else {
-    //        $data = is_string($data) ? $data : VarStr::getMake($data);
-    //        $return = htmlentities($data, $flags, $encoding, $doubleEncode);
-    //    }
-    //
-    //    return $return;
-    //}
+        return $return;
+    }
+
+    /**
+     * Преобразует специальные символы в соответствующие мнемоники (HTML-сущности)
+     * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
+     *
+     * @note для преобразования только символов &, ", ', <, > используйте ->htmlSpecialCharsEncode()
+     * @note метод одноименный VarStr::getHtmlEntityEncode()
+     *
+     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
+     *
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     */
+    public function htmlEntityEncode(
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false,
+        bool $recursive = false
+    ): static {
+        $this->data = static::getHtmlEntityEncode($this->data, $flags, $encoding, $doubleEncode, $recursive);
+
+        return $this;
+    }
+
+    //4
+
+    /**
+     * Преобразует специальные символы в соответствующие мнемоники (HTML-сущности)
+     * Если надо преобразовать &copy; > &amp;copy; следует четвертый параметр $htmlEncode установить в TRUE
+     *
+     * @note для преобразования только символов &, ", ', <, > используйте ->getHtmlSpecialCharsEncode()
+     * @note метод одноименный VarStr::getHtmlEntityEncode()
+     *
+     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &copy; > &amp;copy;
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     */
+    public static function getHtmlEntityEncode(
+        array|bool|float|int|string|null $data,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false,
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
+
+                    } else {
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
+                        $return[$key] = VarStr::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode);
+                    }
+                }
+            }
+        } else {
+            $data = is_string($data) ? $data : VarStr::getMake($data);
+            $return = VarStr::getHtmlEntityEncode($data, $flags, $encoding, $doubleEncode);
+        }
+
+        return $return;
+    }
+
+    //5
+
+    /**
+     * Преобразует специальные символы (ограниченный набор) в соответствующие мнемоники (HTML-сущности)
+     *
+     * @note преобразует только символы &, ", ', <, >, для кодирования всех символов используйте ->htmlEntityEncode()
+     * @note метод одноименный VarStr::getHtmlSpecialCharsEncode()
+     *
+     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
+     *
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &amp; > &amp;amp;
+     * @param bool $recursive флаг для обхода потомков
+     * @return $this
+     */
+    public function htmlSpecialCharsEncode(
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = true,
+        bool $recursive = false
+    ): static {
+        $this->data = static::getHtmlSpecialCharsEncode($this->data, $flags, $encoding, $doubleEncode, $recursive);
+
+        return $this;
+    }
+
+    //6
+
+    /**
+     * Преобразует специальные символы (ограниченный набор) в соответствующие мнемоники (HTML-сущности)
+     *
+     * @note преобразует только символы &, ", ', <, >, для кодирования всех символов используйте ->getHtmlEntityEncode()
+     * @note метод одноименный VarStr::getHtmlSpecialCharsEncode()
+     *
+     * @example & > &amp; | " > &quot; | ' > &apos; | > в &lt; | < в &gt;
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param int $flags битовая маска из флагов определяющая режим обработки
+     * @param string $encoding кодировка
+     * @param bool $doubleEncode при выключении не будет преобразовывать существующие HTML-сущности. При включении приведет к преобразованию &amp; > &amp;amp;
+     * @param bool $recursive флаг для обхода потомков
+     * @return array|string
+     */
+    public static function getHtmlSpecialCharsEncode(
+        array|bool|float|int|string|null $data,
+        int $flags = ENT_COMPAT | ENT_HTML5,
+        string $encoding = 'UTF-8',
+        bool $doubleEncode = false,
+        bool $recursive = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            if (count($data) > 0) {
+                reset($data);
+
+                foreach ($data as $key => $item) {
+                    if ($recursive && is_array($item)) {
+                        $return[$key] = static::getHtmlEntityEncode($item, $flags, $encoding, $doubleEncode, $recursive);
+
+                    } else {
+                        $item = is_string($item) ? $item : VarStr::getMake($item);
+                        $return[$key] = VarStr::getHtmlSpecialCharsEncode($item, $flags, $encoding, $doubleEncode);
+                    }
+                }
+            }
+        } else {
+            $data = is_string($data) ? $data : VarStr::getMake($data);
+            $return = VarStr::getHtmlSpecialCharsEncode($data, $flags, $encoding, $doubleEncode);
+        }
+
+        return $return;
+    }
 
     /**
      * Удаляет пробелы из начала и конца строки (или другие символы при передаче их вторым параметром)
