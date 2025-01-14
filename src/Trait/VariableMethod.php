@@ -471,7 +471,7 @@ trait VariableMethod
                  * @note если вам надо сохранить порядок в текстовом списке значений, используйте input("text") и далее сами преобразовывайте сами
                  */
             case 'ids':
-                $this->ids(',')->removeItems();
+                $this->ids(',', 'all')->removeItems();
                 break;
         }
 
@@ -671,21 +671,9 @@ trait VariableMethod
                     ->maxInteger(1, 1, $recursive);
                 break;
 
-                /**
-                 * Проверка значений массива или текущего числа на наличие идентификатора(ов).
-                 * Идентификаторы проходят проверки на целое положительно число (больше нуля).
-                 *
-                 * @note Если проверяемая переменная содержала строку,
-                 * она будет преобразована в число по правилам строгой типизации и только после будет произведена проверка на ID!
-                 * @note Для работы со списками из строк, работайте с методом input('ids');
-                 *
-                 * 1,2,3,4,5 ...
-                 */
             case 'ids':
-                $this->ids('', 'single', $recursive)
-                    ->removeItems()
-                    ->makeInteger(true, $recursive);
-                break;
+                // Для числа не следует делать этот алгоритм, а сразу в коде сделать проверку на больше или равно
+                throw new Exception('This algorithm does not work for the number type.');
         }
 
         return $this;
@@ -721,7 +709,7 @@ trait VariableMethod
     {
         switch ($option) {
             /**
-             * Проверка значений массива или текущего числа на наличие идентификатора(ов).
+             * Проверка значений массива на наличие идентификатора(ов).
              * Идентификаторы проходят проверки на целое положительно число (больше нуля).
              *
              * @note Если проверяемая переменная содержала строку,
@@ -732,9 +720,7 @@ trait VariableMethod
              */
             case 'ids':
             case 'id':
-                $this->ids('', 'single', $recursive)
-                    ->integerNotLess(false, 0)
-                    ->removeItems([0], false);
+                $this->ids(',', 'all', $recursive);
                 break;
         }
 
@@ -1183,42 +1169,6 @@ trait VariableMethod
         throw new Exception(
             "Метод больше не поддерживается, используйте базовые input(), getInput(), float(), getFloat(), integer(), getInteger()"
         );
-
-        //if (is_array($data) && is_array($return = [])) {
-        //    if (count($data) > 0) {
-        //        reset($data);
-        //
-        //        foreach ($data as $key => $item) {
-        //            if ($recursive && is_array($item)) {
-        //                $return[$key] = static::getMakeCost($item, $default, $recursive, $decimals, $round, $separator);
-        //
-        //            } else {
-        //                $item = is_string($item) ? $item : VarStr::getMake($item);
-        //                //$return[$key] = static::getMakeFloat($item, 0, $round, $default, true);
-        //                //$return[$key] = VarStr::getNumberFormat($item, $default, false, $decimals, $round);
-        //
-        //                // Работаем со значением с точностью до десятичных
-        //                $item = VarFloat::getMakePositive($item, $decimals, $round, $default);
-        //
-        //                // Преобразуем float в string для getNumberFormat
-        //                $item = VarFloat::getString($item, 2);
-        //
-        //                // Преобразуем значение в денежную единицу
-        //                $return[$key] = VarStr::getNumberFormat($item, $decimals, $separator, '', $default);
-        //            }
-        //        }
-        //    }
-        //
-        //} else {
-        //    $data = is_string($data) ? $data : VarStr::getMake($data);
-        //
-        //    // Всегда преобразуем строку в float, на случай если передали значения не по типу
-        //    //$return = static::getMakeFloat($data, 0, $round, $default, true);
-        //    $return = VarFloat::getMakePositive($data, $decimals, $round, $default);
-        //    //$return = (int)VarStr::getNumberFormat($cost, $decimals, $separator, '', $default);
-        //}
-        //
-        //return $return;
     }
 
     /**
@@ -1988,7 +1938,6 @@ trait VariableMethod
      * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
      * @param string $delimiter разделитель строки
-     * @param int $default значение по умолчанию
      * @param string $unique флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
      * @param bool $recursive флаг для обхода потомков
      * @return $this
@@ -1996,11 +1945,10 @@ trait VariableMethod
      */
     public function ids(
         string $delimiter = ',',
-        int $default = 0,
         string $unique = 'single',
         bool $recursive = false
     ): static {
-        $this->data = static::getIds($this->data, $default, $delimiter, $unique, $recursive);
+        $this->data = static::getIds($this->data, $delimiter, $unique, $recursive);
 
         return $this;
     }
@@ -2009,10 +1957,9 @@ trait VariableMethod
      * Проверка строки или массива строк в которых содержатся списки идентификаторов
      *
      * @note метод рассчитан исключительно на строку или массивы строк в которых идентификаторы через символ разделителя!
-     * @note Если передали массив мы осознано сохраняем его порядок и корректируем только значения!
+     * @note длинна массива может отличаться от переданной после удаления недопустимых значений
      *
      * @param array|bool|float|int|string|null $data
-     * @param int|null $default значение по умолчанию (если указать NULL то не допустимые числа будут удалены)
      * @param string $delimiter разделитель строк(и) следует указывать если он отличается от запятой
      * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
      * @param bool $recursive флаг для обхода потомков
@@ -2021,49 +1968,41 @@ trait VariableMethod
      */
     public static function getIds(
         array|bool|float|int|string|null $data,
-        ?int $default = null,
         string $delimiter = ',',
         string $unique = 'single',
         bool $recursive = false,
     ): array|string {
-        if (! is_null($default) && VarInt::getMakePositiveInteger($default, 0) !== $default) {
-            // В рамках концепции Options допускаются только положительные цифры
-            throw new Exception("The default value must be a positive number");
-        }
-
         if (is_array($data) && is_array($return = [])) {
             reset($data);
 
             foreach ($data as $key => $item) {
                 if ($recursive && is_array($item)) {
-                    $return[$key] = static::getIds($item, $default, $delimiter, $unique, $recursive);
+                    $return[$key] = static::getIds($item, $delimiter, $unique, $recursive);
 
                 } else {
-                    $items = trim(is_string($item) ? $item : VarStr::getMake($item));
-                    $items = VarStr::explode($delimiter, $items, []);
-                    $items = static::getMinInteger($items, 0);
-                    $items = VarArray::getRemove($items, (is_null($default) ? [0] : []));
+                    $str = trim(is_string($item) ? $item : VarStr::getMake($item));
+                    $ids = VarStr::explode($delimiter, $str, []);
+                    $ids = static::getMinInteger($ids, 0);
+                    $ids = VarArray::getRemove($ids, [0]);
 
-                    if (count($items) > 0) {
+                    if (count($ids) > 0) {
                         // Проверка на уникальность в текущем списке
-                        $items = $unique === 'single' ? array_unique($items) : $items;
-                        $return[$key] = join($delimiter, $items);
-                    } else {
-                        $return[$key] = (string)$default;
+                        $ids = $unique === 'single' ? array_unique($ids) : $ids;
+                        $return[$key] = join($delimiter, $ids);
                     }
                 }
             }
 
         } else {
             if (is_numeric($data)) {
-                $return = (string)VarInt::getMakePositiveInteger($data, $default);
+                $return = $data > 0 ? VarStr::getMake($data) : '';
 
             } elseif (gettype($data) === 'string') {
-                $return = static::getIds([$data], $default, $delimiter, $unique, false);
-                $return = VarArray::getFirst($return);
+                $list = static::getIds([$data], $delimiter, $unique, false);
+                $return = VarArray::getFirst($list);
                 $return = is_null($return) ? "" : $return;
             } else {
-                $return = (string)$default;
+                $return = '';
             }
         }
 
