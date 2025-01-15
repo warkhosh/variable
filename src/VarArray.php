@@ -991,16 +991,15 @@ class VarArray
     /**
      * Возвращает массив в котором только присутствует(ют) указанный(е) ключ(и) и их значения
      *
-     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
-     * @note этот алгоритм не совместим с getExtractFromArray().
+     * @verison 2.0 без вложенных алгоритмов
      *
-     * @param array|bool|float|int|string|null $keys
+     * @param array|float|int|string $keys
      * @param array $arr
      * @param mixed $default
      * @return array
      */
     public static function getExtract(
-        array|bool|float|int|string|null $keys,
+        array|float|int|string $keys,
         array $arr = [],
         mixed $default = null
     ): array {
@@ -1078,9 +1077,9 @@ class VarArray
     }
 
     /**
-     * Обходит список и в её значениях оставляет только значения с указанным(ми) ключом(и) $keys
+     * Обходит массив и в каждом списке значений оставляет только ключи с их значениями
      *
-     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
+     * @verison 2.0 без вложенных алгоритмов
      *
      * @param array|float|int|string $keys ключи которые надо исключить
      * @param array $array массив в котором убираем значения по ключам
