@@ -39,7 +39,6 @@ class VarInt
         return static::getMake($num, $default, $strict);
     }
 
-
     /**
      * Преобразовывает и возвращает переданное значения в целое положительное число
      *
@@ -58,9 +57,8 @@ class VarInt
             throw new Exception("The default value must be a positive integer");
         }
 
-        return getNum($num, $default, $strict);
+        return getPositiveNumber($num, $default, $strict);
     }
-
 
     /**
      * Преобразование переданного значения в число с плавающей запятой
@@ -75,7 +73,6 @@ class VarInt
     {
         throw new Exception("Используйте метод VarFloat::getMake()");
     }
-
 
     /**
      * Метод проверяет, а попадает ли число в диапазон и возвращает его или значение указанное по умолчанию
