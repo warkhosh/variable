@@ -28,7 +28,6 @@ class VarFloat
      * @param string $round тип округления (auto, upward, downward)
      * @param float $default
      * @return float
-     * @throws Exception
      */
     public static function getMake(
         mixed $var = 0,
