@@ -221,7 +221,9 @@ class VarStr
     }
 
     /**
-     * Устанавливает начало строки на указанное с проверкой на наличие такого значения
+     * Устанавливает в начале строки указанное значения
+     *
+     * @note метод обладает проверкой наличие уже такой строки для избежания дубликата!
      *
      * @param string $prefix
      * @param float|int|string|null $str
@@ -229,21 +231,13 @@ class VarStr
      */
     public static function start(string $prefix, float|int|string|null $str): string
     {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        if (mb_strlen($prefix) > 0) {
-            $quoted = preg_quote($prefix, '/');
-
-            return $prefix.preg_replace('/^(?:'.$quoted.')+/u', '', (string)$str);
-        }
-
-        return (string)$str;
+        return getStartWithCharString(getMakeString($str), $prefix);
     }
 
     /**
-     * Завершает строку заданным значением с проверкой на наличие такого значения
+     * Завершает строку указанным значением
+     *
+     * @note метод обладает проверкой наличие уже такой строки для избежания дубликата!
      *
      * @param string $postfix
      * @param float|int|string|null $str
@@ -251,17 +245,7 @@ class VarStr
      */
     public static function ending(string $postfix, float|int|string|null $str): string
     {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        if (mb_strlen($postfix) > 0) {
-            $quoted = preg_quote($postfix, '/');
-
-            return preg_replace('/(?:'.$quoted.')+$/u', '', (string)$str).$postfix;
-        }
-
-        return (string)$str;
+        return getEndWithCharString(getMakeString($str), $postfix);
     }
 
     /**
@@ -273,21 +257,11 @@ class VarStr
      */
     public static function getRemoveStart(string $prefix, float|int|string|null $str): string
     {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        if (mb_strlen($prefix) > 0) {
-            $quoted = preg_quote($prefix, '/');
-
-            return (string)preg_replace('/^(?:'.$quoted.')+/u', '', (string)$str);
-        }
-
-        return (string)$str;
+        return getStartNotWithString(getMakeString($str), $prefix);
     }
 
     /**
-     * Убирает указную строку из конца строки
+     * Убирает указное значения из конца строки
      *
      * @param string $postfix
      * @param float|int|string|null $str
@@ -295,17 +269,7 @@ class VarStr
      */
     public static function getRemoveEnding(string $postfix, float|int|string|null $str): string
     {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        if (mb_strlen($postfix) > 0) {
-            $quoted = preg_quote($postfix, '/');
-
-            return (string)preg_replace('/(?:'.$quoted.')+$/u', '', (string)$str);
-        }
-
-        return (string)$str;
+        return getEndNotWithString(getMakeString($str), $postfix);
     }
 
     /**
