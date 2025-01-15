@@ -992,6 +992,7 @@ class VarArray
      * Возвращает массив в котором только присутствует(ют) указанный(е) ключ(и) и их значения
      *
      * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
+     * @note этот алгоритм не совместим с getExtractFromArray().
      *
      * @param array|bool|float|int|string|null $keys
      * @param array $arr
@@ -1003,70 +1004,66 @@ class VarArray
         array $arr = [],
         mixed $default = null
     ): array {
-        static::extract($keys, $arr, $default);
-
-        return $arr;
+        return getExtractFromArray($keys, $arr, $default);
     }
 
     /**
-     * В значениях массива оставляет только указанные ключи и их значения
+     * Оставляет в массиве указанные ключи с их значениями
      *
-     * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
+     * @verison 2.0 без вложенных алгоритмов
      *
-     * @param array|bool|float|int|string|null $keys
+     * @param array|float|int|string $keys
      * @param array $arr
      * @param mixed $default
      * @return void
      */
-    public static function extract(
-        array|bool|float|int|string|null $keys,
-        array &$arr = [],
-        mixed $default = null
-    ): void {
-        // Сценарий плоского извлечения
-        if (is_array($keys) && count($keys) > 0 && is_array($return = [])) {
-            foreach ($keys as $key) {
-                if (array_key_exists($key, $arr)) {
-                    $return[$key] = $arr[$key];
-                    unset($arr[$key]);
-                } else {
-                    $return[$key] = $default;
-                }
-            }
-
-            $arr = $return;
-
-        } else {
-            if (is_string($keys) && mb_strlen($keys) > 0) {
-                $parts = explode('.', $keys);
-            } elseif (is_numeric($keys)) {
-                $parts = [$keys];
-            }
-
-            if (isset($parts)) {
-                $last = $parts[count($parts) - 1];
-
-                while (count($parts) >= 1) {
-                    $part = array_shift($parts); // Извлекает первый элемент массива
-
-                    // переходим на уровень ниже
-                    if ($last != $part && is_array($arr[$part])) {
-                        $arr = &$arr[$part];
-                        continue;
-
-                    } else {
-                        // сюда попадают когда дошли до нужного уровня или массив не имеет больше потомков
-                        if ($last == $part) {
-                            if (array_key_exists($last, $arr)) {
-                                $arr = [$last => $arr[$last]];
-                            } else {
-                                $arr = [$last => $default];
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    public static function extract(array|float|int|string $keys, array &$arr = [], mixed $default = null): void
+    {
+        $arr = getExtractFromArray($keys, $arr, $default);
+        // старый код пока оставил
+        //if (is_array($keys) && count($keys) > 0 && is_array($return = [])) {
+        //    foreach ($keys as $key) {
+        //        if (array_key_exists($key, $arr)) {
+        //            $return[$key] = $arr[$key];
+        //            unset($arr[$key]);
+        //        } else {
+        //            $return[$key] = $default;
+        //        }
+        //    }
+        //
+        //    $arr = $return;
+        //
+        //} else {
+        //    if (is_string($keys) && mb_strlen($keys) > 0) {
+        //        $parts = explode('.', $keys);
+        //    } elseif (is_numeric($keys)) {
+        //        $parts = [$keys];
+        //    }
+        //
+        //    if (isset($parts)) {
+        //        $last = $parts[count($parts) - 1];
+        //
+        //        while (count($parts) >= 1) {
+        //            $part = array_shift($parts); // Извлекает первый элемент массива
+        //
+        //            // переходим на уровень ниже
+        //            if ($last != $part && is_array($arr[$part])) {
+        //                $arr = &$arr[$part];
+        //                continue;
+        //
+        //            } else {
+        //                // сюда попадают когда дошли до нужного уровня или массив не имеет больше потомков
+        //                if ($last == $part) {
+        //                    if (array_key_exists($last, $arr)) {
+        //                        $arr = [$last => $arr[$last]];
+        //                    } else {
+        //                        $arr = [$last => $default];
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
     }
 
     /**
@@ -1081,7 +1078,7 @@ class VarArray
     }
 
     /**
-     * Обходит коллекцию и в её значениях оставляет только значения с указанным(ми) ключом(и) $keys
+     * Обходит список и в её значениях оставляет только значения с указанным(ми) ключом(и) $keys
      *
      * @note если $keys строка и содержит вложенные значения, проход будет до нужного уровня без удаления значений и только на конкретном уровне они будут корректироваться!
      *
