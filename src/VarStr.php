@@ -642,67 +642,33 @@ class VarStr
     }
 
     /**
-     * Декодирование закодированной URL строки
+     * Кодирование строки
      *
-     * @param float|int|string|null $str строка, которая должна быть декодирована
-     * @param bool $raw флаг для переключения метода декодирования на rawurldecode() без преобразования символа +
-     * @param string $encoding кодировка
+     * @note RFC 3986: строка, в которой все не цифро-буквенные символы, кроме -_.~,
+     *       должны быть заменены знаком процента (%) за которым следует два шестнадцатеричных числа (короче для урлов только)!
+     * @note для кодирования урлов $rfc3986 должен быть true
+     *
+     * @param float|int|string|null $str строка, которая должна быть закодирована
+     * @param bool $rfc3986 флаг для включения/выключения метода кодирования по RFC 3986 (без преобразования символа +), для урлов
      * @return string
-     * @throws Exception
      */
-    public static function getUrlDecode(
-        float|int|string|null $str = '',
-        bool $raw = false,
-        string $encoding = 'UTF-8'
-    ): string {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        $str = static::getTransformToEncoding((string)$str, $encoding);
-
-        if ($raw) {
-            return rawurldecode($str); // раскодирует контент по RFC 3986
-        }
-
-        // стараемся сохранить символ плюса
-        $str = str_replace('+', '[=FIX_CHAR_PLUS_REPLACE=]', $str);
-        $str = urldecode($str); // раскодирует контент по типу application/x-www-form-urlencoded где пробел это +
-
-        return str_replace('[=FIX_CHAR_PLUS_REPLACE=]', '+', $str);
+    public static function getUrlEncode(float|int|string|null $str = '', bool $rfc3986 = true): string
+    {
+        return getUrlEncodeString($str, $rfc3986);
     }
 
     /**
-     * Кодирование строки для URL
+     * Декодирование закодированной строки
      *
-     * @note RFC 3986: строка, в которой все не цифро-буквенные символы, кроме -_.~,
-     *       должны быть заменены знаком процента (%) за которым следует два шестнадцатеричных числа
+     * @note для декодирования урлов $rfc3986 должен быть true
      *
-     * @param float|int|string|null $str строка, которая должна быть декодирована.
-     * @param bool $raw флаг для переключения метода кодирования на rawurlencode() согласно RFC 3986 без преобразования символа +
-     * @param string $encoding кодировка
+     * @param float|int|string|null $str строка, которая должна быть декодирована
+     * @param bool $rfc3986 флаг для включения/выключения метода декодирования по RFC 3986 (без преобразования символа +), для урлов
      * @return string
-     * @throws Exception
      */
-    public static function getUrlEncode(
-        float|int|string|null $str = '',
-        bool $raw = false,
-        string $encoding = 'UTF-8'
-    ): string {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        $str = static::getTransformToEncoding((string)$str, $encoding);
-
-        if ($raw) {
-            return rawurlencode($str); // кодирует строку по RFC 3986
-        }
-
-        // Возвращает строку, в которой все не цифро-буквенные символы, кроме (-_.) должны быть заменены знаком процента (%),
-        // за которым следует два шестнадцатеричных числа, а пробелы закодированы как знак сложения (+).
-        // Строка кодируется тем же способом, что и POST-данные веб-формы, то есть по типу контента application/x-www-form-urlencoded
-        return urlencode($str);
+    public static function getUrlDecode(float|int|string|null $str = '', bool $rfc3986 = true): string
+    {
+        return getUrlDecodeString($str, $rfc3986);
     }
 
     /**
