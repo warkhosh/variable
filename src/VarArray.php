@@ -1319,6 +1319,7 @@ class VarArray
      * @param array|string $haystack список с допустимых значений
      * @param array $array список, который фильтруем
      * @return array
+     * @deprecated этот метод аналогичен VarArray::getExtract()
      */
     public static function getOnly(array|string $haystack, array $array): array
     {
@@ -1331,6 +1332,7 @@ class VarArray
      * @param array|string $haystack список с допустимых значений
      * @param array $array список, который фильтруем
      * @return void
+     * @deprecated этот метод аналогичен VarArray::extract()
      */
     public static function only(array|string $haystack, array &$array): void
     {
@@ -1343,6 +1345,7 @@ class VarArray
      * @param array|string $haystack список с допустимых значений
      * @param array $array список, который фильтруем
      * @return array
+     * @deprecated этот метод аналогичен VarArray::getItemsExtract()
      */
     public static function getItemsOnly(array|string $haystack, array $array): array
     {
