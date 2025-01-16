@@ -57,7 +57,7 @@ class VarInt
             throw new Exception("The default value must be a positive integer");
         }
 
-        return getPositiveNumber($num, $default, $strict);
+        return getMakePositiveInteger($num, $default, $strict);
     }
 
     /**
