@@ -230,7 +230,7 @@ class VarStr
      */
     public static function start(string $prefix, float|int|string|null $str): string
     {
-        return getStartWithCharString(getMakeString($str), $prefix);
+        return getStartWithCharString($prefix, getMakeString($str));
     }
 
     /**
@@ -244,7 +244,7 @@ class VarStr
      */
     public static function ending(string $postfix, float|int|string|null $str): string
     {
-        return getEndWithCharString(getMakeString($str), $postfix);
+        return getEndWithCharString($postfix, getMakeString($str));
     }
 
     /**
@@ -256,7 +256,7 @@ class VarStr
      */
     public static function getRemoveStart(string $prefix, float|int|string|null $str): string
     {
-        return getStartNotWithString(getMakeString($str), $prefix);
+        return getStartNotWithString($prefix, getMakeString($str));
     }
 
     /**
@@ -268,7 +268,7 @@ class VarStr
      */
     public static function getRemoveEnding(string $postfix, float|int|string|null $str): string
     {
-        return getEndNotWithString(getMakeString($str), $postfix);
+        return getEndNotWithString($postfix, getMakeString($str));
     }
 
     /**
