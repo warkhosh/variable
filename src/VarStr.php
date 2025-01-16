@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Warkhosh\Variable;
 
 use Exception;
-use Throwable;
 
 /**
  * Class VarStr
@@ -725,48 +724,49 @@ class VarStr
         string $thousands_sep = '',
         float|int $default = 0
     ): string {
-        $decimals = $decimals >= 0 ? $decimals : 2;
-
-        try {
-            if (is_null($str) || isEmptyString($str)) {
-                return number_format((float)$default, $decimals, $separator, $thousands_sep);
-            }
-
-            $str = getMakeString($str, strict: true);
-            $str = getTrimString($str);
-
-            $price = preg_replace('/[^0-9,.\s]/ium', '', $str);
-
-            if ($str !== $price) {
-                return number_format((float)$default, $decimals, $separator, $thousands_sep);
-            }
-
-            $str = static::trim((string)$str);
-            $dotParts = explode(".", $str);
-            $commaParts = explode(",", $str);
-            $spaceParts = explode(" ", $str);
-
-            $fidDot = count($dotParts) > 1;
-            $fidComma = count($commaParts) > 1;
-            $fidSpace = count($spaceParts) > 1;
-
-            // Проверка наличия только одного разделителя в тексте
-            if (((int)$fidDot + (int)$fidComma + (int)$fidSpace) > 1) {
-                throw new Exception("There are several separators in value of number");
-            }
-
-            // Проверка повторяющегося разделителя
-            if (($fidDot + $fidComma + $fidSpace) > 1) {
-                throw new Exception("Invalid number format");
-            }
-
-            $str = VarFloat::getMake($str, $decimals, "auto", VarFloat::getMake($default));
-
-            return number_format($str, $decimals, $separator, $thousands_sep);
-
-        } catch (Throwable $e) {
-            return number_format((float)$default, $decimals, $separator, $thousands_sep);
-        }
+        return getFormattedNumberForString($str, $decimals, $separator, $thousands_sep, $default);
+        //$decimals = $decimals >= 0 ? $decimals : 2;
+        //
+        //try {
+        //    if (is_null($str) || isEmptyString($str)) {
+        //        return number_format((float)$default, $decimals, $separator, $thousands_sep);
+        //    }
+        //
+        //    $str = getMakeString($str, strict: true);
+        //    $str = getTrimString($str);
+        //
+        //    $price = preg_replace('/[^0-9,.\s]/ium', '', $str);
+        //
+        //    if ($str !== $price) {
+        //        return number_format((float)$default, $decimals, $separator, $thousands_sep);
+        //    }
+        //
+        //    $str = static::trim((string)$str);
+        //    $dotParts = explode(".", $str);
+        //    $commaParts = explode(",", $str);
+        //    $spaceParts = explode(" ", $str);
+        //
+        //    $fidDot = count($dotParts) > 1;
+        //    $fidComma = count($commaParts) > 1;
+        //    $fidSpace = count($spaceParts) > 1;
+        //
+        //    // Проверка наличия только одного разделителя в тексте
+        //    if (((int)$fidDot + (int)$fidComma + (int)$fidSpace) > 1) {
+        //        throw new Exception("There are several separators in value of number");
+        //    }
+        //
+        //    // Проверка повторяющегося разделителя
+        //    if (($fidDot + $fidComma + $fidSpace) > 1) {
+        //        throw new Exception("Invalid number format");
+        //    }
+        //
+        //    $str = VarFloat::getMake($str, $decimals, "auto", VarFloat::getMake($default));
+        //
+        //    return number_format($str, $decimals, $separator, $thousands_sep);
+        //
+        //} catch (Throwable $e) {
+        //    return number_format((float)$default, $decimals, $separator, $thousands_sep);
+        //}
     }
 
     /**
