@@ -35,62 +35,63 @@ class VarFloat
         string $round = "auto",
         float $default = 0.0
     ): float {
-        if (is_null($var) || (is_string($var) && trim($var) === '') || is_array($var)) {
-            return floatval("0.".str_repeat("0", $decimals));
-        }
-
-        if (is_bool($var)) {
-            return floatval(VarStr::getNumberFormat((int)$var, $decimals, static::SEPARATOR));
-        }
-
-        // Строка, которая не прошла проверку is_numeric()
-        if (! is_numeric($var) && is_string($var)) {
-            $var = trim($var);
-
-            // Строка проходит проверку десятичное число
-            if (is_numeric($var) && is_float($var + 0)) {
-                // Округляем число согласно указанным значениям
-                $var = static::rounding((float)$var, $decimals, $round);
-
-                // Дополняем точность числа и возвращаем
-                return (float)number_format($var, $decimals, static::SEPARATOR);
-            }
-
-            // Если в проекте символ разделителя десятичных чисел точка,
-            // далее идёт проверка и перевод строки как десятичного числа из русской локали в международную (с точкой)
-            if (static::SEPARATOR === ".") {
-                $string = preg_replace('/[^\d,]/ium', '', $var);
-
-                // В строке не найдены лишние символы, но присутствует символ запятой
-                if ($string === $var && mb_strpos($var, ',', 0, 'UTF-8') > 0) {
-                    $var = VarStr::replaceOnce(',', static::SEPARATOR, $var);
-                }
-            }
-
-            // Если строка после вышестоящих логик все равно не проходит проверку на число с плавающей точкой
-            if (! (is_numeric($var) && is_float($var + 0))) {
-                $var = $default;
-            }
-        }
-
-        // Если указанное значение проходит проверку на число (int/float) или вышестоящий алгоритм преобразовал строку в числовую
-        if (is_numeric($var)) {
-            if (is_integer($var)) {
-                return floatval("{$var}.".str_repeat("0", $decimals));
-            }
-
-            // Округляем число согласно указанным значениям
-            $var = static::rounding((float)$var, $decimals, $round);
-
-            // Дополняем точность числа и возвращаем
-            return (float)number_format($var, $decimals, static::SEPARATOR, '');
-        }
-
-        // Округляем default число согласно указанным значениям
-        $var = static::rounding($default, $decimals, $round);
-
-        // Дополняем точность числа и возвращаем
-        return (float)number_format($var, $decimals, static::SEPARATOR, '');
+        return getMakeFloat($var, $decimals, $round, $default, static::SEPARATOR);
+        //if (is_null($var) || (is_string($var) && trim($var) === '') || is_array($var)) {
+        //    return floatval("0.".str_repeat("0", $decimals));
+        //}
+        //
+        //if (is_bool($var)) {
+        //    return floatval(VarStr::getNumberFormat((int)$var, $decimals, static::SEPARATOR));
+        //}
+        //
+        //// Строка, которая не прошла проверку is_numeric()
+        //if (! is_numeric($var) && is_string($var)) {
+        //    $var = trim($var);
+        //
+        //    // Строка проходит проверку десятичное число
+        //    if (is_numeric($var) && is_float($var + 0)) {
+        //        // Округляем число согласно указанным значениям
+        //        $var = static::rounding((float)$var, $decimals, $round);
+        //
+        //        // Дополняем точность числа и возвращаем
+        //        return (float)number_format($var, $decimals, static::SEPARATOR);
+        //    }
+        //
+        //    // Если в проекте символ разделителя десятичных чисел точка,
+        //    // далее идёт проверка и перевод строки как десятичного числа из русской локали в международную (с точкой)
+        //    if (static::SEPARATOR === ".") {
+        //        $string = preg_replace('/[^\d,]/ium', '', $var);
+        //
+        //        // В строке не найдены лишние символы, но присутствует символ запятой
+        //        if ($string === $var && mb_strpos($var, ',', 0, 'UTF-8') > 0) {
+        //            $var = VarStr::replaceOnce(',', static::SEPARATOR, $var);
+        //        }
+        //    }
+        //
+        //    // Если строка после вышестоящих логик все равно не проходит проверку на число с плавающей точкой
+        //    if (! (is_numeric($var) && is_float($var + 0))) {
+        //        $var = $default;
+        //    }
+        //}
+        //
+        //// Если указанное значение проходит проверку на число (int/float) или вышестоящий алгоритм преобразовал строку в числовую
+        //if (is_numeric($var)) {
+        //    if (is_integer($var)) {
+        //        return floatval("{$var}.".str_repeat("0", $decimals));
+        //    }
+        //
+        //    // Округляем число согласно указанным значениям
+        //    $var = static::rounding((float)$var, $decimals, $round);
+        //
+        //    // Дополняем точность числа и возвращаем
+        //    return (float)number_format($var, $decimals, static::SEPARATOR, '');
+        //}
+        //
+        //// Округляем default число согласно указанным значениям
+        //$var = static::rounding($default, $decimals, $round);
+        //
+        //// Дополняем точность числа и возвращаем
+        //return (float)number_format($var, $decimals, static::SEPARATOR, '');
     }
 
     /**
