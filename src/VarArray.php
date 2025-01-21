@@ -996,14 +996,16 @@ class VarArray
      * @param array|float|int|string $keys
      * @param array $arr
      * @param mixed $default
+     * @param bool $createKey флаг создания ключей при их отсутствии
      * @return array
      */
     public static function getExtract(
         array|float|int|string $keys,
         array $arr = [],
-        mixed $default = null
+        mixed $default = null,
+        bool $createKey = true
     ): array {
-        return getExtractFromArray($keys, $arr, $default);
+        return getExtractFromArray($keys, $arr, $default, $createKey);
     }
 
     /**
