@@ -449,12 +449,14 @@ class VarStr
             $str = html_entity_decode($str, ENT_COMPAT | ENT_HTML5, self::ENCODING);
         }
 
-        $str = getReduceString($str, $length, $ending);
+        $str = getReduceString($str, $length, '', $smart);
 
         // Кодирует символы в HTML-сущности если указали флаг преобразования
-        return $transform
+        $str = $transform
             ? htmlspecialchars($str, ENT_COMPAT | ENT_HTML5, self::ENCODING, false)
             : $str;
+
+        return $str.$ending;
 
         // Пока оставил старую логику
         //if ($length <= 0 || is_null($str) || isEmptyString($str)) {
