@@ -409,9 +409,9 @@ class VarStr
     }
 
     /**
-     * Обрезает строку до указанных символов
+     * Возвращает часть строки
      *
-     * @note метод использует trim() перед обрезанием
+     * @note метод использует trim() перед тем как сформирует часть строки
      *
      * @param float|int|string|null $str
      * @param int $length
@@ -419,23 +419,16 @@ class VarStr
      */
     public static function crop(float|int|string|null $str, int $length = 250): string
     {
-        if (is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        if ($length !== 0) {
-            $str = getTrimString(getMakeString($str));
-
-            return mb_substr($str, 0, $length, self::ENCODING);
-        }
-
-        return "";
+        return getCropItString($str, $length, 0, self::ENCODING);
     }
 
     /**
-     * Сокращает текст по параметрам
+     * Возвращает сокращенный текст с начала строки до указанной длинны
+     *
+     * Метод рассчитан для вывода текста, но не строгого усечения длинны при записи в базу данных
      *
      * @note метод использует trim() перед сокращением
+     * @note $ending не участвует в расчетах длины строки, а дописывается к итоговому значению!
      *
      * @param float|int|string|null $str
      * @param int $length
@@ -451,71 +444,84 @@ class VarStr
         bool $transform = true,
         bool $smart = true
     ): string {
-        if ($length <= 0 || is_null($str) || isEmptyString($str)) {
-            return '';
-        }
-
-        $str = VarStr::trim((string)$str);
-
-        // Вычисляем длину текста с учетом количества символов от переменной $ending
-        $maxLength = $length - mb_strlen($ending, self::ENCODING);
-
-        // Переустанавливаем значение окончания через проверку длинны текста
-        $ending = mb_strlen($str, self::ENCODING) > $maxLength ? $ending : '';
-
-        // Защита от человеческого фактора когда длинна строки меньше чем окончание
-        if ($maxLength < 1) {
-            return "";
-        }
-
         // Кодирует коды HTML-сущностей в символы для более точного усечения
         if ($transform) {
-            $str = static::getHtmlEntityDecode($str);
+            $str = html_entity_decode($str, ENT_COMPAT | ENT_HTML5, self::ENCODING);
         }
 
-        // Жёсткое обрезание текста, строго по лимиту
-        if ($smart !== true) {
-            $returnStr = VarStr::crop($str, $length);
-            $returnStr .= $returnStr !== $str ? $ending : "";
+        $str = getReduceString($str, $length, $ending);
 
-            // Кодирует символы в HTML-сущности если указали флаг преобразования
-            return $transform ? static::getHtmlSpecialCharsEncode($returnStr) : $returnStr;
-        }
+        // Кодирует символы в HTML-сущности если указали флаг преобразования
+        return $transform
+            ? htmlspecialchars($str, ENT_COMPAT | ENT_HTML5, self::ENCODING, false)
+            : $str;
 
-        // Длинна строки больше чем требуется
-        if (mb_strlen($str, self::ENCODING) > $length) {
-            // поиск пробелов в тексте
-            if (mb_strstr($str, ' ') === false) {
-                // Укорачиваем единственное слово по точному количеству символов раз в строке нет пробелов
-                $str = mb_substr($str, 0, $maxLength, self::ENCODING);
-
-            } else {
-                $words = [];
-
-                foreach (explode(" ", $str) as $string) {
-                    if (mb_strlen(join(" ", $words), self::ENCODING) < $maxLength) {
-                        $words[] = $string;
-                    }
-                }
-
-                // страховка на случай если первое и единственное выбранное слово превышает указанную длину
-                if (count($words) === 1) {
-                    $str = mb_substr($words[0], 0, $maxLength, self::ENCODING);
-
-                } else {
-                    array_pop($words); // убираем последнее слово делающее превышение ограничения по длине
-                    $str = static::trim(join(" ", $words));
-                }
-            }
-
-            $str .= $ending;
-        }
-
-        if ($transform) {
-            $str = static::getHtmlSpecialCharsEncode($str); // Кодирует символы в HTML-сущности
-        }
-
-        return $str;
+        // Пока оставил старую логику
+        //if ($length <= 0 || is_null($str) || isEmptyString($str)) {
+        //    return '';
+        //}
+        //
+        //$str = VarStr::trim((string)$str);
+        //
+        //// Вычисляем длину текста с учетом количества символов от переменной $ending
+        //$maxLength = $length - mb_strlen($ending, self::ENCODING);
+        //
+        //// Переустанавливаем значение окончания через проверку длинны текста
+        //$ending = mb_strlen($str, self::ENCODING) > $maxLength ? $ending : '';
+        //
+        //// Защита от человеческого фактора когда длинна строки меньше чем окончание
+        //if ($maxLength < 1) {
+        //    return "";
+        //}
+        //
+        //// Кодирует коды HTML-сущностей в символы для более точного усечения
+        //if ($transform) {
+        //    $str = static::getHtmlEntityDecode($str);
+        //}
+        //
+        //// Жёсткое обрезание текста, строго по лимиту
+        //if ($smart !== true) {
+        //    $returnStr = VarStr::crop($str, $length);
+        //    $returnStr .= $returnStr !== $str ? $ending : "";
+        //
+        //    // Кодирует символы в HTML-сущности если указали флаг преобразования
+        //    return $transform ? static::getHtmlSpecialCharsEncode($returnStr) : $returnStr;
+        //}
+        //
+        //// Длинна строки больше чем требуется
+        //if (mb_strlen($str, self::ENCODING) > $length) {
+        //    // поиск пробелов в тексте
+        //    if (mb_strstr($str, ' ') === false) {
+        //        // Укорачиваем единственное слово по точному количеству символов раз в строке нет пробелов
+        //        $str = mb_substr($str, 0, $maxLength, self::ENCODING);
+        //
+        //    } else {
+        //        $words = [];
+        //
+        //        foreach (explode(" ", $str) as $string) {
+        //            if (mb_strlen(join(" ", $words), self::ENCODING) < $maxLength) {
+        //                $words[] = $string;
+        //            }
+        //        }
+        //
+        //        // страховка на случай если первое и единственное выбранное слово превышает указанную длину
+        //        if (count($words) === 1) {
+        //            $str = mb_substr($words[0], 0, $maxLength, self::ENCODING);
+        //
+        //        } else {
+        //            array_pop($words); // убираем последнее слово делающее превышение ограничения по длине
+        //            $str = static::trim(join(" ", $words));
+        //        }
+        //    }
+        //
+        //    $str .= $ending;
+        //}
+        //
+        //if ($transform) {
+        //    $str = static::getHtmlSpecialCharsEncode($str); // Кодирует символы в HTML-сущности
+        //}
+        //
+        //return $str;
     }
 
     /**
