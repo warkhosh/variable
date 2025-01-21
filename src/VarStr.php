@@ -415,9 +415,10 @@ class VarStr
      *
      * @param float|int|string|null $str
      * @param int $length
+     * @param int $start если значение положительное, строка начнётся с позиции start от начала строки иначе конца строки
      * @return string
      */
-    public static function crop(float|int|string|null $str, int $length = 250): string
+    public static function crop(float|int|string|null $str, int $length = 250, int $start = 0): string
     {
         return getCropItString($str, $length, 0, self::ENCODING);
     }
