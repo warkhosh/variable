@@ -420,7 +420,7 @@ class VarStr
      */
     public static function crop(float|int|string|null $str, int $length = 250, int $start = 0): string
     {
-        return getCropItString($str, $length, 0, self::ENCODING);
+        return getCropItString($str, $length, $start, self::ENCODING);
     }
 
     /**
