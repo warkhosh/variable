@@ -166,10 +166,47 @@ class VarStr
     /**
      * Замена первого вхождения строки
      *
+     * @param string $search
+     * @param string $replace
+     * @param float|int|string|null $str
+     * @param string $encoding кодировка
+     * @return string
+     */
+    public static function replaceFirst(
+        string $search,
+        string $replace,
+        float|int|string|null $str,
+        string $encoding = 'UTF-8'
+    ): string {
+        return getReplaceFirstInString($search, $replace, $str, $encoding);
+    }
+
+    /**
+     * Замена последнего вхождения строки
+     *
+     * @param string $search
+     * @param string $replace
+     * @param float|int|string|null $str
+     * @param string $encoding кодировка
+     * @return string
+     */
+    public static function replaceLast(
+        string $search,
+        string $replace,
+        float|int|string|null $str,
+        string $encoding = 'UTF-8'
+    ): string {
+        return getReplaceLastInString($search, $replace, $str, $encoding);
+    }
+
+    /**
+     * Замена первого вхождения строки
+     *
      * @param string|null $search
      * @param string $replace
      * @param float|int|string|null $str
      * @return string
+     * @deprecated заменить на VarStr::replaceFirst() или VarStr::replaceLast()
      */
     public static function replaceOnce(?string $search, string $replace, float|int|string|null $str = null): string
     {
@@ -201,11 +238,11 @@ class VarStr
      * @param string $replace
      * @param float|int|string|null $str
      * @return string
-     * @deprecated метод будет переименован в replaceOnce()
+     * @deprecated заменить на VarStr::replaceFirst() или VarStr::replaceLast()
      */
     public static function str_replace_once(string $search, string $replace, float|int|string|null $str): string
     {
-        return static::replaceOnce($search, $replace, (string)$str);
+        return static::replaceFirst($search, $replace, (string)$str);
     }
 
     /**

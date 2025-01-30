@@ -215,7 +215,7 @@ class VarFloat
 
             // В строке не найдены лишние символы, но присутствует символ запятой
             if ($string === $str && mb_strpos($str, ',', 0, 'UTF-8') > 0) {
-                $str = VarStr::replaceOnce(',', static::SEPARATOR, $str);
+                $str = VarStr::replaceFirst(',', static::SEPARATOR, $str);
             }
 
             if (is_numeric($str) && is_float($str + 0)) {
