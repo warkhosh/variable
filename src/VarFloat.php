@@ -135,7 +135,7 @@ class VarFloat
         string $round = "auto",
         float $default = 0.0
     ): float {
-        throw new Exception("Используйте метод VarFloat::getMake()");
+        throw new Exception("Используйте метод VarFloat::getRound()");
     }
 
     /**
@@ -169,7 +169,7 @@ class VarFloat
      */
     public static function makeString(float|int|string|null $var = 0, int $decimals = 1, string $round = "auto"): string
     {
-        throw new Exception("Используйте метод VarFloat::getMake()");
+        throw new Exception("Используйте метод VarFloat::getString()");
     }
 
     /**
