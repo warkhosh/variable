@@ -487,6 +487,9 @@ class VarStr
             $str = html_entity_decode($str, ENT_COMPAT | ENT_HTML5, self::ENCODING);
         }
 
+        // Сбрасываем или оставляем окончания через проверку длинны текста
+        $ending = mb_strlen($str, self::ENCODING) > $length ? $ending : '';
+
         $str = getReduceString($str, $length, '', $smart);
 
         // Кодирует символы в HTML-сущности если указали флаг преобразования
