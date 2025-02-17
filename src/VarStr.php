@@ -1628,7 +1628,7 @@ class VarStr
             return '';
         }
 
-        return getSlugOfString($str);
+        return getSlugOfString($str, $lower, $ignoreChars);
 
         // На время сохраняю старый алгоритм
         //$str = strip_tags(getTrimString(toUTF8($str)));
