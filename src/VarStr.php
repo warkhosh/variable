@@ -1621,7 +1621,6 @@ class VarStr
      * @param bool $lower
      * @param array $ignoreChars
      * @return string
-     * @throws Exception
      */
     public static function getSlug(float|int|string|null $str, bool $lower = true, array $ignoreChars = []): string
     {
