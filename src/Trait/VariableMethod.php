@@ -904,7 +904,7 @@ trait VariableMethod
      * @return $this
      * @throws Exception
      */
-    private function makeInteger(bool $positive = true, bool $recursive = false, bool $strict = true): static
+    private function makeInteger(bool $positive = true, bool $recursive = false, bool $strict = false): static
     {
         $default = $this->getDefault();
 
@@ -939,7 +939,7 @@ trait VariableMethod
         int $default = 0,
         bool $positive = true,
         bool $recursive = false,
-        bool $strict = true
+        bool $strict = false
     ): array|int {
         if (is_array($data) && is_array($return = [])) {
             if (count($data) > 0) {

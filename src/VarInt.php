@@ -18,7 +18,7 @@ class VarInt
      * @param bool $strict флаг для преобразования дополнительных строковых значений типа "on|off/no|yes/false|true" в число
      * @return int
      */
-    public static function getMake(mixed $num = null, int $default = 0, bool $strict = true): int
+    public static function getMake(mixed $num = null, int $default = 0, bool $strict = false): int
     {
         return getMakeInteger($num, $default, $strict);
     }
@@ -34,7 +34,7 @@ class VarInt
      * @return int
      * @deprecated заменить метод на VarInt::getMake
      */
-    public static function getMakeInteger(mixed $num = null, int $default = 0, bool $strict = true): int
+    public static function getMakeInteger(mixed $num = null, int $default = 0, bool $strict = false): int
     {
         return static::getMake($num, $default, $strict);
     }
@@ -51,7 +51,7 @@ class VarInt
     public static function getMakePositiveInteger(
         bool|float|int|string|null $num = null,
         int $default = 0,
-        bool $strict = true
+        bool $strict = false
     ): int {
         if ($default < 0) {
             throw new Exception("The default value must be a positive integer");
