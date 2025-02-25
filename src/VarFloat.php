@@ -64,7 +64,7 @@ class VarFloat
         //
         //        // В строке не найдены лишние символы, но присутствует символ запятой
         //        if ($string === $var && mb_strpos($var, ',', 0, 'UTF-8') > 0) {
-        //            $var = VarStr::replaceOnce(',', static::SEPARATOR, $var);
+        //            $var = VarStr::replaceFirst(',', static::SEPARATOR, $var);
         //        }
         //    }
         //
