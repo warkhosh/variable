@@ -60,7 +60,7 @@ class VarArray
     }
 
     /**
-     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию и возвращает сам массив
      *
      * @note метод настроен только на работу с учетом точечной нотацией!
      *
@@ -80,7 +80,7 @@ class VarArray
     }
 
     /**
-     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию и возвращает сам массив
      *
      * @note метод настроен только на работу с учетом точечной нотацией!
      *
@@ -91,7 +91,7 @@ class VarArray
      * @param mixed $value
      * @param array $inArray
      * @return array
-     * @deprecated переписать на getAdded()
+     * @deprecated переписать на VarArray::getAdded() или если не нужно возвращает сам массив то VarArray::set()
      */
     public static function apply(float|int|string $key, mixed $value, array &$inArray): array
     {
@@ -101,7 +101,7 @@ class VarArray
     }
 
     /**
-     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию
+     * Устанавливает значение в элемент массива, используя для этого "точечную" нотацию и возвращает сам массив
      *
      * @note метод настроен только на работу с учетом точечной нотацией!
      *
@@ -112,7 +112,7 @@ class VarArray
      * @param mixed $value
      * @param array $inArray
      * @return array
-     * @deprecated переписать на getAdded()
+     * @deprecated переписать на VarArray::getAdded() или если не нужно возвращает сам массив то VarArray::set()
      */
     public static function add(float|int|string $key, mixed $value, array $inArray): array
     {
