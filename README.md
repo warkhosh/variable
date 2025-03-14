@@ -14,7 +14,7 @@
 
 ```php
 $value = [1, 2, 3, 4, 5];
-$variable = new Warkhosh\Variable($value, null);
+$variable = new \Warkhosh\Variable\Variable($value, null);
 
 # Получить все значения
 var_dump($variable->get());
@@ -24,7 +24,7 @@ echo $variable->get(1);
 ```
 
 ```php
-$variable = new Warkhosh\Variable("Konstantin");
+$variable = new \Warkhosh\Variable\Variable("Konstantin");
 
 # Получить значение Konstantin
 echo $variable->get();
@@ -74,15 +74,22 @@ echo $variable->getArray("ids");
 echo $variable->input("small")->upper()->get();
 ```
 
+Пример проверки значения на допустимые значения:
+
+```php
+echo $variable->integer("filter")->inArray([-1, 0, 1, 2, 3, 4, 5])->get();
+```
+
+
 ## VarArray
 
 Класс для работы с переменными типа Array.
 
 Примеры:
 ```php
-echo Warkhosh\Variable\VarArray::getMake('159, 555, age', ',');
-echo Warkhosh\Variable\VarArray::has("request.result", ['request' => ['result' => true]]);
-echo Warkhosh\Variable\VarArray::get("request.message", ['request' => ['message' => 'ok']]);
+echo \Warkhosh\Variable\VarArray::getMake('159, 555, age', ',');
+echo \Warkhosh\Variable\VarArray::has("request.result", ['request' => ['result' => true]]);
+echo \Warkhosh\Variable\VarArray::get("request.message", ['request' => ['message' => 'ok']]);
 ```
 
 Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarArray.php
@@ -94,7 +101,7 @@ echo Warkhosh\Variable\VarArray::get("request.message", ['request' => ['message'
 Примеры:
 ```php
 # Преобразование значения в число с плавающей точкой
-echo Warkhosh\Variable\VarFloat::getMake("159.127", 2, "upward");
+echo \Warkhosh\Variable\VarFloat::getMake("159.127", 2, "upward");
 ```
 
 Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarFloat.php
@@ -105,10 +112,10 @@ echo Warkhosh\Variable\VarFloat::getMake("159.127", 2, "upward");
 
 Примеры:
 ```php
-echo Warkhosh\Variable\VarStr::getMake(159);
-echo Warkhosh\Variable\VarStr::find("age", "My age is 18");
-echo Warkhosh\Variable\VarStr::start("/", "news/123.php");
-echo Warkhosh\Variable\VarStr::reduce("Какой хороший день, какой хороший пень", 15, "...");
+echo \Warkhosh\Variable\VarStr::getMake(159);
+echo \Warkhosh\Variable\VarStr::find("age", "My age is 18");
+echo \Warkhosh\Variable\VarStr::start("/", "news/123.php");
+echo \Warkhosh\Variable\VarStr::reduce("Какой хороший день, какой хороший пень", 15, "...");
 ```
 
 Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarStr.php
@@ -119,8 +126,8 @@ echo Warkhosh\Variable\VarStr::reduce("Какой хороший день, ка�
 
 Примеры:
 ```php
-echo Warkhosh\Variable\VarInt::getMake("159");
-echo Warkhosh\Variable\VarInt::isRange(3, 1, 5);
+echo \Warkhosh\Variable\VarInt::getMake("159");
+echo \Warkhosh\Variable\VarInt::isRange(3, 1, 5);
 ```
 
 Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarInt.php
@@ -131,7 +138,7 @@ echo Warkhosh\Variable\VarInt::isRange(3, 1, 5);
 
 Примеры:
 ```php
-echo Warkhosh\Variable\VarBool::getMake("0");
+echo \Warkhosh\Variable\VarBool::getMake("0");
 ```
 
 Со списком всех методов можно ознакомиться в Warkhosh\Variable\VarBool.php
