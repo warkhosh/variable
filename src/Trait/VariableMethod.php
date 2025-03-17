@@ -450,6 +450,15 @@ trait VariableMethod
                 }
                 break;
 
+                /**
+                 * Для проверки фильтров, где допускаются значения от -1,0,1,2,3,4,5 ...
+                 *
+                 * @note -1 не определено, 0 не выбрано, 1,2,3,4,5 ...
+                 */
+            case 'filter':
+                $this->filter(',', 'all');
+                break;
+
             case 'options':
                 /**
                  * Проверяет и оставляет в строке или массиве наличие только чисел.
@@ -699,13 +708,13 @@ trait VariableMethod
      * Сокращённый метод работы с цифрами
      *
      * @param string $option
-     * @param string|null $delimiter
+     * @param string $delimiter
      * @param bool $recursive
      * @return $this
      * @throws Exception
      * @version 1.1
      */
-    public function array(string $option, ?string $delimiter = null, bool $recursive = false): static
+    public function array(string $option, string $delimiter = ',', bool $recursive = false): static
     {
         switch ($option) {
             /**
@@ -720,7 +729,7 @@ trait VariableMethod
              */
             case 'ids':
             case 'id':
-                $this->ids(',', 'all', $recursive);
+                $this->ids($delimiter, 'all', $recursive);
                 break;
         }
 
@@ -2111,6 +2120,177 @@ trait VariableMethod
             }
 
             $return = count($data) > 0 ? join($delimiter, $data) : $default;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Проверка строки или массива строк в которых содержатся списки чисел начиная от -1, 0, 1, 2, 3...
+     *
+     * @param string $delimiter разделитель строки
+     * @param string $unique флаг проверки уникального значения. Если указали `single`, будет проверка в текущем ряду
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $saveIndex флаг сохраняющий в переданном массиве количество значений да-же если там удалены сами значения
+     * @return $this
+     * @throws Exception
+     */
+    public function filter(
+        string $delimiter = ',',
+        string $unique = 'single',
+        bool $recursive = false,
+        bool $saveIndex = false
+    ): static {
+        $this->data = static::getFilter($this->data, $delimiter, $unique, $recursive, $saveIndex);
+
+        return $this;
+    }
+
+    /**
+     * Проверка строки или массива строк в которых содержатся списки чисел начиная от -1, 0, 1, 2, 3...
+     *
+     * @note метод рассчитан исключительно на строку или массивы строк в которых идентификаторы через символ разделителя!
+     * @note длинна массива может отличаться от переданной после удаления недопустимых значений
+     * @note проверка значений переданного массива с флагом $removeEmptyIndex сохранит порядок и количество ключей, а значения будут пустыми!
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param string $delimiter разделитель строк(и) следует указывать если он отличается от запятой
+     * @param string $unique флаг проверки уникального значения, в текущем ряду идентификаторов после использования $delimiter
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $saveIndex флаг сохраняющий в переданном массиве количество значений да-же если там удалены сами значения
+     * @return array|string
+     * @throws Exception
+     */
+    public static function getFilter(
+        array|bool|float|int|string|null $data,
+        string $delimiter = ',',
+        string $unique = 'single',
+        bool $recursive = false,
+        bool $saveIndex = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            reset($data);
+
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $return[$key] = static::getFilter($item, $delimiter, $unique, $recursive);
+
+                } else {
+                    $str = trim(is_string($item) ? $item : VarStr::getMake($item));
+                    $ids = VarStr::explode($delimiter, $str, []);
+
+                    foreach ($ids as $index => $value) {
+                        $value = (int)$value;
+
+                        if ($value >= -1) {
+                            $ids[$index] = $value;
+                            continue;
+                        }
+
+                        unset($ids[$index]);
+                    }
+
+                    if (count($ids) > 0) {
+                        // Проверка на уникальность в текущем списке
+                        $ids = $unique === 'single' ? array_unique($ids) : $ids;
+                        $return[$key] = join($delimiter, $ids);
+                    } elseif ($saveIndex) {
+                        $return[$key] = "";
+                    }
+                }
+            }
+
+        } else {
+            if (is_numeric($data)) {
+                $return = (int)$data >= -1 ? VarStr::getMake($data) : '';
+
+            } elseif (gettype($data) === 'string') {
+                $list = static::getFilter([$data], $delimiter, $unique, false);
+                $return = VarArray::getFirst($list);
+                $return = is_null($return) ? "" : $return;
+            } else {
+                $return = '';
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Удаление из строки или массива строк значения ноль "0"
+     *
+     * @param string $delimiter разделитель строки
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $saveIndex флаг сохраняющий в переданном массиве количество значений да-же если там удалены сами значения
+     * @return $this
+     * @throws Exception
+     */
+    public function removeZero(
+        string $delimiter = ',',
+        bool $recursive = false,
+        bool $saveIndex = false
+    ): static {
+        $this->data = static::getFilter($this->data, $delimiter, $recursive, $saveIndex);
+
+        return $this;
+    }
+
+    /**
+     * Проверка строки или массива строк в которых содержатся списки чисел начиная от -1, 0, 1, 2, 3...
+     *
+     * @note метод рассчитан исключительно на строку или массивы строк в которых идентификаторы через символ разделителя!
+     * @note длинна массива может отличаться от переданной после удаления недопустимых значений
+     *
+     * @param array|bool|float|int|string|null $data
+     * @param string $delimiter разделитель строк(и) следует указывать если он отличается от запятой
+     * @param bool $recursive флаг для обхода потомков
+     * @param bool $saveIndex флаг сохраняющий в переданном массиве количество значений да-же если там удалены сами значения
+     * @return array|string
+     * @throws Exception
+     */
+    public static function getRemoveZero(
+        array|bool|float|int|string|null $data,
+        string $delimiter = ',',
+        bool $recursive = false,
+        bool $saveIndex = false
+    ): array|string {
+        if (is_array($data) && is_array($return = [])) {
+            reset($data);
+
+            foreach ($data as $key => $item) {
+                if ($recursive && is_array($item)) {
+                    $return[$key] = static::getRemoveZero($item, $delimiter, $recursive);
+
+                } else {
+                    $str = trim(is_string($item) ? $item : VarStr::getMake($item));
+                    $ids = VarStr::explode($delimiter, $str, []);
+                    $ids = array_map('intval', $ids);
+
+                    foreach ($ids as $index => $value) {
+                        if ($value === 0) {
+                            unset($ids[$index]);
+                        }
+                    }
+
+                    if (count($ids) > 0) {
+                        $return[$key] = join($delimiter, $ids);
+                    } elseif ($saveIndex) {
+                        $return[$key] = "";
+                    }
+                }
+            }
+
+        } else {
+            if (is_numeric($data)) {
+                $return = $data != 0 ? VarStr::getMake($data) : '';
+
+            } elseif (gettype($data) === 'string') {
+                $list = static::getRemoveZero([$data], $delimiter, false);
+                $return = VarArray::getFirst($list);
+                $return = is_null($return) ? "" : $return;
+            } else {
+                $return = '';
+            }
         }
 
         return $return;
