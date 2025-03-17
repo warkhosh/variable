@@ -2230,7 +2230,7 @@ trait VariableMethod
         bool $recursive = false,
         bool $saveIndex = false
     ): static {
-        $this->data = static::getFilter($this->data, $delimiter, $recursive, $saveIndex);
+        $this->data = static::getRemoveZero($this->data, $delimiter, $recursive, $saveIndex);
 
         return $this;
     }
