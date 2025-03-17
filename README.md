@@ -48,6 +48,9 @@ echo $variable->getInput("small");
 # Получить значение переменной в формате строки без каких либо алгоритмов
 echo $variable->getInput("unchanged");
 
+# Получить значение переменной в формате строки которая содержит -1 или положительное число (включая ноль)
+echo $variable->getInput("filter");
+
 # Получить значение переменной в формате float c двумя числами после запятой
 echo $variable->getFloat("cost");
 
@@ -72,6 +75,12 @@ echo $variable->getArray("ids");
 
 ```php
 echo $variable->input("small")->upper()->get();
+```
+
+Пример преобразования значения по правилу удаления не допустимых чисел меньше -1 и без нуля:
+
+```php
+echo $variable->input("filter")->removeZero()->get();
 ```
 
 Пример проверки значения на допустимые значения:
