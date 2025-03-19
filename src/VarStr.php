@@ -484,11 +484,11 @@ class VarStr
     ): string {
         // Кодирует коды HTML-сущностей в символы для более точного усечения
         if ($transform) {
-            $str = html_entity_decode($str, ENT_COMPAT | ENT_HTML5, self::ENCODING);
+            $str = html_entity_decode((string)$str, ENT_COMPAT | ENT_HTML5, self::ENCODING);
         }
 
         // Сбрасываем или оставляем окончания через проверку длинны текста
-        $ending = mb_strlen($str, self::ENCODING) > $length ? $ending : '';
+        $ending = mb_strlen((string)$str, self::ENCODING) > $length ? $ending : '';
 
         $str = getReduceString($str, $length, '', $smart);
 
