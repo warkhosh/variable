@@ -183,7 +183,22 @@ class VarFloat
      */
     public static function getString(float|int|string|null $var = 0, int $decimals = 1, string $round = "auto"): string
     {
-        return (string)static::getMake($var, $decimals, $round);
+        $str = (string)static::getMake($var, $decimals, $round);
+
+        if ($decimals > 0) {
+            if (VarStr::find('.')) {
+                [$number, $decimal] = explode('.', $str);
+                $quantity = VarStr::length($decimal) - $decimals;
+                $decimal = $decimal.($quantity > 0 ? str_repeat("0", $quantity) : "");
+
+                return "{$number}.{$decimal}";
+            } else {
+                $decimal = str_repeat("0", $decimals);
+                return "{$str}.{$decimal}";
+            }
+        }
+
+        return $str;
     }
 
     /**
