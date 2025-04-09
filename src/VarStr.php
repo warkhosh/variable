@@ -145,7 +145,7 @@ class VarStr
      */
     public static function findPos(string|null $needle = null, string|null $str = '', int $offset = 0): bool|int
     {
-        return getFindPosInString($str, $needle, $offset);
+        return getFindPosInString($needle, $str, $offset);
     }
 
     /**
