@@ -480,7 +480,7 @@ trait VariableMethod
                  * @note если вам надо сохранить порядок в текстовом списке значений, используйте input("text") и далее сами преобразовывайте сами
                  */
             case 'ids':
-                $this->ids(',', 'all')->removeItems();
+                $this->ids(',', 'all');
                 break;
         }
 
